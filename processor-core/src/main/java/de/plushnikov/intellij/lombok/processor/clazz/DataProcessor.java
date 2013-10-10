@@ -69,7 +69,7 @@ public class DataProcessor extends AbstractLombokClassProcessor {
       target.addAll(new SetterProcessor().createFieldSetters(psiClass, PsiModifier.PUBLIC));
     }
     if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, EqualsAndHashCode.class)) {
-      target.addAll(new EqualsAndHashCodeProcessor().createEqualAndHashCode(psiClass, psiAnnotation));
+      target.addAll(new EqualsAndHashCodeProcessor().createEqualAndHashCode(psiClass, psiAnnotation, true));
     }
     if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, ToString.class)) {
       target.addAll(new ToStringProcessor().createToStringMethod(psiClass, psiAnnotation));
