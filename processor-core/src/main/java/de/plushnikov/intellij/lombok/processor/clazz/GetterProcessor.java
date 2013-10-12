@@ -62,6 +62,7 @@ public class GetterProcessor extends AbstractLombokClassProcessor {
     return null != methodVisibility;
   }
 
+  @Override
   protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation);
     if (methodVisibility != null) {

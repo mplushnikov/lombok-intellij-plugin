@@ -13,11 +13,10 @@ import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
-import gnu.trove.THashMap;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
