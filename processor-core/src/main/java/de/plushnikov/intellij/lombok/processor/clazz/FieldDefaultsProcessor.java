@@ -6,6 +6,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiModifier;
+import com.intellij.util.containers.ConcurrentHashSet;
 import de.plushnikov.intellij.lombok.LombokUtils;
 import de.plushnikov.intellij.lombok.UserMapKeys;
 import de.plushnikov.intellij.lombok.problem.ProblemBuilder;
@@ -13,13 +14,11 @@ import de.plushnikov.intellij.lombok.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.lombok.psi.LombokPsiElementFactory;
 import de.plushnikov.intellij.lombok.util.LombokProcessorUtil;
 import de.plushnikov.intellij.lombok.util.PsiAnnotationUtil;
-import io.netty.util.internal.ConcurrentSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
@@ -35,7 +34,7 @@ public class FieldDefaultsProcessor extends AbstractLombokClassProcessor {
   private static final Logger LOG = Logger.getLogger(FieldDefaultsProcessor.class.getSimpleName());
 
   // TODO : Sorry * 1000, but, in "PsiField" generator, a PsiClass.getFields() recall "processIntern". How to avoid this ?!
-  private Set<PsiClass> inUse = new ConcurrentSet<PsiClass>();
+  private Set<PsiClass> inUse = new ConcurrentHashSet<PsiClass>();
 
   public FieldDefaultsProcessor() {
     super(FieldDefaults.class, PsiField.class);

@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.lombok.processor.clazz;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import de.plushnikov.intellij.lombok.problem.ProblemBuilder;
@@ -10,6 +11,8 @@ import de.plushnikov.intellij.lombok.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.lombok.util.PsiClassUtil;
 import java.lang.annotation.Annotation;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -19,6 +22,8 @@ import java.util.List;
  * @author twillouer
  */
 public class ValueProcessor extends AbstractLombokClassProcessor {
+
+  private FieldDefaultsProcessor fieldDefaultsProcessor = new FieldDefaultsProcessor();
 
   public ValueProcessor() {
     this(Value.class);
@@ -55,9 +60,22 @@ public class ValueProcessor extends AbstractLombokClassProcessor {
     return result;
   }
 
-  protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void processIntern(@NotNull final PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     //@Value class are final
     if(!PsiClassUtil.isFinalClass(psiClass)) {
+      ApplicationManager.getApplication().invokeLater(
+          new Runnable() {
+            public void run() {
+              ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                @Override
+                public void run() {
+                  psiClass.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
+                }
+              });
+            }
+          }
+      );
+
 //      PsiUtil.setModifierProperty(psiClass, PsiModifier.FINAL, true);
     }
 
@@ -69,6 +87,9 @@ public class ValueProcessor extends AbstractLombokClassProcessor {
     }
     if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, ToString.class)) {
       target.addAll(new ToStringProcessor().createToStringMethod(psiClass, psiAnnotation));
+    }
+    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, FieldDefaults.class)) {
+      target.addAll(fieldDefaultsProcessor.recreateFields(psiClass, PsiModifier.PRIVATE, true));
     }
     // create required constructor only if there are no other constructor annotations
     if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, NoArgsConstructor.class, RequiredArgsConstructor.class, AllArgsConstructor.class)) {
