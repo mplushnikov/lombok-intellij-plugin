@@ -5,6 +5,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiModifierList;
+import de.plushnikov.intellij.lombok.util.PsiAnnotationUtil;
+import java.util.Collection;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
@@ -74,4 +79,12 @@ public abstract class AbstractLombokProcessor implements LombokProcessor {
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
     return Collections.emptyList();
   }
+
+  protected void copyAnnotations(final PsiField fromPsiElement, final PsiModifierList toModifierList, final Pattern... patterns) {
+    final Collection<String> annotationsToCopy = PsiAnnotationUtil.collectAnnotationsToCopy(fromPsiElement, patterns);
+    for (String annotationFQN : annotationsToCopy) {
+      toModifierList.addAnnotation(annotationFQN);
+    }
+  }
+
 }

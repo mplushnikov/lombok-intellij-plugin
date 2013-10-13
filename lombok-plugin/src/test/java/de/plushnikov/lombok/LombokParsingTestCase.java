@@ -103,6 +103,9 @@ public abstract class LombokParsingTestCase extends LightCodeInsightFixtureTestC
     PsiField[] intellijFields = intellij.getFields();
     PsiField[] theirsFields = theirs.getFields();
 
+    LOG.log(Level.INFO, "IntelliJ Fields for class " + intellij.getName() + ": " + Arrays.toString(intellijFields));
+    LOG.log(Level.INFO, "Theirs Fields for class " + theirs.getName() + ": " + Arrays.toString(theirsFields));
+
     assertEquals("Field counts are different for Class " + intellij.getName(), theirsFields.length, intellijFields.length);
 
     for (PsiField theirsField : theirsFields) {
@@ -112,8 +115,10 @@ public abstract class LombokParsingTestCase extends LightCodeInsightFixtureTestC
         if (theirsField.getName().equals(intellijField.getName())) {
           final PsiModifierList intellijFieldModifierList = intellijField.getModifierList();
 
-          compareModifiers(intellijFieldModifierList, theirsFieldModifierList);
+          compareModifiers(intellijFieldModifierList, theirsFieldModifierList, theirsField.getContainingClass().getName() + "/" + theirsField.getName());
           compareType(intellijField.getType(), theirsField.getType(), theirsField);
+          assertEquals("Bad initializer on " + theirsField.getContainingClass().getName() + "/" + theirsField.getName(), theirsField.hasInitializer(), intellijField.hasInitializer());
+          assertEquals("Not same initializer on " + theirsField.getContainingClass().getName() + "/" + theirsField.getName(), theirsField.getInitializer(), intellijField.getInitializer());
           compared = true;
         }
       }
@@ -137,12 +142,12 @@ public abstract class LombokParsingTestCase extends LightCodeInsightFixtureTestC
     return theirsCanonicalText;
   }
 
-  private void compareModifiers(PsiModifierList intellij, PsiModifierList theirs) {
+  private void compareModifiers(PsiModifierList intellij, PsiModifierList theirs, String from) {
     assertNotNull(intellij);
     assertNotNull(theirs);
 
     for (String modifier : modifiers) {
-      assertEquals(modifier + " Modifier is not equal; ", theirs.hasModifierProperty(modifier), intellij.hasModifierProperty(modifier));
+      assertEquals(modifier + " Modifier is not equal on " + from, theirs.hasModifierProperty(modifier), intellij.hasModifierProperty(modifier));
     }
 
     Collection<String> intellijAnnotations = Lists.newArrayList(Collections2.transform(Arrays.asList(intellij.getAnnotations()), new QualifiedNameFunction()));
@@ -169,7 +174,7 @@ public abstract class LombokParsingTestCase extends LightCodeInsightFixtureTestC
             theirsMethod.getParameterList().getParametersCount() == intellijMethod.getParameterList().getParametersCount()) {
           PsiModifierList intellijFieldModifierList = intellijMethod.getModifierList();
 
-          compareModifiers(intellijFieldModifierList, theirsFieldModifierList);
+          compareModifiers(intellijFieldModifierList, theirsFieldModifierList, theirsMethod.getContainingClass().getName() + "/" + theirsMethod.getName());
           compareType(intellijMethod.getReturnType(), theirsMethod.getReturnType(), theirsMethod);
           compareParams(intellijMethod.getParameterList(), theirsMethod.getParameterList());
 
