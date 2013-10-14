@@ -1,8 +1,12 @@
 package de.plushnikov.intellij.lombok.processor.clazz;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import de.plushnikov.intellij.lombok.problem.ProblemBuilder;
 import de.plushnikov.intellij.lombok.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.lombok.processor.clazz.constructor.AllArgsConstructorProcessor;
@@ -10,13 +14,18 @@ import de.plushnikov.intellij.lombok.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.lombok.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.lombok.util.PsiClassUtil;
 import java.lang.annotation.Annotation;
-import lombok.*;
+import java.util.Collection;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author twillouer
@@ -62,7 +71,7 @@ public class ValueProcessor extends AbstractLombokClassProcessor {
 
   protected void processIntern(@NotNull final PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     //@Value class are final
-    if(!PsiClassUtil.isFinalClass(psiClass)) {
+    if (!PsiClassUtil.isFinalClass(psiClass) && !PsiAnnotationUtil.isAnnotatedWith(psiClass, NonFinal.class)) {
       ApplicationManager.getApplication().invokeLater(
           new Runnable() {
             public void run() {
@@ -75,8 +84,6 @@ public class ValueProcessor extends AbstractLombokClassProcessor {
             }
           }
       );
-
-//      PsiUtil.setModifierProperty(psiClass, PsiModifier.FINAL, true);
     }
 
     if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, Getter.class)) {
