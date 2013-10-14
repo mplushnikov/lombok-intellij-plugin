@@ -7,3 +7,4 @@
 /test-manual/lombok_pg/*.iml
 /test-manual/lombok_pg/target
 /.idea/libraries
+/.idea/workspace.xml
