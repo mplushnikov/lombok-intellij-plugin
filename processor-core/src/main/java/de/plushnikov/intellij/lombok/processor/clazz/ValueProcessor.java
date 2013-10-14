@@ -1,6 +1,8 @@
 package de.plushnikov.intellij.lombok.processor.clazz;
 
+import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -78,7 +80,12 @@ public class ValueProcessor extends AbstractLombokClassProcessor {
               ApplicationManager.getApplication().runWriteAction(new Runnable() {
                 @Override
                 public void run() {
-                  psiClass.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
+                  CommandProcessor.getInstance().executeCommand(psiClass.getProject(), new Runnable() {
+                    @Override
+                    public void run() {
+                      psiClass.getModifierList().setModifierProperty(PsiModifier.FINAL, true);
+                    }
+                  }, "lombok FieldsDefaults", ActionGroup.EMPTY_GROUP);
                 }
               });
             }

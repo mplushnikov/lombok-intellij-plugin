@@ -1,6 +1,8 @@
 package de.plushnikov.intellij.lombok.processor.clazz;
 
+import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -126,14 +128,19 @@ public class FieldDefaultsProcessor extends AbstractLombokClassProcessor {
             ApplicationManager.getApplication().runWriteAction(new Runnable() {
               @Override
               public void run() {
-                if (mustBePrivate) {
-                  psiField.getModifierList().setModifierProperty(PsiModifier.PRIVATE, true);
-                } else if (modifier != null) {
-                  psiField.getModifierList().setModifierProperty(modifier, true);
-                } else {
-                  psiField.getModifierList().setModifierProperty(PsiModifier.PACKAGE_LOCAL, true);
-                }
-                psiField.getModifierList().setModifierProperty(PsiModifier.FINAL, mustBeFinal && !PsiAnnotationUtil.isAnnotatedWith(psiField, NonFinal.class));
+                CommandProcessor.getInstance().executeCommand(psiField.getProject(), new Runnable() {
+                  @Override
+                  public void run() {
+                    if (mustBePrivate) {
+                      psiField.getModifierList().setModifierProperty(PsiModifier.PRIVATE, true);
+                    } else if (modifier != null) {
+                      psiField.getModifierList().setModifierProperty(modifier, true);
+                    } else {
+                      psiField.getModifierList().setModifierProperty(PsiModifier.PACKAGE_LOCAL, true);
+                    }
+                    psiField.getModifierList().setModifierProperty(PsiModifier.FINAL, mustBeFinal && !PsiAnnotationUtil.isAnnotatedWith(psiField, NonFinal.class));
+                  }
+                }, "lombok FieldsDefaults", ActionGroup.EMPTY_GROUP);
               }
             });
           }
