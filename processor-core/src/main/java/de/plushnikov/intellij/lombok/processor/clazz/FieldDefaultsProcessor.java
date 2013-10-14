@@ -14,6 +14,7 @@ import de.plushnikov.intellij.lombok.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.lombok.psi.LombokPsiElementFactory;
 import de.plushnikov.intellij.lombok.util.LombokProcessorUtil;
 import de.plushnikov.intellij.lombok.util.PsiAnnotationUtil;
+import de.plushnikov.intellij.lombok.util.PsiClassUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,26 +34,15 @@ import org.jetbrains.annotations.NotNull;
 public class FieldDefaultsProcessor extends AbstractLombokClassProcessor {
   private static final Logger LOG = Logger.getLogger(FieldDefaultsProcessor.class.getSimpleName());
 
-  // TODO : Sorry * 1000, but, in "PsiField" generator, a PsiClass.getFields() recall "processIntern". How to avoid this ?!
-  private Set<PsiClass> inUse = new ConcurrentHashSet<PsiClass>();
-
   public FieldDefaultsProcessor() {
     super(FieldDefaults.class, PsiField.class);
   }
 
   @Override
   protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    if (inUse.contains(psiClass)) {
-      return;
-    }
-    inUse.add(psiClass);
-    try {
-      final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation, "level");
-      final Boolean makeFinal = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "makeFinal", Boolean.class);
-      target.addAll(recreateFields(psiClass, methodVisibility, Boolean.TRUE.equals(makeFinal)));
-    } finally {
-      inUse.remove(psiClass);
-    }
+    final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation, "level");
+    final Boolean makeFinal = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "makeFinal", Boolean.class);
+    target.addAll(recreateFields(psiClass, methodVisibility, Boolean.TRUE.equals(makeFinal)));
   }
 
   @Override
@@ -91,7 +81,7 @@ public class FieldDefaultsProcessor extends AbstractLombokClassProcessor {
   public Collection<PsiField> recreateFields(@NotNull PsiClass psiClass, String methodModifier, boolean mustBeFinal) {
     Collection<PsiField> result = new ArrayList<PsiField>();
 
-    for (PsiField psiField : psiClass.getFields()) {
+    for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       if (!psiField.getName().startsWith(LombokUtils.LOMBOK_INTERN_FIELD_MARKER)) {
         PsiField newField = recreateField(psiField, methodModifier, mustBeFinal);
         if (newField != null) {
