@@ -98,10 +98,10 @@ public class EqualsAndHashCodeProcessor extends AbstractLombokClassProcessor {
   }
 
   protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.addAll(createEqualAndHashCode(psiClass, psiAnnotation));
+    target.addAll(createEqualAndHashCode(psiClass, psiAnnotation, true));
   }
 
-  protected Collection<PsiMethod> createEqualAndHashCode(PsiClass psiClass, PsiElement psiNavTargetElement) {
+  protected Collection<PsiMethod> createEqualAndHashCode(PsiClass psiClass, PsiElement psiNavTargetElement, boolean tryGenerateCanEqual) {
     if (areMethodsAlreadyExists(psiClass)) {
       return Collections.emptyList();
     }
@@ -109,7 +109,7 @@ public class EqualsAndHashCodeProcessor extends AbstractLombokClassProcessor {
     result.add(createEqualsMethod(psiClass, psiNavTargetElement));
     result.add(createHashCodeMethod(psiClass, psiNavTargetElement));
 
-    final boolean shouldGenerateCanEqual = shouldGenerateCanEqual(psiClass);
+    final boolean shouldGenerateCanEqual = tryGenerateCanEqual && shouldGenerateCanEqual(psiClass);
     if (shouldGenerateCanEqual) {
       result.add(createCanEqualMethod(psiClass, psiNavTargetElement));
     }
