@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.settings;
 
 import com.intellij.compiler.CompilerConfiguration;
 import com.intellij.compiler.CompilerConfigurationImpl;
-import com.intellij.compiler.CompilerWorkspaceConfiguration;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -79,9 +78,8 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     final CompilerConfiguration compilerConfiguration = CompilerConfiguration.getInstance(myProject);
     boolean javacCompiler = JAVAC_COMPILER_ID.equals(((CompilerConfigurationImpl) compilerConfiguration).getDefaultCompiler().getId());
     boolean annotationProcessorsEnabled = compilerConfiguration.isAnnotationProcessorsEnabled();
-    boolean externBuild = CompilerWorkspaceConfiguration.getInstance(myProject).useOutOfProcessBuild();
 
-    return (externBuild && annotationProcessorsEnabled) || (!externBuild && !annotationProcessorsEnabled && javacCompiler);
+    return (!annotationProcessorsEnabled && javacCompiler);
   }
 
   @Override

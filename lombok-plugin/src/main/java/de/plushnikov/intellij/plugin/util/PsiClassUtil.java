@@ -16,7 +16,6 @@ import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
-import com.intellij.psi.impl.source.PsiExtensibleClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,13 +56,9 @@ public class PsiClassUtil {
    */
   @NotNull
   public static Collection<PsiMethod> collectClassMethodsIntern(@NotNull PsiClass psiClass) {
-    if (psiClass instanceof PsiExtensibleClass) {
-      return ((PsiExtensibleClass) psiClass).getOwnMethods();
-    } else {
-      return Collections2.transform(
-          Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiMethod.class)),
-          PSI_ELEMENT_TO_METHOD_FUNCTION);
-    }
+    return Collections2.transform(
+       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiMethod.class)),
+       PSI_ELEMENT_TO_METHOD_FUNCTION);
   }
 
   /**
@@ -74,13 +69,9 @@ public class PsiClassUtil {
    */
   @NotNull
   public static Collection<PsiField> collectClassFieldsIntern(@NotNull PsiClass psiClass) {
-    if (psiClass instanceof PsiExtensibleClass) {
-      return ((PsiExtensibleClass) psiClass).getOwnFields();
-    } else {
-      return Collections2.transform(
-          Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiField.class)),
-          PSI_ELEMENT_TO_FIELD_FUNCTION);
-    }
+    return Collections2.transform(
+       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiField.class)),
+       PSI_ELEMENT_TO_FIELD_FUNCTION);
   }
 
   /**
@@ -91,13 +82,9 @@ public class PsiClassUtil {
    */
   @NotNull
   public static Collection<PsiClass> collectInnerClassesIntern(@NotNull PsiClass psiClass) {
-    if (psiClass instanceof PsiExtensibleClass) {
-      return ((PsiExtensibleClass) psiClass).getOwnInnerClasses();
-    } else {
-      return Collections2.transform(
-          Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiClass.class)),
-          PSI_ELEMENT_TO_CLASS_FUNCTION);
-    }
+    return Collections2.transform(
+       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiClass.class)),
+       PSI_ELEMENT_TO_CLASS_FUNCTION);
   }
 
   @NotNull
@@ -129,7 +116,7 @@ public class PsiClassUtil {
   public static boolean hasSuperClass(@NotNull final PsiClass psiClass) {
     final PsiClass superClass = psiClass.getSuperClass();
     return (null != superClass && !CommonClassNames.JAVA_LANG_OBJECT.equals(superClass.getQualifiedName())
-        || !superTypesIsEmptyOrObjectOnly(psiClass));
+       || !superTypesIsEmptyOrObjectOnly(psiClass));
   }
 
   private static boolean superTypesIsEmptyOrObjectOnly(@NotNull final PsiClass psiClass) {
@@ -169,7 +156,7 @@ public class PsiClassUtil {
     }
     return result;
   }
-  
+
   /**
    * Return true if class is final.
    *
