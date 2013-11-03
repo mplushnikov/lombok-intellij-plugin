@@ -3,9 +3,11 @@ package de.plushnikov.intellij.plugin.provider;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import de.plushnikov.intellij.plugin.extension.LombokProcessorExtensionPoint;
 import de.plushnikov.intellij.plugin.extension.UserMapKeys;
@@ -14,10 +16,13 @@ import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Provides support for lombok generated elements
@@ -50,20 +55,73 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       return emptyResult;
     }
 
-    final PsiClass psiClass = (PsiClass) element;
-    if (log.isDebugEnabled()) {
-      log.debug(String.format("Process class %s with LombokAugmentProvider", psiClass.getName()));
+    boolean isLombokPresent = UserMapKeys.isLombokPossiblePresent(element);
+    if (!isLombokPresent) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Skipped call for type: %s class: %s", type, ((PsiClass) element).getQualifiedName()));
+      }
+      return Collections.emptyList();
     }
 
-    cleanAttributeUsage(psiClass);
+    return process(type, project, (PsiClass) element);
+  }
 
-    List<Psi> result = new ArrayList<Psi>();
-    for (Processor processor : LombokProcessorExtensionPoint.EP_NAME.getExtensions()) {
-      if (processor.canProduce(type) && processor.isEnabled(project)) {
-        result.addAll((Collection<Psi>) processor.process(psiClass));
+  private <Psi extends PsiElement> List<Psi> process(Class<Psi> type, Project project, PsiClass psiClass) {
+    boolean isLombokPossiblePresent = true;
+    try {
+      isLombokPossiblePresent = verifyLombokPresent(psiClass);
+    } catch (IOException ex) {
+      log.warn("Exception durcing check for Lombok", ex);
+    }
+    UserMapKeys.updateLombokPresent(psiClass, isLombokPossiblePresent);
+
+    if (isLombokPossiblePresent) {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Process call for type: %s class: %s", type, psiClass.getQualifiedName()));
+      }
+
+      cleanAttributeUsage(psiClass);
+
+      final List<Psi> result = new ArrayList<Psi>();
+      for (Processor processor : LombokProcessorExtensionPoint.EP_NAME.getExtensions()) {
+        if (processor.canProduce(type) && processor.isEnabled(project)) {
+          result.addAll((Collection<Psi>) processor.process(psiClass));
+        }
+      }
+      return result;
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug(String.format("Skipped call for type: %s class: %s", type, psiClass.getQualifiedName()));
       }
     }
-    return result;
+    return Collections.emptyList();
+  }
+
+  private boolean verifyLombokPresent(PsiClass psiClass) throws IOException {
+    boolean isLombokPossiblePresent = true;
+    final PsiFile containingFile = psiClass.getContainingFile();
+    if (null != containingFile) {
+      VirtualFile virtualFile = containingFile.getVirtualFile();
+      if (null != virtualFile) {
+        InputStream inputStream = null;
+        try {
+          inputStream = virtualFile.getInputStream();
+          Scanner scanner = new Scanner(inputStream);
+          while (scanner.hasNextLine()) {
+            final String lineFromFile = scanner.nextLine();
+            isLombokPossiblePresent = lineFromFile.contains("lombok.");
+            if (isLombokPossiblePresent) {
+              break;
+            }
+          }
+        } finally {
+          if (null != inputStream) {
+            inputStream.close();
+          }
+        }
+      }
+    }
+    return isLombokPossiblePresent;
   }
 
   protected void cleanAttributeUsage(PsiClass psiClass) {
