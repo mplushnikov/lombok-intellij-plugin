@@ -39,7 +39,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private ASTNode myASTNode;
   private boolean myConstructor;
   private LightTypeParameterListBuilder myTypeParameterList;
-  private LightReferenceListBuilder myThrowsList;
+  private LombokLightReferenceListBuilder myThrowsList;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, StdFileTypes.JAVA.getLanguage(), name,
@@ -48,7 +48,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     myNameIdentifier = new LombokLightIdentifier(manager, name);
     final Language language = StdFileTypes.JAVA.getLanguage();
     myTypeParameterList = new LightTypeParameterListBuilder(manager, language);
-    myThrowsList = new LightReferenceListBuilder(manager, language, PsiReferenceList.Role.THROWS_LIST);
+    myThrowsList = new LombokLightReferenceListBuilder(manager, language, PsiReferenceList.Role.THROWS_LIST);
   }
 
   public LombokLightMethodBuilder withNavigationElement(PsiElement navigationElement) {

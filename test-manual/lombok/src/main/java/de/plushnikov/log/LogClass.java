@@ -11,11 +11,11 @@ public class LogClass {
     private String stringProperty;
 
     public void doSomething() {
-        LogClass.log.fine("Messsdage");
+        log.fine("Messsdage");
     }
 
     public int getIntProperty() {
-        LogClass.log.entering("LogClass","getIntProperty");
+        log.entering("LogClass","getIntProperty");
         return intProperty;
     }
 

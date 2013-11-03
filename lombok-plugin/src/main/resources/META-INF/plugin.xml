@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="http://code.google.com/p/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.7</version>
+  <version>0.7.2</version>
   <idea-version since-build="99.18" until-build="110"/>
 
   <description><![CDATA[
@@ -79,6 +79,16 @@
 
   <change-notes><![CDATA[
 		<ul>
+		<li>0.7.2
+				<ol>
+				    <li>Fix multiple stackoverflow exceptions</li>
+				</ol>
+			</li>
+		 <li>0.7.1
+				<ol>
+				    <li>Some performance optimizations</li>
+				</ol>
+			</li>
 		  <li>0.7
 				<ol>
 				    <li>Added partial support for @Value lombok annotations</li>

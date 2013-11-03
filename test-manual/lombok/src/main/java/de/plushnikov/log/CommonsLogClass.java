@@ -12,6 +12,6 @@ public class CommonsLogClass {
     private String stringProperty;
 
     public void doSomething() {
-        CommonsLogClass.log.error("Error Message Text");
+        log.error("Error Message Text");
     }
 }
