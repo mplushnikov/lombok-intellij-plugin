@@ -54,6 +54,7 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.EqualsAndHashCodeProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.GetterProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor"/>
+    <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.FieldDefaultsProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueExperimentalProcessor"/>

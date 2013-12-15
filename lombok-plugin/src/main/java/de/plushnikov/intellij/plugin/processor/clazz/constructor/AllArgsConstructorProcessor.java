@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Plushnikov Michail
@@ -51,13 +52,14 @@ public class AllArgsConstructorProcessor extends AbstractConstructorClassProcess
   }
 
   @NotNull
-  public Collection<PsiField> getAllFields(@NotNull PsiClass psiClass) {
-    return getAllNotInitializedAndNotStaticFields(psiClass);
+  public Collection<PsiMethod> createAllArgsConstructor(@NotNull PsiClass psiClass, @NotNull String methodVisibility, @NotNull PsiAnnotation psiAnnotation, @Nullable String staticName) {
+    final Collection<PsiField> allReqFields = getAllFields(psiClass);
+
+    return createConstructorMethod(psiClass, methodVisibility, psiAnnotation, allReqFields, staticName);
   }
 
   @NotNull
-  public Collection<PsiMethod> createAllArgsConstructor(PsiClass psiClass, String methodVisibility, PsiAnnotation psiAnnotation, String staticName) {
-    final Collection<PsiField> allNotInitializedNotStaticFields = getAllFields(psiClass);
-    return createConstructorMethod(psiClass, methodVisibility, psiAnnotation, allNotInitializedNotStaticFields, staticName);
+  public Collection<PsiField> getAllFields(@NotNull PsiClass psiClass) {
+    return getAllNotInitializedAndNotStaticFields(psiClass);
   }
 }

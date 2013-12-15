@@ -13,7 +13,12 @@ public class LombokProcessorUtil {
 
   @Nullable
   public static String getMethodModifier(@NotNull PsiAnnotation psiAnnotation) {
-    return convertAccessLevelToJavaModifier(getAnnotationValue(psiAnnotation, "value"));
+    return getMethodModifier(psiAnnotation, "value");
+  }
+
+  @Nullable
+  public static String getMethodModifier(@NotNull PsiAnnotation psiAnnotation, @NotNull String name) {
+    return convertAccessLevelToJavaModifier(getAnnotationValue(psiAnnotation, name));
   }
 
   @Nullable

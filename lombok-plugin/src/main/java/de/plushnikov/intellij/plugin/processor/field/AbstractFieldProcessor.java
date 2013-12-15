@@ -69,11 +69,4 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
 
   protected abstract void processIntern(PsiField psiField, PsiAnnotation psiAnnotation, List<? super PsiElement> target);
 
-  protected void copyAnnotations(final PsiField fromPsiElement, final PsiModifierList toModifierList, final Pattern... patterns) {
-    final Collection<String> annotationsToCopy = PsiAnnotationUtil.collectAnnotationsToCopy(fromPsiElement, patterns);
-    for (String annotationFQN : annotationsToCopy) {
-      toModifierList.addAnnotation(annotationFQN);
-    }
-  }
-
 }
