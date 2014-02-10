@@ -39,14 +39,19 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private final LightIdentifier myNameIdentifier;
   private ASTNode myASTNode;
   private String myName;
+  private boolean myConstructor;
+  private LightTypeParameterListBuilder myTypeParameterList;
+  private LombokLightReferenceListBuilder myThrowsList;
   private PsiCodeBlock myBodyCodeBlock;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, StdFileTypes.JAVA.getLanguage(), name,
         new LightParameterListBuilder(manager, StdFileTypes.JAVA.getLanguage()), new LombokLightModifierList(manager, StdFileTypes.JAVA.getLanguage()));
 
-    myNameIdentifier = new LombokLightIdentifier(manager, name);
     final Language language = StdFileTypes.JAVA.getLanguage();
+
+    myName = name;
+    myNameIdentifier = new LombokLightIdentifier(manager, name);
     myTypeParameterList = new LightTypeParameterListBuilder(manager, language);
     myThrowsList = new LombokLightReferenceListBuilder(manager, language, PsiReferenceList.Role.THROWS_LIST);
   }
@@ -56,7 +61,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     return this;
   }
 
-  public LombokLightMethodBuilder withModifier( @NotNull @NonNls String modifier) {
+  public LombokLightMethodBuilder withModifier(@NotNull @NonNls String modifier) {
     addModifier(modifier);
     return this;
   }

@@ -2,7 +2,9 @@
 <idea-plugin version="2" url="http://code.google.com/p/lombok-intellij-plugin">
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
-  <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
+  <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail
+    Plushnikov
+  </vendor>
   <version>0.8.0</version>
   <idea-version since-build="99.18" until-build="110.00"/>
 
@@ -33,13 +35,14 @@
     <projectConfigurable implementation="de.plushnikov.intellij.plugin.settings.ProjectSettingsPage"/>
 
     <renameHandler implementation="de.plushnikov.intellij.plugin.extension.LombokElementRenameHandler" order="FIRST"/>
-    <treeGenerator implementation="de.plushnikov.intellij.plugin.extension.LombokLightMethodTreeGenerator"/>
+    <!--<treeGenerator implementation="de.plushnikov.intellij.plugin.extension.LombokLightMethodTreeGenerator"/>-->
   </extensions>
 
   <extensions defaultExtensionNs="Lombook Plugin">
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor"/>
-    <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor"/>
+    <processor
+        implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.LogProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.Log4jProcessor"/>
@@ -106,7 +109,8 @@
     <group id="DelombokActionGroup" text="Delombok" description="Refactor code removing lombok annotations"
            icon="/icons/delombok.png" popup="true">
       <action id="delombokAny" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEverythingAction"
-              text="All lombok annotations" description="Action to replace all lombok annotations with vanilla java methods">
+              text="All lombok annotations"
+              description="Action to replace all lombok annotations with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokData" class="de.plushnikov.intellij.plugin.action.delombok.DelombokDataAction"
@@ -129,15 +133,18 @@
       <action id="delombokSetter" class="de.plushnikov.intellij.plugin.action.delombok.DelombokSetterAction"
               text="@Setter" description="Action to replace lombok @Setter annotation with vanilla setter methods">
       </action>
-      <action id="delombokEqualsAndHashCode" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEqualsAndHashCodeAction"
-              text="@EqualsAndHashCode" description="Action to replace lombok @EqualsAndHashCode annotation with vanilla java methods">
+      <action id="delombokEqualsAndHashCode"
+              class="de.plushnikov.intellij.plugin.action.delombok.DelombokEqualsAndHashCodeAction"
+              text="@EqualsAndHashCode"
+              description="Action to replace lombok @EqualsAndHashCode annotation with vanilla java methods">
       </action>
       <action id="delombokToString" class="de.plushnikov.intellij.plugin.action.delombok.DelombokToStringAction"
               text="@ToString" description="Action to replace lombok @ToString annotation with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"
-              text="@Log (and friends)" description="Action to replace lombok @Log (and other) annotation with vanilla log field">
+              text="@Log (and friends)"
+              description="Action to replace lombok @Log (and other) annotation with vanilla log field">
       </action>
 
       <add-to-group group-id="RefactoringMenu" anchor="last"/>
