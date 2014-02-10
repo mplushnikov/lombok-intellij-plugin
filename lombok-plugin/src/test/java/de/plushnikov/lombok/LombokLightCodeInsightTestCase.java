@@ -16,10 +16,10 @@ public abstract class LombokLightCodeInsightTestCase extends LightCodeInsightFix
   private static final String LOMBOK_SRC_PATH = "./lombok-api/target/generated-sources/lombok";
   private static final String LOMBOKPG_SRC_PATH = "./lombok-api/target/generated-sources/lombok-pg";
 
-  @Override
-  protected String getTestDataPath() {
-    return ".";
-  }
+//  @Override
+//  protected String getTestDataPath() {
+//    return ".";
+//  }
 
   @Override
   protected String getBasePath() {
@@ -29,6 +29,7 @@ public abstract class LombokLightCodeInsightTestCase extends LightCodeInsightFix
   @Override
   public void setUp() throws Exception {
     super.setUp();
+    myFixture.setTestDataPath(".");
     addLombokClassesToFixture();
   }
 

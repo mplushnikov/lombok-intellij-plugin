@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.action;
 
-import com.intellij.codeInsight.CodeInsightUtilBase;
 import com.intellij.codeInsight.generation.ClassMember;
 import com.intellij.codeInsight.generation.EncapsulatableClassMember;
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
@@ -34,7 +33,7 @@ public abstract class BaseRefactorHandler implements Runnable {
 
     List<EncapsulatableClassMember> classMembers = getEncapsulatableClassMembers(psiClass);
     chooser = new MemberChooser<ClassMember>(
-       classMembers.toArray(new ClassMember[classMembers.size()]), true, true, project);
+        classMembers.toArray(new ClassMember[classMembers.size()]), true, true, project);
     chooser.setTitle(getChooserTitle());
     chooser.setCopyJavadocVisible(false);
   }
@@ -65,7 +64,6 @@ public abstract class BaseRefactorHandler implements Runnable {
 
   @Override
   public void run() {
-    if (!CodeInsightUtilBase.prepareEditorForWrite(editor)) return;
     if (!FileDocumentManager.getInstance().requestWriting(editor.getDocument(), project)) {
       return;
     }
