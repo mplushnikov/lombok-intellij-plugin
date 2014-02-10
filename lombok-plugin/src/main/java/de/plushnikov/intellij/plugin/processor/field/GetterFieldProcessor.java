@@ -40,7 +40,7 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
     super(supportedAnnotationClass, supportedClass);
   }
 
-  protected void processIntern(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation);
     if (methodVisibility != null) {
       target.add(createGetterMethod(psiField, methodVisibility));
@@ -133,23 +133,15 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
     if (StringUtil.isNotEmpty(methodModifier)) {
       method.withModifier(methodModifier);
     }
-    if (psiField.hasModifierProperty(PsiModifier.STATIC)) {
+    boolean isStatic = psiField.hasModifierProperty(PsiModifier.STATIC);
+    if (isStatic) {
       method.withModifier(PsiModifier.STATIC);
     }
+
+    method.withBody(PsiMethodUtil.createCodeBlockFromText(String.format("return %s.%s;", isStatic ? psiClass.getName() : "this", psiField.getName()), psiClass));
 
     copyAnnotations(psiField, method.getModifierList(),
         LombokUtils.NON_NULL_PATTERN, LombokUtils.NULLABLE_PATTERN, LombokUtils.DEPRECATED_PATTERN);
     return method;
   }
-
-  private String getGetterName(@NotNull PsiField psiField) {
-    final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
-
-    final String fieldNameWithoutPrefix = accessorsInfo.removePrefix(psiField.getName());
-    if (accessorsInfo.isFluent()) {
-      return LombokUtils.decapitalize(fieldNameWithoutPrefix);
-    }
-    return LombokUtils.toGetterName(fieldNameWithoutPrefix, PsiType.BOOLEAN.equals(psiField.getType()));
-  }
-
 }

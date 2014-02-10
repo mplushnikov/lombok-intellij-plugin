@@ -6,6 +6,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiFile;
@@ -35,10 +36,13 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private final LightIdentifier myNameIdentifier;
   private final LombokLightReferenceListBuilder myThrowsList;
   private ASTNode myASTNode;
+  private String myName;
+  private PsiCodeBlock myBodyCodeBlock;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, JavaLanguage.INSTANCE, name,
-       new LightParameterListBuilder(manager, JavaLanguage.INSTANCE), new LombokLightModifierList(manager, JavaLanguage.INSTANCE));
+        new LightParameterListBuilder(manager, JavaLanguage.INSTANCE), new LombokLightModifierList(manager, JavaLanguage.INSTANCE));
+    myName = name;
     myNameIdentifier = new LombokLightIdentifier(manager, name);
     myThrowsList = new LombokLightReferenceListBuilder(manager, JavaLanguage.INSTANCE, PsiReferenceList.Role.THROWS_LIST);
   }
@@ -102,6 +106,16 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   public LombokLightMethodBuilder withConstructor(boolean isConstructor) {
     setConstructor(isConstructor);
     return this;
+  }
+
+  public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {
+    myBodyCodeBlock = codeBlock;
+    return this;
+  }
+
+  @Override
+  public PsiCodeBlock getBody() {
+    return myBodyCodeBlock;
   }
 
   @Override
@@ -203,6 +217,18 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
       return containingClass.add(newElement);
     }
     return null;
+  }
+
+  @NotNull
+  @Override
+  public String getName() {
+    return myName;
+  }
+
+  @Override
+  public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
+    myName = name;
+    return this;
   }
 
   @Override

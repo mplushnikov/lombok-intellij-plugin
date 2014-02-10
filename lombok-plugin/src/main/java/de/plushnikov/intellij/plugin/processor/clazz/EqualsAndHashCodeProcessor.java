@@ -1,14 +1,17 @@
 package de.plushnikov.intellij.plugin.processor.clazz;
 
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.StringBuilderSpinAllocator;
 import de.plushnikov.intellij.plugin.extension.UserMapKeys;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -18,6 +21,8 @@ import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiFieldUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.EqualsAndHashCode;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -43,7 +48,7 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    final boolean result = validateAnnotationOnRigthType(psiClass, builder);
+    final boolean result = validateAnnotationOnRightType(psiClass, builder);
     if (result) {
       validateExistingMethods(psiClass, builder);
     }
@@ -73,7 +78,7 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
     }
   }
 
-  protected boolean validateAnnotationOnRigthType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  protected boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (psiClass.isAnnotationType() || psiClass.isInterface() || psiClass.isEnum()) {
       builder.addError("@EqualsAndHashCode is only supported on a class type");
@@ -100,21 +105,23 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
     return PsiMethodUtil.hasMethodByName(classMethods, EQUALS_METHOD_NAME, HASH_CODE_METHOD_NAME, CAN_EQUAL_METHOD_NAME);
   }
 
-  protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.addAll(createEqualAndHashCode(psiClass, psiAnnotation, true));
+  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+    target.addAll(createEqualAndHashCode(psiClass, psiAnnotation));
   }
 
-  protected Collection<PsiMethod> createEqualAndHashCode(PsiClass psiClass, PsiElement psiNavTargetElement, boolean tryGenerateCanEqual) {
+  protected Collection<PsiMethod> createEqualAndHashCode(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     if (areMethodsAlreadyExists(psiClass)) {
       return Collections.emptyList();
     }
-    Collection<PsiMethod> result = new ArrayList<PsiMethod>(3);
-    result.add(createEqualsMethod(psiClass, psiNavTargetElement));
-    result.add(createHashCodeMethod(psiClass, psiNavTargetElement));
 
-    final boolean shouldGenerateCanEqual = tryGenerateCanEqual && shouldGenerateCanEqual(psiClass);
+    final boolean shouldGenerateCanEqual = shouldGenerateCanEqual(psiClass);
+
+    Collection<PsiMethod> result = new ArrayList<PsiMethod>(3);
+    result.add(createEqualsMethod(psiClass, psiAnnotation, shouldGenerateCanEqual));
+    result.add(createHashCodeMethod(psiClass, psiAnnotation, shouldGenerateCanEqual));
+
     if (shouldGenerateCanEqual) {
-      result.add(createCanEqualMethod(psiClass, psiNavTargetElement));
+      result.add(createCanEqualMethod(psiClass, psiAnnotation));
     }
 
     Collection<PsiField> equalsAndHashCodeFields = PsiFieldUtil.filterFieldsByModifiers(psiClass.getFields(), PsiModifier.STATIC, PsiModifier.TRANSIENT);
@@ -124,41 +131,175 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
   }
 
   private boolean shouldGenerateCanEqual(@NotNull PsiClass psiClass) {
-    boolean isFinal = psiClass.hasModifierProperty(PsiModifier.FINAL);
-    boolean isNotDirectDescendantOfObject = PsiClassUtil.hasSuperClass(psiClass);
+    final boolean isNotDirectDescendantOfObject = PsiClassUtil.hasSuperClass(psiClass);
+    if (isNotDirectDescendantOfObject) {
+      return isNotDirectDescendantOfObject;
+    }
 
-    return !isFinal || isNotDirectDescendantOfObject;
+    final boolean isFinal = psiClass.hasModifierProperty(PsiModifier.FINAL) ||
+        (PsiAnnotationUtil.isAnnotatedWith(psiClass, Value.class, lombok.experimental.Value.class) && PsiAnnotationUtil.isNotAnnotatedWith(psiClass, NonFinal.class));
+    return !isFinal;
   }
 
   @NotNull
-  private PsiMethod createEqualsMethod(@NotNull PsiClass psiClass, @NotNull PsiElement psiNavTargetElement) {
+  private PsiMethod createEqualsMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod) {
     final PsiManager psiManager = psiClass.getManager();
+
+    final String blockText = createEqualsBlockString(psiClass, psiAnnotation, hasCanEqualMethod);
+
     return new LombokLightMethodBuilder(psiManager, EQUALS_METHOD_NAME)
         .withModifier(PsiModifier.PUBLIC)
         .withMethodReturnType(PsiType.BOOLEAN)
         .withContainingClass(psiClass)
-        .withNavigationElement(psiNavTargetElement)
-        .withParameter("obj", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())));
+        .withNavigationElement(psiAnnotation)
+        .withParameter("o", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
+        .withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
   }
 
   @NotNull
-  private PsiMethod createHashCodeMethod(@NotNull PsiClass psiClass, @NotNull PsiElement psiNavTargetElement) {
+  private PsiMethod createHashCodeMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod) {
     final PsiManager psiManager = psiClass.getManager();
+
+    final String blockText = createHashcodeBlockString(psiClass, psiAnnotation);
+
     return new LombokLightMethodBuilder(psiManager, HASH_CODE_METHOD_NAME)
         .withModifier(PsiModifier.PUBLIC)
         .withMethodReturnType(PsiType.INT)
         .withContainingClass(psiClass)
-        .withNavigationElement(psiNavTargetElement);
+        .withNavigationElement(psiAnnotation)
+        .withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
   }
 
   @NotNull
   private PsiMethod createCanEqualMethod(@NotNull PsiClass psiClass, @NotNull PsiElement psiNavTargetElement) {
     final PsiManager psiManager = psiClass.getManager();
+
+    final String blockText = String.format("return other instanceof %s;", psiClass.getName());
+
     return new LombokLightMethodBuilder(psiManager, CAN_EQUAL_METHOD_NAME)
         .withModifier(PsiModifier.PUBLIC)
         .withMethodReturnType(PsiType.BOOLEAN)
         .withContainingClass(psiClass)
         .withNavigationElement(psiNavTargetElement)
-        .withParameter("obj", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())));
+        .withParameter("other", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
+        .withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
   }
+
+  private String createEqualsBlockString(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod) {
+    final boolean callSuper = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "callSuper", Boolean.class, Boolean.FALSE);
+    final boolean doNotUseGetters = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "doNotUseGetters", Boolean.class, Boolean.FALSE);
+
+    final String psiClassName = psiClass.getName();
+
+    final StringBuilder builder = StringBuilderSpinAllocator.alloc();
+    try {
+      builder.append("if (o == this) return true;\n");
+      builder.append("if (!(o instanceof ").append(psiClassName).append(")) return false;\n");
+      builder.append("final ").append(psiClassName).append(" other = (").append(psiClassName).append(")o;\n");
+
+      if (hasCanEqualMethod) {
+        builder.append("if (!other.canEqual((java.lang.Object)this)) return false;\n");
+      }
+      if (callSuper) {
+        builder.append("if (!super.equals(o)) return false;\n");
+      }
+
+      final Collection<PsiField> psiFields = filterFields(psiClass, psiAnnotation, true);
+      for (PsiField classField : psiFields) {
+        final String fieldName = classField.getName();
+
+        final String fieldAccessor = buildAttributeNameString(doNotUseGetters, classField, psiClass);
+
+        final PsiType classFieldType = classField.getType();
+        if (classFieldType instanceof PsiPrimitiveType) {
+          if (PsiType.FLOAT.equals(classFieldType)) {
+            builder.append("if (java.lang.Float.compare(this.").append(fieldAccessor).append(", other.").append(fieldAccessor).append(") != 0) return false;\n");
+          } else if (PsiType.DOUBLE.equals(classFieldType)) {
+            builder.append("if (java.lang.Double.compare(this.").append(fieldAccessor).append(", other.").append(fieldAccessor).append(") != 0) return false;\n");
+          } else {
+            builder.append("if (this.").append(fieldAccessor).append(" != other.").append(fieldAccessor).append(") return false;\n");
+          }
+        } else if (classFieldType instanceof PsiArrayType) {
+          final PsiType componentType = ((PsiArrayType) classFieldType).getComponentType();
+          if (componentType instanceof PsiPrimitiveType) {
+            builder.append("if (!java.util.Arrays.equals(this.").append(fieldAccessor).append(", other.").append(fieldAccessor).append(")) return false;\n");
+          } else {
+            builder.append("if (!java.util.Arrays.deepEquals(this.").append(fieldAccessor).append(", other.").append(fieldAccessor).append(")) return false;\n");
+          }
+        } else {
+          builder.append("final java.lang.Object this$").append(fieldName).append(" = this.").append(fieldAccessor).append(";\n");
+          builder.append("final java.lang.Object other$").append(fieldName).append(" = other.").append(fieldAccessor).append(";\n");
+          builder.append("if (this$").append(fieldName).append(" == null ? other$").append(fieldName).append(" != null : !this$")
+              .append(fieldName).append(".equals(other$").append(fieldName).append(")) return false;\n");
+        }
+      }
+      builder.append("return true;\n");
+      return builder.toString();
+    } finally {
+      StringBuilderSpinAllocator.dispose(builder);
+    }
+  }
+
+  private static final int PRIME_FOR_HASHCODE = 59;
+  private static final int PRIME_FOR_TRUE = 79;
+  private static final int PRIME_FOR_FALSE = 97;
+
+  private String createHashcodeBlockString(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    final boolean callSuper = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "callSuper", Boolean.class, Boolean.FALSE);
+    final boolean doNotUseGetters = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "doNotUseGetters", Boolean.class, Boolean.FALSE);
+
+    final StringBuilder builder = StringBuilderSpinAllocator.alloc();
+    try {
+
+      final Collection<PsiField> psiFields = filterFields(psiClass, psiAnnotation, true);
+
+      if (!psiFields.isEmpty() || callSuper) {
+        builder.append("final int PRIME = ").append(PRIME_FOR_HASHCODE).append(";\n");
+      }
+      builder.append("int result = 1;\n");
+
+      if (callSuper) {
+        builder.append("result = ((result * PRIME) + super.hashCode());\n");
+      }
+
+      for (PsiField classField : psiFields) {
+        final String fieldName = classField.getName();
+
+        final String fieldAccessor = buildAttributeNameString(doNotUseGetters, classField, psiClass);
+
+        final PsiType classFieldType = classField.getType();
+        if (classFieldType instanceof PsiPrimitiveType) {
+          if (PsiType.BOOLEAN.equals(classFieldType)) {
+            builder.append("result = ((result * PRIME) + (this.").append(fieldAccessor).append(" ? ").append(PRIME_FOR_TRUE).append(" : ").append(PRIME_FOR_FALSE).append("));\n");
+          } else if (PsiType.LONG.equals(classFieldType)) {
+            builder.append("final long $").append(fieldName).append(" = this.").append(fieldAccessor).append(";\n");
+            builder.append("result = result * PRIME + (int)($").append(fieldName).append(" >>> 32 ^ $").append(fieldName).append(");\n");
+          } else if (PsiType.FLOAT.equals(classFieldType)) {
+            builder.append("result = result * PRIME + java.lang.Float.floatToIntBits(this.").append(fieldAccessor).append(");\n");
+          } else if (PsiType.DOUBLE.equals(classFieldType)) {
+            builder.append("final long $").append(fieldName).append(" = java.lang.Double.doubleToLongBits(this.").append(fieldAccessor).append(");\n");
+            builder.append("result = result * PRIME + (int)($").append(fieldName).append(" >>> 32 ^ $").append(fieldName).append(");\n");
+          } else {
+            builder.append("result = result * PRIME + this.").append(fieldAccessor).append(";\n");
+          }
+        } else if (classFieldType instanceof PsiArrayType) {
+          final PsiType componentType = ((PsiArrayType) classFieldType).getComponentType();
+          if (componentType instanceof PsiPrimitiveType) {
+            builder.append("result = result * PRIME + java.util.Arrays.hashCode(this.").append(fieldName).append(");\n");
+          } else {
+            builder.append("result = result * PRIME + java.util.Arrays.deepHashCode(this.").append(fieldName).append(");\n");
+          }
+        } else {
+          builder.append("final java.lang.Object $").append(fieldName).append(" = this.").append(fieldAccessor).append(";\n");
+          builder.append("result = result * PRIME + ($").append(fieldName).append(" == null ? 0 : $").append(fieldName).append(".hashCode());\n");
+        }
+      }
+      builder.append("return result;\n");
+      return builder.toString();
+    } finally {
+      StringBuilderSpinAllocator.dispose(builder);
+    }
+  }
+
+
 }

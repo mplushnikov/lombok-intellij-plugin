@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Inspect and validate @Cleanup lombok annotation
@@ -29,6 +30,13 @@ public class CleanupProcessor extends AbstractProcessor {
     super(Cleanup.class, PsiElement.class);
   }
 
+  @NotNull
+  @Override
+  public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
+    return Collections.emptyList();
+  }
+
+  @NotNull
   @Override
   public Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation) {
     // TODO warning: "You're assigning an auto-cleanup variable to something else. This is a bad idea."

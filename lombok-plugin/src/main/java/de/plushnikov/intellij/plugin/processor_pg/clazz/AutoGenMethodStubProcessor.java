@@ -1,4 +1,4 @@
-package de.plushnikov.intellij.plugin.processor.clazz;
+package de.plushnikov.intellij.plugin.processor_pg.clazz;
 
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
 import com.intellij.psi.PsiAnnotation;
@@ -11,6 +11,7 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.infos.CandidateInfo;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
+import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.ErrorMessages;
 import lombok.AutoGenMethodStub;
@@ -23,6 +24,7 @@ import java.util.List;
  * Inspect and validate @AutoGenMethodStub lombok-pg annotation on a class
  * Creates methods for all of unimplemented methods of the annotated type and create method stubs for all of them
  * TODO implement me
+ *
  * @author Plushnikov Michail
  */
 public class AutoGenMethodStubProcessor extends AbstractClassProcessor {
@@ -44,7 +46,7 @@ public class AutoGenMethodStubProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  protected void processIntern(@NotNull final PsiClass psiClass, @NotNull final PsiAnnotation psiAnnotation, @NotNull final List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull final PsiClass psiClass, @NotNull final PsiAnnotation psiAnnotation, @NotNull final List<? super PsiElement> target) {
     //todo reimplement this to get it working
     final Collection<CandidateInfo> candidateInfos = OverrideImplementUtil.getMethodsToOverrideImplement(psiClass, true);
     for (CandidateInfo candidateInfo : candidateInfos) {
