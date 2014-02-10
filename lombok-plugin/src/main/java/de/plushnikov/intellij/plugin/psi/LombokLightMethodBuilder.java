@@ -7,6 +7,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiFile;
@@ -37,9 +38,8 @@ import org.jetbrains.annotations.Nullable;
 public class LombokLightMethodBuilder extends LightMethodBuilder {
   private final LightIdentifier myNameIdentifier;
   private ASTNode myASTNode;
-  private boolean myConstructor;
-  private LightTypeParameterListBuilder myTypeParameterList;
-  private LombokLightReferenceListBuilder myThrowsList;
+  private String myName;
+  private PsiCodeBlock myBodyCodeBlock;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, StdFileTypes.JAVA.getLanguage(), name,
@@ -125,6 +125,16 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   @Override
   public boolean isConstructor() {
     return myConstructor;
+  }
+
+  public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {
+    myBodyCodeBlock = codeBlock;
+    return this;
+  }
+
+  @Override
+  public PsiCodeBlock getBody() {
+    return myBodyCodeBlock;
   }
 
   @Override
@@ -226,6 +236,18 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
       return containingClass.add(newElement);
     }
     return null;
+  }
+
+  @NotNull
+  @Override
+  public String getName() {
+    return myName;
+  }
+
+  @Override
+  public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
+    myName = name;
+    return this;
   }
 
   @Override

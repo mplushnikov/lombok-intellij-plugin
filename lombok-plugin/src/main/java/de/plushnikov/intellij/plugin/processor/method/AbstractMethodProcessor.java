@@ -38,12 +38,27 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiMethod, getSupportedAnnotation());
       if (null != psiAnnotation) {
-        process(psiMethod, psiAnnotation, result);
+        if (validate(psiAnnotation, psiMethod, ProblemEmptyBuilder.getInstance())) {
+          processIntern(psiMethod, psiAnnotation, result);
+        }
       }
     }
     return result;
   }
 
+  @NotNull
+  public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
+    List<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
+    for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
+      PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiMethod, getSupportedAnnotation());
+      if (null != psiAnnotation) {
+        result.add(psiAnnotation);
+      }
+    }
+    return result;
+  }
+
+  @NotNull
   @Override
   public Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation) {
     Collection<LombokProblem> result = Collections.emptyList();
@@ -58,12 +73,6 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
   }
 
   protected abstract boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiMethod psiMethod, @NotNull ProblemBuilder builder);
-
-  public final void process(@NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    if (validate(psiAnnotation, psiMethod, ProblemEmptyBuilder.getInstance())) {
-      processIntern(psiMethod, psiAnnotation, target);
-    }
-  }
 
   protected abstract void processIntern(PsiMethod psiMethod, PsiAnnotation psiAnnotation, List<? super PsiElement> target);
 }

@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Inspect and validate @Synchronized lombok annotation
@@ -33,6 +34,13 @@ public class SynchronizedProcessor extends AbstractProcessor {
     super(Synchronized.class, PsiElement.class);
   }
 
+  @NotNull
+  @Override
+  public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
+    return Collections.emptyList();
+  }
+
+  @NotNull
   @Override
   public Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation) {
     Collection<LombokProblem> result = new ArrayList<LombokProblem>(2);

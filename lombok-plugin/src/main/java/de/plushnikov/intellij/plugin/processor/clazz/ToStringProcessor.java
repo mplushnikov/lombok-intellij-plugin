@@ -1,14 +1,17 @@
 package de.plushnikov.intellij.plugin.processor.clazz;
 
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.util.StringBuilderSpinAllocator;
 import de.plushnikov.intellij.plugin.extension.UserMapKeys;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -80,12 +83,12 @@ public class ToStringProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     target.addAll(createToStringMethod(psiClass, psiAnnotation));
   }
 
   @NotNull
-  public Collection<PsiMethod> createToStringMethod(@NotNull PsiClass psiClass, @NotNull PsiElement psiNavTargetElement) {
+  public Collection<PsiMethod> createToStringMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
     if (PsiMethodUtil.hasMethodByName(classMethods, METHOD_NAME)) {
       return Collections.emptyList();
@@ -95,13 +98,65 @@ public class ToStringProcessor extends AbstractClassProcessor {
     LombokLightMethodBuilder method = new LombokLightMethodBuilder(psiManager, METHOD_NAME)
         .withMethodReturnType(PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
         .withContainingClass(psiClass)
-        .withNavigationElement(psiNavTargetElement)
+        .withNavigationElement(psiAnnotation)
         .withModifier(PsiModifier.PUBLIC);
+
+    final String paramString = createParamString(psiClass, psiAnnotation);
+    final String blockText = String.format("return \"%s(%s)\";", psiClass.getQualifiedName(), paramString);
+    method.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
 
     Collection<PsiField> toStringFields = PsiFieldUtil.filterFieldsByModifiers(psiClass.getFields(), PsiModifier.STATIC);
     UserMapKeys.addReadUsageFor(toStringFields);
 
     return Collections.<PsiMethod>singletonList(method);
+  }
+
+  private String createParamString(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    final boolean includeFieldNames = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "includeFieldNames", Boolean.class, Boolean.TRUE);
+    final boolean callSuper = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "callSuper", Boolean.class, Boolean.FALSE);
+    final boolean doNotUseGetters = PsiAnnotationUtil.getAnnotationValue(psiAnnotation, "doNotUseGetters", Boolean.class, Boolean.FALSE);
+
+    final StringBuilder paramString = StringBuilderSpinAllocator.alloc();
+    try {
+      if (callSuper) {
+        paramString.append("super=\" + super.toString() + \", ");
+      }
+
+      final Collection<PsiField> psiFields = filterFields(psiClass, psiAnnotation, false);
+      for (PsiField classField : psiFields) {
+        final String fieldName = classField.getName();
+
+        if (includeFieldNames) {
+          paramString.append(fieldName).append('=');
+        }
+        paramString.append("\"+");
+
+        final PsiType classFieldType = classField.getType();
+        if (classFieldType instanceof PsiArrayType) {
+          final PsiType componentType = ((PsiArrayType) classFieldType).getComponentType();
+          if (componentType instanceof PsiPrimitiveType) {
+            paramString.append("java.util.Arrays.toString(");
+          } else {
+            paramString.append("java.util.Arrays.deepToString(");
+          }
+        }
+
+        final String fieldAccessor = buildAttributeNameString(doNotUseGetters, classField, psiClass);
+        paramString.append("this.").append(fieldAccessor);
+
+        if (classFieldType instanceof PsiArrayType) {
+          paramString.append(")");
+        }
+
+        paramString.append("+\", ");
+      }
+      if (paramString.length() > 2) {
+        paramString.delete(paramString.length() - 2, paramString.length());
+      }
+      return paramString.toString();
+    } finally {
+      StringBuilderSpinAllocator.dispose(paramString);
+    }
   }
 
 }

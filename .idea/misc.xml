@@ -29,8 +29,12 @@
       <list>
         <option value="$PROJECT_DIR$/lombok-api/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/test-manual/pom.xml" />
       </list>
     </option>
+  </component>
+  <component name="ProjectKey">
+    <option name="state" value="https://github.com/mplushnikov/lombok-intellij-plugin.git" />
   </component>
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>

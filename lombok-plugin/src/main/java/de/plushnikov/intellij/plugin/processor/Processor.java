@@ -20,12 +20,14 @@ public interface Processor {
   @NotNull
   String getSupportedAnnotation();
 
+  @NotNull
   Class<? extends Annotation> getSupportedAnnotationClass();
 
+  @NotNull
   Class<? extends PsiElement> getSupportedClass();
 
+  @NotNull
   Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation);
-
 
   boolean isEnabled(@NotNull Project project);
 
@@ -33,4 +35,5 @@ public interface Processor {
 
   @NotNull
   List<? super PsiElement> process(@NotNull PsiClass psiClass);
+
 }

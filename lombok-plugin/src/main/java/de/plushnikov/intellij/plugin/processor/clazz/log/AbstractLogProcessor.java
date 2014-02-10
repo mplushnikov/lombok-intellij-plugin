@@ -38,6 +38,14 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     this.loggerInitializer = loggerInitializer;
   }
 
+  public static String getLoggerName() {
+    return loggerName;
+  }
+
+  public String getLoggerType() {
+    return loggerType;
+  }
+
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
@@ -52,9 +60,13 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  protected void processIntern(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    Project project = psiClass.getProject();
-    PsiManager manager = psiClass.getContainingFile().getManager();
+  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+    target.add(createLoggerField(psiClass, psiAnnotation));
+  }
+
+  private LombokLightFieldBuilder createLoggerField(PsiClass psiClass, PsiAnnotation psiAnnotation) {
+    final Project project = psiClass.getProject();
+    final PsiManager manager = psiClass.getContainingFile().getManager();
 
     final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);
     PsiType psiLoggerType = psiElementFactory.createTypeFromText(loggerType, psiClass);
@@ -67,8 +79,7 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     final String className = null != classQualifiedName ? classQualifiedName : psiClass.getName();
     PsiExpression initializer = psiElementFactory.createExpressionFromText(String.format(loggerInitializer, className), psiClass);
     loggerField.setInitializer(initializer);
-
-    target.add(loggerField);
+    return loggerField;
   }
 
   protected boolean hasFieldByName(@NotNull PsiClass psiClass, String... fieldNames) {
@@ -82,4 +93,5 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     }
     return false;
   }
+
 }

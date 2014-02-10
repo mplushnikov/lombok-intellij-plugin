@@ -43,7 +43,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
   }
 
   @Override
-  protected void processIntern(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation);
     if (methodVisibility != null) {
       target.add(createSetterMethod(psiField, methodVisibility));
@@ -146,7 +146,8 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     if (StringUtil.isNotEmpty(methodModifier)) {
       method.withModifier(methodModifier);
     }
-    if (psiField.hasModifierProperty(PsiModifier.STATIC)) {
+    boolean isStatic = psiField.hasModifierProperty(PsiModifier.STATIC);
+    if (isStatic) {
       method.withModifier(PsiModifier.STATIC);
     }
 
@@ -159,6 +160,14 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
         methodParameterModifierList.addAnnotation(annotationFQN);
       }
     }
+
+    final String thisOrClass = isStatic ? psiClass.getName() : "this";
+    String blockText = String.format("%s.%s = %s;", thisOrClass, psiField.getName(), methodParameter.getName());
+    if (!isStatic && !PsiType.VOID.equals(returnType)) {
+      blockText += "return this;";
+    }
+
+    method.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
 
     copyAnnotations(psiField, method.getModifierList(), LombokUtils.DEPRECATED_PATTERN);
 

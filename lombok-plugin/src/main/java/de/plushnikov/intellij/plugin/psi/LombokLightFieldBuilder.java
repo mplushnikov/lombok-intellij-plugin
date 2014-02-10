@@ -8,7 +8,6 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightFieldBuilder;
-import com.intellij.psi.impl.light.LightIdentifier;
 import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
@@ -18,11 +17,13 @@ import org.jetbrains.annotations.NotNull;
  * @author Plushnikov Michail
  */
 public class LombokLightFieldBuilder extends LightFieldBuilder {
-  protected final LightIdentifier myNameIdentifier;
+  protected String myName;
+  protected final LombokLightIdentifier myNameIdentifier;
 
   public LombokLightFieldBuilder(@NotNull PsiManager manager, @NotNull String name, @NotNull PsiType type) {
     super(manager, name, type);
-    myNameIdentifier = new LightIdentifier(manager, name);
+    myName = name;
+    myNameIdentifier = new LombokLightIdentifier(manager, name);
   }
 
   public LombokLightFieldBuilder withContainingClass(PsiClass psiClass) {
@@ -37,6 +38,19 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
 
   public LombokLightFieldBuilder withNavigationElement(PsiElement navigationElement) {
     setNavigationElement(navigationElement);
+    return this;
+  }
+
+  @NotNull
+  @Override
+  public String getName() {
+    return myName;
+  }
+
+  @Override
+  public PsiElement setName(@NotNull String name) {
+    myName = name;
+    myNameIdentifier.setText(myName);
     return this;
   }
 
