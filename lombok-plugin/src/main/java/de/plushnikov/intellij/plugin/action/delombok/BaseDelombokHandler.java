@@ -27,9 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class BaseDelombokHandler {
 
@@ -134,8 +132,7 @@ public class BaseDelombokHandler {
     final PsiMethod resultMethod;
     final PsiType returnType = fromMethod.getReturnType();
     if (null == returnType) {
-      resultMethod = elementFactory.createConstructor();
-      resultMethod.setName(fromMethod.getName());
+      resultMethod = elementFactory.createConstructor(fromMethod.getName());
     } else {
       resultMethod = elementFactory.createMethod(fromMethod.getName(), returnType);
     }
@@ -163,13 +160,8 @@ public class BaseDelombokHandler {
     return (PsiMethod) CodeStyleManager.getInstance(project).reformat(resultMethod);
   }
 
-  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(
-      PsiModifier.PUBLIC, PsiModifier.PROTECTED, PsiModifier.PRIVATE, PsiModifier.PACKAGE_LOCAL,
-      PsiModifier.STATIC, PsiModifier.ABSTRACT, PsiModifier.FINAL, PsiModifier.NATIVE,
-      PsiModifier.SYNCHRONIZED, PsiModifier.STRICTFP, PsiModifier.TRANSIENT, PsiModifier.VOLATILE));
-
   private void copyModifiers(PsiModifierList fromModifierList, PsiModifierList resultModifierList) {
-    for (String modifier : ALL_MODIFIERS) {
+    for (String modifier : PsiModifier.MODIFIERS) {
       resultModifierList.setModifierProperty(modifier, fromModifierList.hasModifierProperty(modifier));
     }
   }
