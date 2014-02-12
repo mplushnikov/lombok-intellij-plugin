@@ -37,7 +37,6 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private final LightIdentifier myNameIdentifier;
   private ASTNode myASTNode;
   private String myName;
-  private boolean myConstructor;
   private LombokLightReferenceListBuilder myThrowsList;
   private PsiCodeBlock myBodyCodeBlock;
 
@@ -109,13 +108,8 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   }
 
   public LombokLightMethodBuilder withConstructor(boolean isConstructor) {
-    myConstructor = isConstructor;
+    setConstructor(isConstructor);
     return this;
-  }
-
-  @Override
-  public boolean isConstructor() {
-    return myConstructor;
   }
 
   public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {
