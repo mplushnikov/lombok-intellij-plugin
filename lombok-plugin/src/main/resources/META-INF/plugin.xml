@@ -151,6 +151,7 @@
     </group>
   </actions>
 
+  <!--TODO Add inspection: @NonNull is meaningless on a primitive.-->
   <!--<li>TODO: Add generate actions for Lombok equals/hashcode, toString, getter, setter, constructor and maybe logger method</li>-->
   <!--<li>TODO: Add delombok action for @Delegate, @Cleanup, @Synchronized and other annotations</li>-->
   <change-notes><![CDATA[
