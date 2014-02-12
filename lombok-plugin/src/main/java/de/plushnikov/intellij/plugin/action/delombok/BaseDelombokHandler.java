@@ -164,7 +164,7 @@ public class BaseDelombokHandler {
   }
 
   private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(
-      PsiModifier.PUBLIC, PsiModifier.PROTECTED, PsiModifier.PRIVATE, PsiModifier.PACKAGE_LOCAL,
+      PsiModifier.PUBLIC, PsiModifier.PROTECTED, PsiModifier.PRIVATE,
       PsiModifier.STATIC, PsiModifier.ABSTRACT, PsiModifier.FINAL, PsiModifier.NATIVE,
       PsiModifier.SYNCHRONIZED, PsiModifier.STRICTFP, PsiModifier.TRANSIENT, PsiModifier.VOLATILE));
 
