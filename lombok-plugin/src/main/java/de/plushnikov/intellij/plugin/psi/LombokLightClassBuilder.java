@@ -6,7 +6,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiTypeParameterList;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +19,7 @@ public class LombokLightClassBuilder extends LombokLightClass {
     setQualifiedName(qualifiedName);
   }
 
-  public LombokLightClassBuilder withModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String modifier) {
+  public LombokLightClassBuilder withModifier( @NotNull @NonNls String modifier) {
     getModifierList().addModifier(modifier);
     return this;
   }

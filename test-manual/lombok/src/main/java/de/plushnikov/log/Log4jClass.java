@@ -11,8 +11,8 @@ public class Log4jClass {
     private String stringProperty;
 
     public void doSomething() {
-        Log4jClass.log.warn("Warning message text");
-        Log4jClass.log.error("Error message text");
+        log.warn("Warning message text");
+        log.error("Error message text");
     }
 
     public static void main(String[] args) {

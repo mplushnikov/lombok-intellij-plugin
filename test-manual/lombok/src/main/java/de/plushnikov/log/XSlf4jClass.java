@@ -12,7 +12,7 @@ public class XSlf4jClass {
     private String stringProperty;
 
     public void doSomething() {
-        XSlf4jClass.log.info("Information message text {}", XSlf4jClass.log.getName());
+        log.info("Information message text {}", log.getName());
     }
 
     public static void main(String[] args) {

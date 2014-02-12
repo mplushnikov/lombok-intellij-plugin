@@ -10,9 +10,7 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiCompiledElement;
@@ -28,6 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+
+//import com.intellij.openapi.vfs.VfsUtilCore;
+//import com.intellij.openapi.vfs.VirtualFileVisitor;
 
 public abstract class BaseDelombokAction extends AnAction {
   private final BaseDelombokHandler myHandler;
@@ -66,15 +67,16 @@ public abstract class BaseDelombokAction extends AnAction {
   }
 
   private void processDirectory(@NotNull final Project project, @NotNull VirtualFile vFile) {
-    VfsUtilCore.visitChildrenRecursively(vFile, new VirtualFileVisitor() {
-      @Override
-      public boolean visitFile(@NotNull VirtualFile file) {
-        if (!file.isDirectory()) {
-          processFile(project, file);
-        }
-        return true;
-      }
-    });
+//TODO BACKPORT IT!
+//    VfsUtilCore.visitChildrenRecursively(vFile, new VirtualFileVisitor() {
+//      @Override
+//      public boolean visitFile(@NotNull VirtualFile file) {
+//        if (!file.isDirectory()) {
+//          processFile(project, file);
+//        }
+//        return true;
+//      }
+//    });
   }
 
   private void processFile(Project project, VirtualFile file) {

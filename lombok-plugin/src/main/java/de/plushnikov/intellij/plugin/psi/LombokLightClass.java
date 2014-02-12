@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.psi;
 
-import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -29,7 +29,7 @@ public class LombokLightClass extends LightClass {
 
   public LombokLightClass(@NotNull PsiClass delegate) {
     super(delegate);
-    myModifierList = new LombokLightModifierList(delegate.getManager(), JavaLanguage.INSTANCE);
+    myModifierList = new LombokLightModifierList(delegate.getManager(), StdFileTypes.JAVA.getLanguage());
   }
 
   @Nullable

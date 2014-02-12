@@ -23,7 +23,11 @@ import java.util.Set;
  * @author Plushnikov Michail
  */
 public class LombokLightModifierList extends LightModifierList {
-  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(PsiModifier.MODIFIERS));
+  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(
+      PsiModifier.PUBLIC, PsiModifier.PROTECTED, PsiModifier.PRIVATE, PsiModifier.PACKAGE_LOCAL,
+      PsiModifier.STATIC, PsiModifier.ABSTRACT, PsiModifier.FINAL, PsiModifier.NATIVE,
+      PsiModifier.SYNCHRONIZED, PsiModifier.STRICTFP, PsiModifier.TRANSIENT, PsiModifier.VOLATILE));
+
 
   private final Map<String, PsiAnnotation> myAnnotations;
 
@@ -32,7 +36,7 @@ public class LombokLightModifierList extends LightModifierList {
     myAnnotations = new HashMap<String, PsiAnnotation>();
   }
 
-  public void setModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
+  public void setModifierProperty(@NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
     if (value) {
       addModifier(name);
     } else {
@@ -42,7 +46,7 @@ public class LombokLightModifierList extends LightModifierList {
     }
   }
 
-  private void removeModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String name) {
+  private void removeModifier(@NotNull @NonNls String name) {
     final Collection<String> myModifiers = collectAllModifiers();
     myModifiers.remove(name);
 
@@ -55,7 +59,7 @@ public class LombokLightModifierList extends LightModifierList {
 
   private Collection<String> collectAllModifiers() {
     Collection<String> result = new HashSet<String>();
-    for (@PsiModifier.ModifierConstant String modifier : ALL_MODIFIERS) {
+    for (String modifier : ALL_MODIFIERS) {
       if (hasModifierProperty(modifier)) {
         result.add(modifier);
       }
@@ -63,7 +67,7 @@ public class LombokLightModifierList extends LightModifierList {
     return result;
   }
 
-  public void checkSetModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
+  public void checkSetModifierProperty(@NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
     throw new IncorrectOperationException();
   }
 
