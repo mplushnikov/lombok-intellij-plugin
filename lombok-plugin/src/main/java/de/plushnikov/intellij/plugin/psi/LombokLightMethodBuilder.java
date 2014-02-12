@@ -67,7 +67,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   }
 
   public LombokLightMethodBuilder withMethodReturnType(PsiType returnType) {
-    setReturnType(returnType);
+    setMethodReturnType(returnType);
     return this;
   }
 
