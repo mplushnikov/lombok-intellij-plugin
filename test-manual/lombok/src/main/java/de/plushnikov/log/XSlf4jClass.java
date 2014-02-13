@@ -11,9 +11,9 @@ public class XSlf4jClass {
 
     private String stringProperty;
 
-    public void doSomething() {
-        log.info("Information message text {}", log.getName());
-    }
+  public void doSomething() {
+    log.info("Information message text {}", log.getName());
+  }
 
     public static void main(String[] args) {
         new XSlf4jClass().doSomething();

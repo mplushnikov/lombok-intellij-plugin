@@ -10,10 +10,10 @@ public class Log4j2Class {
 
     private String stringProperty;
 
-    public void doSomething() {
-        log.warn("Warning message text");
-        log.error("Error message text");
-    }
+  public void doSomething() {
+    log.warn("Warning message text");
+    log.error("Error message text");
+  }
 
     public static void main(String[] args) {
         new Log4jClass().doSomething();

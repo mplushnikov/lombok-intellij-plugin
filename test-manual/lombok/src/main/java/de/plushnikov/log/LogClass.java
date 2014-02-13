@@ -10,14 +10,14 @@ public class LogClass {
 
     private String stringProperty;
 
-    public void doSomething() {
-        log.fine("Messsdage");
-    }
+  public void doSomething() {
+    log.fine("Messsdage");
+  }
 
-    public int getIntProperty() {
-        log.entering("LogClass","getIntProperty");
-        return intProperty;
-    }
+  public int getIntProperty() {
+    log.entering("LogClass", "getIntProperty");
+    return intProperty;
+  }
 
     public void setIntProperty(int intProperty) {
         this.intProperty = intProperty;
