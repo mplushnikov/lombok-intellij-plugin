@@ -33,6 +33,7 @@ import java.util.List;
 
 /**
  * From Intellij community edition
+ *
  * @author Max Medvedev
  */
 public class LightReferenceListBuilder extends LightElement implements PsiReferenceList {
@@ -68,7 +69,9 @@ public class LightReferenceListBuilder extends LightElement implements PsiRefere
 
   public void addReference(PsiClassType type) {
     final PsiClass resolved = type.resolve();
-    if (resolved == null) return;
+    if (resolved == null) {
+      return;
+    }
 
     final PsiJavaCodeReferenceElement ref = myFactory.createReferenceElementByType(type);
     myRefs.add(ref);
@@ -80,8 +83,7 @@ public class LightReferenceListBuilder extends LightElement implements PsiRefere
     if (myCachedRefs == null) {
       if (myRefs.isEmpty()) {
         myCachedRefs = PsiJavaCodeReferenceElement.EMPTY_ARRAY;
-      }
-      else {
+      } else {
         myCachedRefs = ContainerUtil.toArray(myRefs, new PsiJavaCodeReferenceElement[myRefs.size()]);
       }
     }
@@ -94,8 +96,7 @@ public class LightReferenceListBuilder extends LightElement implements PsiRefere
     if (myCachedTypes == null) {
       if (myRefs.isEmpty()) {
         myCachedTypes = PsiClassType.EMPTY_ARRAY;
-      }
-      else {
+      } else {
         final int size = myRefs.size();
         myCachedTypes = new PsiClassType[size];
         for (int i = 0; i < size; i++) {

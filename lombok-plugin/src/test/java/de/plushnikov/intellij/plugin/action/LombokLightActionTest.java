@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.rt.execution.junit.FileComparisonFailure;
 import de.plushnikov.lombok.LombokLightCodeInsightTestCase;
 import junit.framework.ComparisonFailure;
 
@@ -24,8 +23,6 @@ public abstract class LombokLightActionTest extends LombokLightCodeInsightTestCa
   private void checkResultByFile(String expectedFile) throws IOException {
     try {
       myFixture.checkResultByFile(expectedFile, true);
-    } catch (FileComparisonFailure ex) {
-      checkResultManually(expectedFile);
     } catch (ComparisonFailure ex) {
       checkResultManually(expectedFile);
     }

@@ -46,7 +46,9 @@ Various problems with spring have also been reported. See issue #287, issue #271
   public static String toGetterName(CharSequence fieldName, boolean isBoolean) {
     final String prefix = isBoolean ? "is" : "get";
 
-    if (fieldName.length() == 0) return prefix;
+    if (fieldName.length() == 0) {
+      return prefix;
+    }
 
     if (isBoolean && fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
       // The field is for example named 'isRunning'.
@@ -72,7 +74,9 @@ Various problems with spring have also been reported. See issue #287, issue #271
    * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
    */
   public static String toSetterName(CharSequence fieldName, boolean isBoolean) {
-    if (fieldName.length() == 0) return "set";
+    if (fieldName.length() == 0) {
+      return "set";
+    }
 
     if (isBoolean && fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
       // The field is for example named 'isRunning'.
@@ -83,7 +87,9 @@ Various problems with spring have also been reported. See issue #287, issue #271
   }
 
   private static String buildName(String prefix, String suffix) {
-    if (suffix.length() == 0) return prefix;
+    if (suffix.length() == 0) {
+      return prefix;
+    }
 
     char first = suffix.charAt(0);
     if (Character.isLowerCase(first)) {
@@ -106,7 +112,9 @@ Various problems with spring have also been reported. See issue #287, issue #271
    * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
    */
   public static List<String> toAllGetterNames(CharSequence fieldName, boolean isBoolean) {
-    if (!isBoolean) return Collections.singletonList(toGetterName(fieldName, false));
+    if (!isBoolean) {
+      return Collections.singletonList(toGetterName(fieldName, false));
+    }
 
     List<String> baseNames = new ArrayList<String>();
     baseNames.add(fieldName.toString());
@@ -139,7 +147,9 @@ Various problems with spring have also been reported. See issue #287, issue #271
    * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
    */
   public static List<String> toAllSetterNames(CharSequence fieldName, boolean isBoolean) {
-    if (!isBoolean) return Collections.singletonList(toSetterName(fieldName, false));
+    if (!isBoolean) {
+      return Collections.singletonList(toSetterName(fieldName, false));
+    }
 
     List<String> baseNames = new ArrayList<String>();
     baseNames.add(fieldName.toString());

@@ -12,15 +12,23 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Plushnikov Michail
  */
 public class LombokLightModifierList extends LightModifierList {
+  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(
+      PsiModifier.PUBLIC, PsiModifier.PROTECTED, PsiModifier.PRIVATE, PsiModifier.PACKAGE_LOCAL,
+      PsiModifier.STATIC, PsiModifier.ABSTRACT, PsiModifier.FINAL, PsiModifier.NATIVE,
+      PsiModifier.SYNCHRONIZED, PsiModifier.STRICTFP, PsiModifier.TRANSIENT, PsiModifier.VOLATILE));
+
+
   private final Map<String, PsiAnnotation> myAnnotations;
 
   public LombokLightModifierList(PsiManager manager, final Language language, String... modifiers) {
@@ -51,7 +59,7 @@ public class LombokLightModifierList extends LightModifierList {
 
   private Collection<String> collectAllModifiers() {
     Collection<String> result = new HashSet<String>();
-    for (String modifier : PsiModifier.MODIFIERS) {
+    for (String modifier : ALL_MODIFIERS) {
       if (hasModifierProperty(modifier)) {
         result.add(modifier);
       }

@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 public class ProjectSettings {
-  private static final String       LOMBOK_PLUGIN_ENABLED_IN_PROJECT_PROPERTY = "LombokPluginEnabledInProject";
-  private static final Key<Boolean> LOMBOK_ENABLED_KEY                        = Key.create(LOMBOK_PLUGIN_ENABLED_IN_PROJECT_PROPERTY);
+  private static final String LOMBOK_PLUGIN_ENABLED_IN_PROJECT_PROPERTY = "LombokPluginEnabledInProject";
+  private static final Key<Boolean> LOMBOK_ENABLED_KEY = Key.create(LOMBOK_PLUGIN_ENABLED_IN_PROJECT_PROPERTY);
 
   public static boolean isEnabledInProject(@NotNull final Project project) {
     PropertiesComponent properties = PropertiesComponent.getInstance(project);

@@ -69,9 +69,9 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     boolean annotationProcessingPossible = isLombokAnnotationProcessingPossible();
 
     myAnnotationConfigurationOkLabel.setVisible(annotationProcessingPossible);
-    myAnnotationConfigurationInfo1Label.setVisible(!annotationProcessingPossible );
-    myAnnotationConfigurationInfo2Label.setVisible(!annotationProcessingPossible );
-    myAnnotationConfigurationInfo3Label.setVisible(!annotationProcessingPossible );
+    myAnnotationConfigurationInfo1Label.setVisible(!annotationProcessingPossible);
+    myAnnotationConfigurationInfo2Label.setVisible(!annotationProcessingPossible);
+    myAnnotationConfigurationInfo3Label.setVisible(!annotationProcessingPossible);
   }
 
   private boolean isLombokAnnotationProcessingPossible() {

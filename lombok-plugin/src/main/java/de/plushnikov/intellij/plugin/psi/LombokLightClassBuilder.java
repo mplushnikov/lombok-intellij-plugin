@@ -19,7 +19,7 @@ public class LombokLightClassBuilder extends LombokLightClass {
     setQualifiedName(qualifiedName);
   }
 
-  public LombokLightClassBuilder withModifier( @NotNull @NonNls String modifier) {
+  public LombokLightClassBuilder withModifier(@NotNull @NonNls String modifier) {
     getModifierList().addModifier(modifier);
     return this;
   }

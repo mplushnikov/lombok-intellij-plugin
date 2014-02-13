@@ -31,7 +31,7 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
     return this;
   }
 
-  public LombokLightFieldBuilder withModifier( @NotNull @NonNls String modifier) {
+  public LombokLightFieldBuilder withModifier(@NotNull @NonNls String modifier) {
     ((LightModifierList) getModifierList()).addModifier(modifier);
     return this;
   }

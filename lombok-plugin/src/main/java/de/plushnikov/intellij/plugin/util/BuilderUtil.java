@@ -29,7 +29,7 @@ public class BuilderUtil {
   }
 
   public static String createBuilderClassNameWithGenerics(@NotNull PsiAnnotation psiAnnotation, @Nullable PsiType psiType) {
-    return createBuilderClassNameWithGenerics(psiAnnotation, psiType != null ?  psiType.getPresentableText() : PsiType.VOID.getBoxedTypeName());
+    return createBuilderClassNameWithGenerics(psiAnnotation, psiType != null ? psiType.getPresentableText() : PsiType.VOID.getBoxedTypeName());
   }
 
   public static String createBuilderClassNameWithGenerics(@NotNull PsiAnnotation psiAnnotation, @NotNull String type) {

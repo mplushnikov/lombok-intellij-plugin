@@ -19,11 +19,13 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightIdentifier;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.psi.impl.light.LightParameterListBuilder;
+import com.intellij.psi.impl.light.LightTypeParameter;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.StringBuilderSpinAllocator;
 import org.jetbrains.annotations.NonNls;
@@ -37,6 +39,8 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private final LightIdentifier myNameIdentifier;
   private ASTNode myASTNode;
   private String myName;
+  private boolean myConstructor;
+  private LightTypeParameterListBuilder myTypeParameterList;
   private LombokLightReferenceListBuilder myThrowsList;
   private PsiCodeBlock myBodyCodeBlock;
 
@@ -48,6 +52,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
 
     myName = name;
     myNameIdentifier = new LombokLightIdentifier(manager, name);
+    myTypeParameterList = new LightTypeParameterListBuilder(manager, language);
     myThrowsList = new LombokLightReferenceListBuilder(manager, language, PsiReferenceList.Role.THROWS_LIST);
   }
 
@@ -62,7 +67,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   }
 
   public LombokLightMethodBuilder withMethodReturnType(PsiType returnType) {
-    setMethodReturnType(returnType);
+    setReturnType(returnType);
     return this;
   }
 
@@ -107,9 +112,24 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     return this;
   }
 
-  public LombokLightMethodBuilder withConstructor(boolean isConstructor) {
-    setConstructor(isConstructor);
+  @Override
+  public PsiTypeParameterList getTypeParameterList() {
+    return myTypeParameterList;
+  }
+
+  public LightMethodBuilder addTypeParameter(PsiTypeParameter parameter) {
+    myTypeParameterList.addParameter(new LightTypeParameter(parameter));
     return this;
+  }
+
+  public LombokLightMethodBuilder withConstructor(boolean isConstructor) {
+    myConstructor = isConstructor;
+    return this;
+  }
+
+  @Override
+  public boolean isConstructor() {
+    return myConstructor;
   }
 
   public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {

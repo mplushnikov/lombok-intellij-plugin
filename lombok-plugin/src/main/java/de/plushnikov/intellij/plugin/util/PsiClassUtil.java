@@ -57,8 +57,8 @@ public class PsiClassUtil {
   @NotNull
   public static Collection<PsiMethod> collectClassMethodsIntern(@NotNull PsiClass psiClass) {
     return Collections2.transform(
-       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiMethod.class)),
-       PSI_ELEMENT_TO_METHOD_FUNCTION);
+        Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiMethod.class)),
+        PSI_ELEMENT_TO_METHOD_FUNCTION);
   }
 
   /**
@@ -70,8 +70,8 @@ public class PsiClassUtil {
   @NotNull
   public static Collection<PsiField> collectClassFieldsIntern(@NotNull PsiClass psiClass) {
     return Collections2.transform(
-       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiField.class)),
-       PSI_ELEMENT_TO_FIELD_FUNCTION);
+        Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiField.class)),
+        PSI_ELEMENT_TO_FIELD_FUNCTION);
   }
 
   /**
@@ -83,8 +83,8 @@ public class PsiClassUtil {
   @NotNull
   public static Collection<PsiClass> collectInnerClassesIntern(@NotNull PsiClass psiClass) {
     return Collections2.transform(
-       Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiClass.class)),
-       PSI_ELEMENT_TO_CLASS_FUNCTION);
+        Collections2.filter(Lists.newArrayList(psiClass.getChildren()), Predicates.instanceOf(PsiClass.class)),
+        PSI_ELEMENT_TO_CLASS_FUNCTION);
   }
 
   @NotNull
@@ -116,7 +116,7 @@ public class PsiClassUtil {
   public static boolean hasSuperClass(@NotNull final PsiClass psiClass) {
     final PsiClass superClass = psiClass.getSuperClass();
     return (null != superClass && !CommonClassNames.JAVA_LANG_OBJECT.equals(superClass.getQualifiedName())
-       || !superTypesIsEmptyOrObjectOnly(psiClass));
+        || !superTypesIsEmptyOrObjectOnly(psiClass));
   }
 
   private static boolean superTypesIsEmptyOrObjectOnly(@NotNull final PsiClass psiClass) {
@@ -182,8 +182,9 @@ public class PsiClassUtil {
   public static PsiClass getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
     Collection<PsiClass> innerClasses = collectInnerClassesIntern(psiClass);
     for (PsiClass innerClass : innerClasses) {
-      if (className.equals(innerClass.getName()))
+      if (className.equals(innerClass.getName())) {
         return innerClass;
+      }
     }
     return null;
   }
@@ -192,8 +193,9 @@ public class PsiClassUtil {
   public static PsiClass getInnerClassByName(@NotNull PsiClass psiClass, @NotNull String className) {
     PsiClass[] innerClasses = psiClass.getInnerClasses();
     for (PsiClass innerClass : innerClasses) {
-      if (className.equals(innerClass.getName()))
+      if (className.equals(innerClass.getName())) {
         return innerClass;
+      }
     }
     return null;
   }

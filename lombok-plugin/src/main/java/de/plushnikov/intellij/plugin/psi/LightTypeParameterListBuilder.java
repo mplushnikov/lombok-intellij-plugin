@@ -29,6 +29,7 @@ import java.util.List;
 
 /**
  * From Intellij community edition
+ *
  * @author Max Medvedev
  */
 public class LightTypeParameterListBuilder extends LightElement implements PsiTypeParameterList {
@@ -47,9 +48,8 @@ public class LightTypeParameterListBuilder extends LightElement implements PsiTy
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof JavaElementVisitor) {
-      ((JavaElementVisitor)visitor).visitTypeParameterList(this);
-    }
-    else {
+      ((JavaElementVisitor) visitor).visitTypeParameterList(this);
+    } else {
       visitor.visitElement(this);
     }
   }
@@ -59,8 +59,7 @@ public class LightTypeParameterListBuilder extends LightElement implements PsiTy
     if (cached == null) {
       if (myParameters.size() == 0) {
         cached = PsiTypeParameter.EMPTY_ARRAY;
-      }
-      else {
+      } else {
         cached = myParameters.toArray(new PsiTypeParameter[myParameters.size()]);
       }
     }
