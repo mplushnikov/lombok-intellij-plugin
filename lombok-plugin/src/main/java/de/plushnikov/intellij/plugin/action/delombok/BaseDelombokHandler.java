@@ -5,11 +5,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
@@ -17,11 +19,14 @@ import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiNameValuePair;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.processor.field.AbstractFieldProcessor;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,6 +41,11 @@ public class BaseDelombokHandler {
 
   protected BaseDelombokHandler(AbstractClassProcessor classProcessor, AbstractFieldProcessor fieldProcessor) {
     this(classProcessor);
+    fieldProcessors.add(fieldProcessor);
+  }
+
+  protected BaseDelombokHandler(AbstractFieldProcessor fieldProcessor) {
+    this();
     fieldProcessors.add(fieldProcessor);
   }
 
@@ -83,9 +93,11 @@ public class BaseDelombokHandler {
     Collection<PsiAnnotation> psiAnnotations = classProcessor.collectProcessedAnnotations(psiClass);
 
     List<? super PsiElement> psiElements = classProcessor.process(psiClass);
+    ProjectSettings.setEnabledInProject(project, false);
     for (Object psiElement : psiElements) {
       psiClass.add(rebuildPsiElement(project, (PsiElement) psiElement));
     }
+    ProjectSettings.setEnabledInProject(project, true);
 
     deleteAnnotations(psiAnnotations);
   }
@@ -108,9 +120,12 @@ public class BaseDelombokHandler {
     Collection<PsiAnnotation> psiAnnotations = fieldProcessor.collectProcessedAnnotations(psiClass);
 
     List<? super PsiElement> psiElements = fieldProcessor.process(psiClass);
+
+    ProjectSettings.setEnabledInProject(project, false);
     for (Object psiElement : psiElements) {
       psiClass.add(rebuildPsiElement(project, (PsiMethod) psiElement));
     }
+    ProjectSettings.setEnabledInProject(project, true);
 
     deleteAnnotations(psiAnnotations);
   }
@@ -135,6 +150,27 @@ public class BaseDelombokHandler {
       resultMethod = elementFactory.createConstructor(fromMethod.getName());
     } else {
       resultMethod = elementFactory.createMethod(fromMethod.getName(), returnType);
+    }
+
+    final PsiTypeParameterList fromMethodTypeParameterList = fromMethod.getTypeParameterList();
+    if (null != fromMethodTypeParameterList) {
+      PsiTypeParameter[] typeParameters = fromMethodTypeParameterList.getTypeParameters();
+      if (typeParameters.length > 0) {
+        PsiTypeParameterList parameterList = (PsiTypeParameterList) resultMethod.addAfter(
+            elementFactory.createTypeParameterList(), resultMethod.getModifierList());
+        for (PsiTypeParameter typeParameter : typeParameters) {
+          parameterList.add(elementFactory.createTypeParameter(typeParameter.getName(), typeParameter.getExtendsList().getReferencedTypes()));
+        }
+      }
+    }
+
+    final PsiClassType[] referencedTypes = fromMethod.getThrowsList().getReferencedTypes();
+    if (referencedTypes.length > 0) {
+      PsiJavaCodeReferenceElement[] refs = new PsiJavaCodeReferenceElement[referencedTypes.length];
+      for (int i = 0; i < refs.length; i++) {
+        refs[i] = elementFactory.createReferenceElementByType(referencedTypes[i]);
+      }
+      resultMethod.getThrowsList().replace(elementFactory.createReferenceList(refs));
     }
 
     for (PsiParameter parameter : fromMethod.getParameterList().getParameters()) {

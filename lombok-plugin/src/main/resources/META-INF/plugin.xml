@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.8.0</version>
+  <version>0.8.1</version>
   <idea-version since-build="110.3" until-build="123.00"/>
 
   <description><![CDATA[
@@ -106,8 +106,7 @@
     <group id="DelombokActionGroup" text="Delombok" description="Refactor code removing lombok annotations"
            icon="/icons/delombok.png" popup="true">
       <action id="delombokAny" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEverythingAction"
-              text="All lombok annotations"
-              description="Action to replace all lombok annotations with vanilla java methods">
+              text="All lombok annotations" description="Action to replace all lombok annotations with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokData" class="de.plushnikov.intellij.plugin.action.delombok.DelombokDataAction"
@@ -118,6 +117,9 @@
       </action>
       <action id="delombokWither" class="de.plushnikov.intellij.plugin.action.delombok.DelombokWitherAction"
               text="@Wither" description="Action to replace lombok @Wither annotation with vanilla java methods">
+      </action>
+      <action id="delombokDelegate" class="de.plushnikov.intellij.plugin.action.delombok.DelombokDelegateAction"
+              text="@Delegate" description="Action to replace lombok @Delegate annotation with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokConstructor" class="de.plushnikov.intellij.plugin.action.delombok.DelombokConstructorAction"
@@ -130,29 +132,30 @@
       <action id="delombokSetter" class="de.plushnikov.intellij.plugin.action.delombok.DelombokSetterAction"
               text="@Setter" description="Action to replace lombok @Setter annotation with vanilla setter methods">
       </action>
-      <action id="delombokEqualsAndHashCode"
-              class="de.plushnikov.intellij.plugin.action.delombok.DelombokEqualsAndHashCodeAction"
-              text="@EqualsAndHashCode"
-              description="Action to replace lombok @EqualsAndHashCode annotation with vanilla java methods">
+      <action id="delombokEqualsAndHashCode" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEqualsAndHashCodeAction"
+              text="@EqualsAndHashCode" description="Action to replace lombok @EqualsAndHashCode annotation with vanilla java methods">
       </action>
       <action id="delombokToString" class="de.plushnikov.intellij.plugin.action.delombok.DelombokToStringAction"
               text="@ToString" description="Action to replace lombok @ToString annotation with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"
-              text="@Log (and friends)"
-              description="Action to replace lombok @Log (and other) annotation with vanilla log field">
+              text="@Log (and friends)" description="Action to replace lombok @Log (and other) annotation with vanilla log field">
       </action>
 
       <add-to-group group-id="RefactoringMenu" anchor="last"/>
     </group>
   </actions>
 
-  <!--TODO Add inspection: @NonNull is meaningless on a primitive.-->
   <!--<li>TODO: Add generate actions for Lombok equals/hashcode, toString, getter, setter, constructor and maybe logger method</li>-->
-  <!--<li>TODO: Add delombok action for @Delegate, @Cleanup, @Synchronized and other annotations</li>-->
+  <!--<li>TODO: Add delombok action for @Cleanup, @Synchronized and other annotations</li>-->
   <change-notes><![CDATA[
 		<ul>
+		<li>0.8.1
+				<ol>
+				    <li>Issue #98: Fixed Lombok Experimental Accessor Prefix does not handle non-alphanumeric prefixes</li>
+				</ol>
+			</li>
 		<li>0.8.0
 				<ol>
 				    <li>Added refactoring action for Lombok @Log and friends, @Getter and @Setter methods</li>
