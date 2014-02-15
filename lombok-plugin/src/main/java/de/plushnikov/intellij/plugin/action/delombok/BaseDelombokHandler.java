@@ -156,11 +156,12 @@ public class BaseDelombokHandler {
     if (null != fromMethodTypeParameterList) {
       PsiTypeParameter[] typeParameters = fromMethodTypeParameterList.getTypeParameters();
       if (typeParameters.length > 0) {
-        PsiTypeParameterList parameterList = (PsiTypeParameterList) resultMethod.addAfter(
-            elementFactory.createTypeParameterList(), resultMethod.getModifierList());
-        for (PsiTypeParameter typeParameter : typeParameters) {
-          parameterList.add(elementFactory.createTypeParameter(typeParameter.getName(), typeParameter.getExtendsList().getReferencedTypes()));
-        }
+        //TODO backport this
+//        PsiTypeParameterList parameterList = (PsiTypeParameterList) resultMethod.addAfter(
+//            elementFactory.createTypeParameterList(), resultMethod.getModifierList());
+//        for (PsiTypeParameter typeParameter : typeParameters) {
+//          parameterList.add(elementFactory.createTypeParameter(typeParameter.getName(), typeParameter.getExtendsList().getReferencedTypes()));
+//        }
       }
     }
 
