@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.rt.execution.junit.FileComparisonFailure;
 import de.plushnikov.lombok.LombokLightCodeInsightTestCase;
 import junit.framework.ComparisonFailure;
 
@@ -25,21 +24,15 @@ public abstract class LombokLightActionTest extends LombokLightCodeInsightTestCa
   private void checkResultByFile(String expectedFile) throws IOException {
     try {
       myFixture.checkResultByFile(expectedFile, true);
-    } catch (FileComparisonFailure ex) {
-      checkResultManually(expectedFile);
     } catch (ComparisonFailure ex) {
-      checkResultManually(expectedFile);
+      String actualFileText = myFixture.getFile().getText();
+      actualFileText = actualFileText.replace("java.lang.", "");
+
+      final String path = "." + "/" + expectedFile;
+      String expectedFileText = StringUtil.convertLineSeparators(FileUtil.loadFile(new File(path)));
+
+      assertEquals(expectedFileText.replaceAll("\\s+", ""), actualFileText.replaceAll("\\s+", ""));
     }
-  }
-
-  private void checkResultManually(String expectedFile) throws IOException {
-    String actualFileText = myFixture.getFile().getText();
-    actualFileText = actualFileText.replace("java.lang.", "");
-
-    final String path = "." + "/" + expectedFile;
-    String expectedFileText = StringUtil.convertLineSeparators(FileUtil.loadFile(new File(path)));
-
-    assertEquals(expectedFileText.replaceAll("\\s+", ""), actualFileText.replaceAll("\\s+", ""));
   }
 
   private void performActionTest() {

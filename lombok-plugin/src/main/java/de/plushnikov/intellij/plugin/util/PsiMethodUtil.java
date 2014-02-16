@@ -1,12 +1,16 @@
 package de.plushnikov.intellij.plugin.util;
 
+import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.PsiTypeParameterList;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethod;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,6 +36,40 @@ public class PsiMethodUtil {
   public static PsiCodeBlock createCodeBlockFromText(@NotNull String blockText, @NotNull PsiClass psiClass) {
     final PsiElementFactory elementFactory = JavaPsiFacade.getInstance(psiClass.getProject()).getElementFactory();
     return elementFactory.createCodeBlockFromText("{" + blockText + "}", psiClass);
+  }
+
+  public static PsiTypeParameterList createTypeParameterList(@NotNull PsiTypeParameterList psiTypeParameterList) {
+    PsiTypeParameter[] psiTypeParameters = psiTypeParameterList.getTypeParameters();
+    if (psiTypeParameters.length > 0) {
+
+      final PsiElementFactory elementFactory = JavaPsiFacade.getInstance(psiTypeParameterList.getProject()).getElementFactory();
+
+      final StringBuilder builder = new StringBuilder("public <");
+
+      for (PsiTypeParameter psiTypeParameter : psiTypeParameters) {
+        builder.append(psiTypeParameter.getName());
+
+        PsiClassType[] superTypes = psiTypeParameter.getExtendsListTypes();
+        if (superTypes.length > 1 || superTypes.length == 1 && !superTypes[0].equalsToText(CommonClassNames.JAVA_LANG_OBJECT)) {
+          builder.append(" extends ");
+          for (PsiClassType type : superTypes) {
+            if (type.equalsToText(CommonClassNames.JAVA_LANG_OBJECT)) {
+              continue;
+            }
+            builder.append(type.getCanonicalText()).append('&');
+          }
+          builder.deleteCharAt(builder.length() - 1);
+        }
+        builder.append(',');
+      }
+      builder.deleteCharAt(builder.length() - 1);
+
+      builder.append("> void foo(){}");
+
+      PsiMethod methodFromText = elementFactory.createMethodFromText(builder.toString(), null);
+      return methodFromText.getTypeParameterList();
+    }
+    return null;
   }
 
   public static boolean hasMethodByName(@NotNull Collection<PsiMethod> classMethods, @NotNull String methodName) {
