@@ -24,8 +24,6 @@ import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
-import de.plushnikov.intellij.plugin.processor.field.AbstractFieldProcessor;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,26 +34,10 @@ import java.util.List;
 
 public class BaseDelombokHandler {
 
-  private final Collection<AbstractClassProcessor> classProcessors;
-  private final Collection<AbstractFieldProcessor> fieldProcessors;
+  private final Collection<AbstractProcessor> lombokProcessors;
 
-  protected BaseDelombokHandler(AbstractClassProcessor classProcessor, AbstractFieldProcessor fieldProcessor) {
-    this(classProcessor);
-    fieldProcessors.add(fieldProcessor);
-  }
-
-  protected BaseDelombokHandler(AbstractFieldProcessor fieldProcessor) {
-    this();
-    fieldProcessors.add(fieldProcessor);
-  }
-
-  protected BaseDelombokHandler(AbstractClassProcessor... classProcessors) {
-    this.classProcessors = new ArrayList<AbstractClassProcessor>(Arrays.asList(classProcessors));
-    this.fieldProcessors = new ArrayList<AbstractFieldProcessor>();
-  }
-
-  void addFieldProcessor(AbstractFieldProcessor... fieldProcessor) {
-    fieldProcessors.addAll(Arrays.asList(fieldProcessor));
+  protected BaseDelombokHandler(AbstractProcessor... lombokProcessors) {
+    this.lombokProcessors = new ArrayList<AbstractProcessor>(Arrays.asList(lombokProcessors));
   }
 
   public void invoke(@NotNull Project project, @NotNull PsiJavaFile psiFile) {
@@ -75,12 +57,8 @@ public class BaseDelombokHandler {
   }
 
   private void invoke(Project project, PsiClass psiClass) {
-    for (AbstractClassProcessor classProcessor : classProcessors) {
-      processClass(project, psiClass, classProcessor);
-    }
-
-    for (AbstractFieldProcessor fieldProcessor : fieldProcessors) {
-      processFields(project, psiClass, fieldProcessor);
+    for (AbstractProcessor lombokProcessor : lombokProcessors) {
+      processClass(project, psiClass, lombokProcessor);
     }
   }
 
@@ -89,45 +67,31 @@ public class BaseDelombokHandler {
     UndoUtil.markPsiFileForUndo(psiFile);
   }
 
-  protected void processClass(@NotNull Project project, @NotNull PsiClass psiClass, AbstractProcessor classProcessor) {
-    Collection<PsiAnnotation> psiAnnotations = classProcessor.collectProcessedAnnotations(psiClass);
+  protected void processClass(@NotNull Project project, @NotNull PsiClass psiClass, @NotNull AbstractProcessor lombokProcessor) {
+    Collection<PsiAnnotation> psiAnnotations = lombokProcessor.collectProcessedAnnotations(psiClass);
 
-    List<? super PsiElement> psiElements = classProcessor.process(psiClass);
+    List<? super PsiElement> psiElements = lombokProcessor.process(psiClass);
+
     ProjectSettings.setEnabledInProject(project, false);
-    for (Object psiElement : psiElements) {
-      psiClass.add(rebuildPsiElement(project, (PsiElement) psiElement));
+    try {
+      for (Object psiElement : psiElements) {
+        psiClass.add(rebuildPsiElement(project, (PsiElement) psiElement));
+      }
+    } finally {
+      ProjectSettings.setEnabledInProject(project, true);
     }
-    ProjectSettings.setEnabledInProject(project, true);
 
     deleteAnnotations(psiAnnotations);
   }
 
-  public Collection<PsiAnnotation> collectProccessableAnnotations(@NotNull PsiClass psiClass) {
+  public Collection<PsiAnnotation> collectProcessableAnnotations(@NotNull PsiClass psiClass) {
     Collection<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
 
-    for (AbstractClassProcessor classProcessor : classProcessors) {
-      result.addAll(classProcessor.collectProcessedAnnotations(psiClass));
-    }
-
-    for (AbstractFieldProcessor fieldProcessor : fieldProcessors) {
-      result.addAll(fieldProcessor.collectProcessedAnnotations(psiClass));
+    for (AbstractProcessor lombokProcessor : lombokProcessors) {
+      result.addAll(lombokProcessor.collectProcessedAnnotations(psiClass));
     }
 
     return result;
-  }
-
-  private void processFields(@NotNull Project project, @NotNull PsiClass psiClass, AbstractProcessor fieldProcessor) {
-    Collection<PsiAnnotation> psiAnnotations = fieldProcessor.collectProcessedAnnotations(psiClass);
-
-    List<? super PsiElement> psiElements = fieldProcessor.process(psiClass);
-
-    ProjectSettings.setEnabledInProject(project, false);
-    for (Object psiElement : psiElements) {
-      psiClass.add(rebuildPsiElement(project, (PsiMethod) psiElement));
-    }
-    ProjectSettings.setEnabledInProject(project, true);
-
-    deleteAnnotations(psiAnnotations);
   }
 
   private PsiElement rebuildPsiElement(@NotNull Project project, PsiElement psiElement) {

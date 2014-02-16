@@ -4,6 +4,7 @@ import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -43,19 +44,12 @@ public abstract class LombokLightActionTest extends LombokLightCodeInsightTestCa
 
   private void performActionTest() {
     AnAction anAction = getAction();
-    anAction.actionPerformed(createAnActionEvent(anAction));
-    FileDocumentManager.getInstance().saveAllDocuments();
-  }
 
-  private AnActionEvent createAnActionEvent(AnAction anAction) {
-    return new AnActionEvent(
-        null,
-        DataManager.getInstance().getDataContext(),
-        "",
-        anAction.getTemplatePresentation(),
-        ActionManager.getInstance(),
-        0
-    );
+    DataContext context = DataManager.getInstance().getDataContext();
+    AnActionEvent anActionEvent = new AnActionEvent(null, context, "", anAction.getTemplatePresentation(), ActionManager.getInstance(), 0);
+
+    anAction.actionPerformed(anActionEvent);
+    FileDocumentManager.getInstance().saveAllDocuments();
   }
 
   protected abstract AnAction getAction();
