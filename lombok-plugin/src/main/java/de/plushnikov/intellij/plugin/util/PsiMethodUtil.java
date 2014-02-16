@@ -13,6 +13,7 @@ import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.PsiTypeParameterList;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethod;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
@@ -38,6 +39,7 @@ public class PsiMethodUtil {
     return elementFactory.createCodeBlockFromText("{" + blockText + "}", psiClass);
   }
 
+  @Nullable
   public static PsiTypeParameterList createTypeParameterList(@NotNull PsiTypeParameterList psiTypeParameterList) {
     PsiTypeParameter[] psiTypeParameters = psiTypeParameterList.getTypeParameters();
     if (psiTypeParameters.length > 0) {
@@ -72,6 +74,7 @@ public class PsiMethodUtil {
     return null;
   }
 
+
   public static boolean hasMethodByName(@NotNull Collection<PsiMethod> classMethods, @NotNull String methodName) {
     boolean hasMethod = false;
     for (PsiMethod classMethod : classMethods) {
@@ -84,17 +87,6 @@ public class PsiMethodUtil {
   }
 
   public static boolean hasMethodByName(@NotNull Collection<PsiMethod> classMethods, String... methodNames) {
-    boolean hasMethod = false;
-    for (String methodName : methodNames) {
-      if (hasMethodByName(classMethods, methodName)) {
-        hasMethod = true;
-        break;
-      }
-    }
-    return hasMethod;
-  }
-
-  public static boolean hasMethodByName(@NotNull Collection<PsiMethod> classMethods, @NotNull Collection<String> methodNames) {
     boolean hasMethod = false;
     for (String methodName : methodNames) {
       if (hasMethodByName(classMethods, methodName)) {
