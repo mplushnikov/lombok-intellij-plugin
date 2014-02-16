@@ -13,7 +13,6 @@ import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import org.jetbrains.annotations.NotNull;
@@ -158,21 +157,6 @@ public class PsiClassUtil {
   }
 
   /**
-   * Return true if class is final.
-   *
-   * @param psiClass
-   * @return
-   */
-  public static boolean isFinalClass(@NotNull PsiClass psiClass) {
-    boolean result = false;
-    final PsiModifierList modifierList = psiClass.getModifierList();
-    if (null != modifierList) {
-      result = modifierList.hasModifierProperty(PsiModifier.FINAL);
-    }
-    return result;
-  }
-
-  /**
    * Workaround to get inner class of the psiClass, without calling PsiAugmentProvider infinitely
    *
    * @param psiClass psiClass to search for inner class
@@ -182,8 +166,9 @@ public class PsiClassUtil {
   public static PsiClass getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
     Collection<PsiClass> innerClasses = collectInnerClassesIntern(psiClass);
     for (PsiClass innerClass : innerClasses) {
-      if (className.equals(innerClass.getName()))
+      if (className.equals(innerClass.getName())) {
         return innerClass;
+      }
     }
     return null;
   }
@@ -192,8 +177,9 @@ public class PsiClassUtil {
   public static PsiClass getInnerClassByName(@NotNull PsiClass psiClass, @NotNull String className) {
     PsiClass[] innerClasses = psiClass.getInnerClasses();
     for (PsiClass innerClass : innerClasses) {
-      if (className.equals(innerClass.getName()))
+      if (className.equals(innerClass.getName())) {
         return innerClass;
+      }
     }
     return null;
   }
