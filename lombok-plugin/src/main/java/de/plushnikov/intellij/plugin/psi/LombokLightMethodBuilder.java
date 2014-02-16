@@ -112,6 +112,15 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     return this;
   }
 
+  public boolean hasTypeParameters() {
+    return getTypeParameters().length > 0;
+  }
+
+  @NotNull
+  public PsiTypeParameter[] getTypeParameters() {
+    return myTypeParameterList.getTypeParameters();
+  }
+
   @Override
   public PsiTypeParameterList getTypeParameterList() {
     return myTypeParameterList;
