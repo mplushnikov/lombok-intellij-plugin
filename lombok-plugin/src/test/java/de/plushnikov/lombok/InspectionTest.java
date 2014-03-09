@@ -25,11 +25,19 @@ public class InspectionTest extends InspectionTestCase {
     doTest();
   }
 
+  public void testBuilderInvalidIdentifier() throws Exception {
+    doTest();
+  }
+
   public void testDelegateConcreteType() throws Exception {
     doTest();
   }
 
   public void testDelegateOnMethodWithParameter() throws Exception {
+    doTest();
+  }
+
+  public void testDelegateOnStaticFieldOrMethod() throws Exception {
     doTest();
   }
 }

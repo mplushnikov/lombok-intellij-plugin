@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.8.1</version>
+  <version>0.8.2</version>
   <idea-version since-build="110.3" until-build="123.00"/>
 
   <description><![CDATA[
