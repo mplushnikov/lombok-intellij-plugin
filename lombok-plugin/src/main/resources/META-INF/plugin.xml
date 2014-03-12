@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.8.2</version>
+  <version>0.8.3</version>
   <idea-version since-build="99.18" until-build="110.00"/>
 
   <description><![CDATA[
@@ -33,7 +33,6 @@
     <projectConfigurable implementation="de.plushnikov.intellij.plugin.settings.ProjectSettingsPage"/>
 
     <renameHandler implementation="de.plushnikov.intellij.plugin.extension.LombokElementRenameHandler" order="FIRST"/>
-    <!--<treeGenerator implementation="de.plushnikov.intellij.plugin.extension.LombokLightMethodTreeGenerator"/>-->
   </extensions>
 
   <extensions defaultExtensionNs="Lombook Plugin">
@@ -152,9 +151,17 @@
   <!--<li>TODO: Add delombok action for @Cleanup, @Synchronized and other annotations</li>-->
   <change-notes><![CDATA[
 		<ul>
-		  <li>0.8.2
+		<li>0.8.3
 				<ol>
-		        <li>Added support for "topic" annotation value of all @Log annotations (Lombok >= 1.12.6)</li>
+				    <li>Fixed #17: Cyclic parent child relation</li>
+				    <li>Fixed #34: Lombok plugin crashes</li>
+				    <li>Fixed #36: Possible class cast exception</li>
+				    <li>Fixed #37: Delombok of files included as library failes</li>
+				</ol>
+			</li>
+		<li>0.8.2
+				<ol>
+				    <li>Added support for "topic" annotation value of all @Log annotations (Lombok >= 1.12.6)</li>
 				    <li>Added validation of static fields/methods of @Delegate annotation (@Delegate is legal only on instance fields or no-argument instance methods)</li>
 				    <li>Fixed #19: Slf4j in static context</li>
 				    <li>Fixed #29: Renaming a class with the @Log* annotation adds extra qualification to calls</li>
@@ -162,8 +169,8 @@
 				    <li>Fixed #32: Refactor -> Extract -> Parameter Object || Change Signature broken</li>
 				    <li>Fixed (on GoogleCode) #83: @Slf4j does not work when added for first time</li>
 				    <li>Fixed (on GoogleCode) #100:	Refactor Change Signature || Extract - Parameter Object</li>
-		     </ol>
-	    </li>
+				</ol>
+			</li>
 		<li>0.8.1
 				<ol>
 				    <li>Issue (on Git) #23: Fixed @Delegate inspection reports error</li>
