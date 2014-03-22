@@ -3,7 +3,8 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.8.3</version>
+  <version>0.8.4</version>
+  
   <idea-version since-build="99.18" until-build="110.00"/>
 
   <description><![CDATA[
@@ -33,6 +34,10 @@
     <projectConfigurable implementation="de.plushnikov.intellij.plugin.settings.ProjectSettingsPage"/>
 
     <renameHandler implementation="de.plushnikov.intellij.plugin.extension.LombokElementRenameHandler" order="FIRST"/>
+   
+    <lang.structureViewExtension implementation="de.plushnikov.intellij.plugin.extension.LombokStructureViewExtension"/>
+
+    <daemon.highlightInfoFilter implementation="de.plushnikov.intellij.plugin.extension.LombokHighlightErrorFilter"/>
   </extensions>
 
   <extensions defaultExtensionNs="Lombook Plugin">
@@ -151,6 +156,12 @@
   <!--<li>TODO: Add delombok action for @Cleanup, @Synchronized and other annotations</li>-->
   <change-notes><![CDATA[
 		<ul>
+		<li>0.8.4
+				<ol>
+				    <li>Fixed #42 : Added Extension to populate Structure view</li>
+				    <li>Fixed issue 13(on GoogleCode): @SneakyThrows does not hide Unhandled Exception Error</li>
+				</ol>
+			</li>
 		<li>0.8.3
 				<ol>
 				    <li>Fixed #17: Cyclic parent child relation</li>
