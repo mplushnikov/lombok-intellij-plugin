@@ -4,7 +4,6 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiType;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor;
@@ -41,7 +40,7 @@ public class BuilderProcessor extends AbstractClassProcessor {
     final Collection<PsiMethod> definedConstructors = PsiClassUtil.collectClassConstructorIntern(psiClass);
     // Create all args constructor only if there is no declared constructors
     if (definedConstructors.isEmpty()) {
-      target.addAll(allArgsConstructorProcessor.createAllArgsConstructor(psiClass, PsiModifier.DEFAULT, psiAnnotation));
+      target.addAll(allArgsConstructorProcessor.createAllArgsConstructor(psiClass, "", psiAnnotation));
     }
 
     final PsiType psiBuilderType = PsiClassUtil.getTypeWithGenerics(psiClass);
