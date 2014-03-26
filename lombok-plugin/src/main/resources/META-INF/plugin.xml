@@ -60,8 +60,8 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueExperimentalProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
+    <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.BuilderClassProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.BuilderProcessor"/>
-    <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.BuilderInnerClassProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.DelegateFieldProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.GetterFieldProcessor"/>
@@ -69,8 +69,8 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.WitherFieldProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.method.DelegateMethodProcessor"/>
+    <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderClassMethodProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderMethodProcessor"/>
-    <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderMethodInnerClassProcessor"/>
 
     <!-- lombok-pg-->
     <processor implementation="de.plushnikov.intellij.plugin.processor_pg.clazz.FluentSetterProcessor"/>
@@ -158,6 +158,9 @@
 		<ul>
 		<li>0.8.4
 				<ol>
+				    <li>Fixed #20 : Inspection of lombok annotations say I can't use @Builder on constructor</li>
+				    <li>Fixed issue 92(on Googlecode) : Plugin flags @Builder annotations when they are placed on contructors</li>
+				    <li>Fixed #41 : Error with @Builder </li>
 				    <li>Fixed #42 : Added Extension to populate Structure view</li>
 				    <li>Fixed issue 13(on GoogleCode): @SneakyThrows does not hide Unhandled Exception Error</li>
 				</ol>

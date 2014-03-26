@@ -1,5 +1,6 @@
 package de.plushnikov.lombok;
 
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.InspectionTestCase;
 import de.plushnikov.intellij.plugin.inspection.LombokInspection;
 
@@ -14,7 +15,7 @@ public class InspectionTest extends InspectionTestCase {
   }
 
   private void doTest() throws Exception {
-    doTest(getTestName(true), new LombokInspection());
+    doTest(getTestName(true), new LocalInspectionToolWrapper(new LombokInspection()), "java 1.5");
   }
 
   public void testIssue37() throws Exception {
