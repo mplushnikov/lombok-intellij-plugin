@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.8.5</version>
+  <version>0.8.6</version>
 
   <idea-version since-build="123.72" until-build="133.00"/>
 
@@ -160,6 +160,11 @@
   <!--TODO @Builder is not supported on constructors with constructor type parameters..-->
   <change-notes><![CDATA[
 		<ul>
+		<li>0.8.6
+				<ol>
+				    <li>Fixed #46 : @SneakyThrows does not work on methods which throws multiple exceptions</li>
+				</ol>
+			</li>
 		<li>0.8.5
 				<ol>
 				    <li>Fixed #44 : @SneakyThrows doesn't hide exception on Intellij13</li>
