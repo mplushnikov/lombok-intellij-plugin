@@ -1,10 +1,4 @@
-/out
-/lombok-api/target
-/test-manual/.idea
-/test-manual/*.iml
-/test-manual/lombok/*.iml
-/test-manual/lombok/target
-/test-manual/lombok_pg/*.iml
-/test-manual/lombok_pg/target
-/.idea/libraries
-/.idea/workspace.xml
+out
+target
+.idea
+*.iml
