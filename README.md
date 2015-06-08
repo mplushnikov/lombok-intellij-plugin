@@ -1,4 +1,4 @@
-lombok-intellij-plugin [![Build Status](https://travis-ci.org/mplushnikov/lombok-intellij-plugin.svg?branch=master)](https://travis-ci.org/mplushnikov/lombok-intellij-plugin) [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN) 
+lombok-intellij-plugin [![Build Status](https://travis-ci.org/mplushnikov/lombok-intellij-plugin.svg?branch=master)](https://travis-ci.org/mplushnikov/lombok-intellij-plugin) [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
 ======================
 
 [![Join the chat at https://gitter.im/mplushnikov/lombok-intellij-plugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mplushnikov/lombok-intellij-plugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -43,10 +43,10 @@ Features / Supports
 Installation
 ------------
 - Using IDE built-in plugin system:
-  - <kbd>File</kbd> > <kbd>Settings</kbd> > <kbd>Plugins</kbd> > <kbd>Browse repositories...</kbd> > <kbd>Search for "lombok"</kbd> > <kbd>Install Plugin</kbd>
+  - <kbd>Preferences</kbd> > <kbd>Settings</kbd> > <kbd>Plugins</kbd> > <kbd>Browse repositories...</kbd> > <kbd>Search for "lombok"</kbd> > <kbd>Install Plugin</kbd>
 - Manually:
   - Download the [latest release](https://github.com/mplushnikov/lombok-intellij-plugin/releases/latest) and install it manually using <kbd>Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Install plugin from disk...</kbd>
-  
+
 Restart IDE.
 
 Developed By
