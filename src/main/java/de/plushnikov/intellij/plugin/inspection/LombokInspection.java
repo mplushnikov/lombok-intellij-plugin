@@ -6,10 +6,8 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElementVisitor;
-import com.intellij.psi.PsiTypeElement;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.processor.Processor;
-import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,11 +20,9 @@ import java.util.HashSet;
 public class LombokInspection extends BaseJavaLocalInspectionTool {
 
   private final LombokProcessorProvider processorProvider;
-  private final ValProcessor valProcessor;
 
   public LombokInspection() {
     processorProvider = LombokProcessorProvider.getInstance();
-    valProcessor = new ValProcessor();
   }
 
   @NotNull
@@ -64,13 +60,6 @@ public class LombokInspection extends BaseJavaLocalInspectionTool {
 
     public LombokElementVisitor(ProblemsHolder holder) {
       this.holder = holder;
-    }
-
-    @Override
-    public void visitTypeElement(PsiTypeElement type) {
-      super.visitTypeElement(type);
-
-      valProcessor.verifyTypeElement(type, holder);
     }
 
     @Override

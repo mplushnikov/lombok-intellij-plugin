@@ -5,7 +5,7 @@
     <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
     <version>0.9.8</version>
 
-    <idea-version since-build="138.00" until-build="141.9999"/>
+    <idea-version since-build="133.00" until-build="137.9999"/>
 
     <description>A plugin that adds first-class support for Project Lombok</description>
     <category>Tools Integration</category>
@@ -52,11 +52,6 @@
         <renamePsiElementProcessor implementation="de.plushnikov.intellij.plugin.extension.LombokRenameFieldReferenceProcessor"/>
 
         <java.elementFinder implementation="de.plushnikov.intellij.plugin.extension.LombokElementFinder" order="last"/>
-
-        <!--Overwrite IntelliJ Diamond inspection, to filter out val declarations-->
-        <localInspection groupPath="Java" language="JAVA" shortName="Convert2Diamond" displayName="Explicit type can be replaced with &lt;&gt;"
-                         groupName="Java language level migration aids" enabledByDefault="true" level="WARNING"
-                         implementationClass="de.plushnikov.intellij.plugin.inspection.LombokExplicitTypeCanBeDiamondInspection" order="last"/>
     </extensions>
 
     <extensions defaultExtensionNs="de.plushnikov.lombok">

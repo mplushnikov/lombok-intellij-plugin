@@ -7,14 +7,11 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import de.plushnikov.intellij.plugin.processor.Processor;
-import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,19 +29,8 @@ import java.util.List;
 public class LombokAugmentProvider extends PsiAugmentProvider {
   private static final Logger log = Logger.getInstance(LombokAugmentProvider.class.getName());
 
-  private ValProcessor valProcessor;
-
   public LombokAugmentProvider() {
     log.debug("LombokAugmentProvider created");
-    valProcessor = new ValProcessor();
-  }
-
-  @Nullable
-  protected PsiType inferType(PsiTypeElement typeElement) {
-    if (null == typeElement || DumbService.isDumb(typeElement.getProject())) {
-      return null;
-    }
-    return valProcessor.inferType(typeElement);
   }
 
   @NotNull
