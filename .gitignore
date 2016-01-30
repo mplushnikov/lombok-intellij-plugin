@@ -1,4 +1,7 @@
-out
-target
-.idea
+out/
+target/
+.idea/
+.gradle/
+build/
+generated/
 *.iml
