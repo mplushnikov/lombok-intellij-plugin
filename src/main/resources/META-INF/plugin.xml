@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin version="2" url="https://github.com/mplushnikov/lombok-intellij-plugin">
+    <id>de.plushnikov.lombok</id>
+    <name>Lombok Plugin</name>
+    <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
+    <version>0.9.8.15</version>
+
+    <idea-version since-build="142.00"/>
+
+    <description>A plugin that adds first-class support for Project Lombok</description>
+    <category>Tools Integration</category>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <application-components>
+        <component>
+            <implementation-class>de.plushnikov.intellij.plugin.LombokLoader</implementation-class>
+        </component>
+    </application-components>
+
+    <extensionPoints>
+        <extensionPoint name="processor" interface="de.plushnikov.intellij.plugin.processor.Processor"/>
+    </extensionPoints>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="de.plushnikov.intellij.plugin.settings.LombokSettings"/>
+
+        <lang.psiAugmentProvider implementation="de.plushnikov.intellij.plugin.provider.LombokAugmentProvider"/>
+        <implicitUsageProvider implementation="de.plushnikov.intellij.plugin.provider.LombokImplicitUsageProvider"/>
+        <inspectionToolProvider implementation="de.plushnikov.intellij.plugin.provider.LombokInspectionProvider"/>
+        <projectConfigurable instance="de.plushnikov.intellij.plugin.settings.ProjectSettingsPage"/>
+
+        <renameHandler implementation="de.plushnikov.intellij.plugin.extension.LombokElementRenameHandler" order="FIRST"/>
+        <treeGenerator implementation="de.plushnikov.intellij.plugin.extension.LombokLightMethodTreeGenerator"/>
+
+        <lang.structureViewExtension implementation="de.plushnikov.intellij.plugin.extension.LombokStructureViewExtension"/>
+
+        <daemon.highlightInfoFilter implementation="de.plushnikov.intellij.plugin.extension.LombokHighlightErrorFilter"/>
+
+        <fileTypeFactory implementation="de.plushnikov.intellij.plugin.language.LombokConfigFileTypeFactory"/>
+        <lang.parserDefinition language="Lombok.Config" implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigParserDefinition"/>
+        <lang.syntaxHighlighterFactory key="Lombok.Config" implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigSyntaxHighlighterFactory"/>
+        <colorSettingsPage implementation="de.plushnikov.intellij.plugin.language.LombokConfigColorSettingsPage"/>
+        <completion.contributor language="Lombok.Config" implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigCompletionContributor"/>
+        <lang.commenter language="Lombok.Config" implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigCommentor"/>
+
+        <fileBasedIndex implementation="de.plushnikov.intellij.plugin.lombokconfig.LombokConfigIndex"/>
+
+        <custom.exception.handler implementation="de.plushnikov.intellij.plugin.handler.SneakyThrowsExceptionHandler"/>
+
+        <findUsagesHandlerFactory implementation="de.plushnikov.intellij.plugin.extension.LombokFieldFindUsagesHandlerFactory"/>
+        <renamePsiElementProcessor implementation="de.plushnikov.intellij.plugin.extension.LombokRenameFieldReferenceProcessor"/>
+
+        <java.elementFinder implementation="de.plushnikov.intellij.plugin.extension.LombokElementFinder" order="last"/>
+
+        <!--Overwrite IntelliJ Diamond inspection, to filter out val declarations-->
+        <localInspection groupPath="Java" language="JAVA" shortName="Convert2Diamond" displayName="Explicit type can be replaced with &lt;&gt;"
+                         groupName="Java language level migration aids" enabledByDefault="true" level="WARNING"
+                         implementationClass="de.plushnikov.intellij.plugin.inspection.LombokExplicitTypeCanBeDiamondInspection" order="last"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="de.plushnikov.lombok">
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.LogProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.Log4jProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.Log4j2Processor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.XSlf4jProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.log.CommonsLogProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.DataProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.EqualsAndHashCodeProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.GetterProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderExperimentalPreDefinedInnerClassFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderExperimentalPreDefinedInnerClassMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderClassProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderExperimentalClassProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderExperimentalProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueExperimentalProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.field.DelegateFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.field.DelegateExperimentalFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.field.GetterFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.field.SetterFieldProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.field.WitherFieldProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.DelegateMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.DelegateExperimentalMethodProcessor"/>
+
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderClassMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderExperimentalClassMethodProcessor"/>
+        <processor implementation="de.plushnikov.intellij.plugin.processor.method.BuilderExperimentalMethodProcessor"/>
+
+        <!-- hrisey -->
+        <processor implementation="pl.mg6.hrisey.intellij.plugin.processor.clazz.ParcelableMethodsProcessor"/>
+        <processor implementation="pl.mg6.hrisey.intellij.plugin.processor.clazz.ParcelableFieldsProcessor"/>
+    </extensions>
+
+    <actions>
+        <group id="LombokActionGroup" text="Lombok" description="Refactor code with lombok annotations"
+               icon="/icons/lombok.png" popup="true">
+
+            <action id="defaultLombokData" class="de.plushnikov.intellij.plugin.action.lombok.LombokDataAction"
+                    text="Default @Data" description="Action to replace getter/setter/equals/hashcode/toString methods with lombok @Data annotation">
+            </action>
+            <separator/>
+            <action id="defaultLombokGetter" class="de.plushnikov.intellij.plugin.action.lombok.LombokGetterAction"
+                    text="Default @Getter" description="Action to replace all getter methods with lombok @Getter annotation">
+            </action>
+            <action id="defaultLombokSetter" class="de.plushnikov.intellij.plugin.action.lombok.LombokSetterAction"
+                    text="Default @Setter" description="Action to replace all setter methods with lombok @Setter annotation">
+            </action>
+            <action id="defaultLombokEqualsAndHashcode" class="de.plushnikov.intellij.plugin.action.lombok.LombokEqualsAndHashcodeAction"
+                    text="Default @EqualsAndHashcode" description="Action to replace equals and hashcode methods with lombok @EqualsAndHashcode annotation">
+            </action>
+            <action id="defaultLombokToString" class="de.plushnikov.intellij.plugin.action.lombok.LombokToStringAction"
+                    text="Default @ToString" description="Action to replace toString method with lombok @ToString annotation">
+            </action>
+            <separator/>
+            <action id="defaultLombokLogger" class="de.plushnikov.intellij.plugin.action.lombok.LombokLoggerAction"
+                    text="@Log (and friends)" description="Action to replace logger with lombok @Log annotation">
+            </action>
+
+            <!--<separator/>-->
+            <!--<action id="generalLombokGetter" class="de.plushnikov.intellij.plugin.action.lombok.RefactorGetterAction"-->
+            <!--text="Selectable @Getter"-->
+            <!--description="Action to replace some getter methods with lombok @Getter annotation">-->
+            <!--</action>-->
+            <!--<action id="generalLombokSetter" class="de.plushnikov.intellij.plugin.action.lombok.RefactorSetterAction"-->
+            <!--text="Selectable @Setter"-->
+            <!--description="Action to replace some setter methods with lombok @Setter annotation">-->
+            <!--</action>-->
+
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </group>
+        <group id="DelombokActionGroup" text="Delombok" description="Refactor code removing lombok annotations"
+               icon="/icons/delombok.png" popup="true">
+            <action id="delombokAny" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEverythingAction"
+                    text="All lombok annotations" description="Action to replace all lombok annotations with vanilla java methods">
+            </action>
+            <separator/>
+            <action id="delombokData" class="de.plushnikov.intellij.plugin.action.delombok.DelombokDataAction"
+                    text="@Data" description="Action to replace lombok @Data annotation with vanilla java methods">
+            </action>
+            <action id="delombokValue" class="de.plushnikov.intellij.plugin.action.delombok.DelombokValueAction"
+                    text="@Value" description="Action to replace lombok @Value annotation with vanilla java methods">
+            </action>
+            <action id="delombokWither" class="de.plushnikov.intellij.plugin.action.delombok.DelombokWitherAction"
+                    text="@Wither" description="Action to replace lombok @Wither annotation with vanilla java methods">
+            </action>
+            <action id="delombokDelegate" class="de.plushnikov.intellij.plugin.action.delombok.DelombokDelegateAction"
+                    text="@Delegate" description="Action to replace lombok @Delegate annotation with vanilla java methods">
+            </action>
+            <action id="delombokBuilder" class="de.plushnikov.intellij.plugin.action.delombok.DelombokBuilderAction"
+                    text="@Builder" description="Action to replace lombok @Builder annotation with vanilla java methods">
+            </action>
+            <separator/>
+            <action id="delombokConstructor" class="de.plushnikov.intellij.plugin.action.delombok.DelombokConstructorAction"
+                    text="@Constructors"
+                    description="Action to replace lombok @NoArgsConstructor, @RequiredArgsConstructor and @AllArgsConstructor annotations with vanilla java methods">
+            </action>
+            <action id="delombokGetter" class="de.plushnikov.intellij.plugin.action.delombok.DelombokGetterAction"
+                    text="@Getter" description="Action to replace lombok @Getter annotation with vanilla getter methods">
+            </action>
+            <action id="delombokSetter" class="de.plushnikov.intellij.plugin.action.delombok.DelombokSetterAction"
+                    text="@Setter" description="Action to replace lombok @Setter annotation with vanilla setter methods">
+            </action>
+            <action id="delombokEqualsAndHashCode" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEqualsAndHashCodeAction"
+                    text="@EqualsAndHashCode" description="Action to replace lombok @EqualsAndHashCode annotation with vanilla java methods">
+            </action>
+            <action id="delombokToString" class="de.plushnikov.intellij.plugin.action.delombok.DelombokToStringAction"
+                    text="@ToString" description="Action to replace lombok @ToString annotation with vanilla java methods">
+            </action>
+            <separator/>
+            <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"
+                    text="@Log (and friends)" description="Action to replace lombok @Log (and other) annotation with vanilla log field">
+            </action>
+
+            <add-to-group group-id="RefactoringMenu" anchor="last"/>
+        </group>
+    </actions>
+
+    <!--<li>TODO: Add generate actions for Lombok equals/hashcode, toString, getter, setter, constructor and maybe logger method</li>-->
+    <!--<li>TODO: Add delombok action for @Cleanup, @Synchronized and other annotations</li>-->
+
+    <!--TODO @Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.-->
+    <!--TODO @Builder is not supported on constructors with constructor type parameters..-->
+    <change-notes><![CDATA[
+		<ul>
+		<li>0.9.8
+				<ol>
+				     <li>Fixed #151: Builder issues with Accessors</li>
+				     <li>Fixed #153: IntelliJ produces warning when specifying generic type on val declaration</li>
+				     <li>Fixed #156: Exception in @Singular handling</li>
+				     <li>Fixed #165: Can't correctly resolve multiple @Builder methods in same class having partial implementations</li>
+				     <li>Fixed #172: "Lombok needs a default constructor in the base class" error in enum</li>
+				     <li>Fixed #175: Added support for @Tolerate for @Getter and @Setter</li>
+				</ol>
+			</li>
+		<li>0.9.7
+				<ol>
+				    <li>Added caching of produced PsiElements to reduce probability of recursive invocation #112,#123, #126, #129</li>
+				    <li>Fixed #130: @XArgsConstructor don't show error when used on a subclass that requires non-empty super call</li>
+				    <li>Fixed #132: Make @EqualsAndHashCode(callSuper = true) default</li>
+				    <li>Fixed #135: Added support for @NoArgsConstructor(force = true)</li>
+				    <li>Fixed #149: Idea cannot generate another constructor when @NoArgsConstructor is used</li>
+				</ol>
+			</li>
+		<li>0.9.6
+				<ol>
+				    <li>Fixed #47: Feature request: support onX annotations via @__</li>
+				    <li>Fixed #77: Support new @Singular annotation for @Builder collection fields</li>
+				    <li>Fixed #123: SpinAllocator has exhausted! Too many threads or you're going to get StackOverflow</li>
+				</ol>
+			</li>
+		<li>0.9.5
+				<ol>
+				    <li>Fixed #48: Importing @Builder generated builder classes does not work</li>
+				    <li>Added #77: Basic Support for new @Singular annotation for @Builder collection fields</li>
+				    <li>Fixed #111: @Builder on constructors/methods is not recognized in Android Studio</li>
+				    <li>Fixed #116: @Builder - Builder class can't be found without a static import</li>
+				    <li>Added Hrisey @Parcelable support patch</li>
+				    <li>Dropped outdated support for some lombok_pg annotations</li>
+				</ol>
+			</li>
+		<li>0.9.4
+				<ol>
+				    <li>Fixed regression #108: Getter/Setter wrong after last Update</li>
+				    <li>Fixed #100, #72: AssertionError: Stub and PSI element type mismatch</li>
+				</ol>
+			</li>
+		<li>0.9.3
+				<ol>
+				    <li>Fixed #95: Fluent Setter Override Error</li>
+				    <li>Fixed #96: @Value and @Wither not playing well together</li>
+				    <li>Fixed #97: Two constructors being shown when using @Builder and @AllArgsConstructor together</li>
+				    <li>Fixed #98: Plugin crash: IndexNotReadyException val processing</li>
+				    <li>Fixed #101: @SneakyThrows causes incorrect errors in IntelliJ 14</li>
+				</ol>
+			</li>
+		  <li>0.9.2
+				<ol>
+				    <li>Added #9:  Basic val support in IntelliJ 14.1</li>
+				    <li>Fixed #81: @Builder: buildMethod should have same throws-list as annotated static method</li>
+				    <li>Fixed #82: Abstract Class + @Delegate</li>
+				    <li>Fixed #83: Getting inconvertible types error assigning new builder instance</li>
+				    <li>Fixed #84: Properly find usages of @Getters & @Setters on fields with @Acccessor prefixes</li>
+				    <li>Fixed #90: Renaming a field with different case doesn't rename getter</li>
+				    <li>Fixed #92: Improved @Wither support</li>
+				    <li>Fixed #93: IntelliJ unable to resolve constructor when using @Builder and @Value together</li>
+				</ol>
+			</li>
+		  <li>0.9.1
+				<ol>
+				    <li>Fixed #33: Builder annotation with partial implementation shows errors</li>
+				    <li>Fixed #78: Support for constructors of @Value objects with assigned final fields</li>
+				    <li>Fixed #79: Support for multiple @Builder in same java class</li>
+				    <li>Fixed #80: Some issues with "delomboked" @Builder on static method</li>
+				</ol>
+			</li>
+			<li>0.9.0
+				<ol>
+				    <li>Added Delombok Feature for @Builder</li>
+				    <li>Issue #53: Basic Support for Lombok configuration keys</li>
+				    <li>Fixed #57: Incorrect constructors appear in "Structure" when `@Value` and `@Builder`</li>
+				    <li>Fixed #70: Conflict resolution failed on renaming field together with its accessors in IntelliJ 14</li>
+				    <li>Issue #74: Fixed (only IntelliJ 14+) Sneaky Throws Not Correctly Detected for Anonymous Inner Class </li>
+						<li>Issue #75: Added support for @lombok.Builder (lombok version 1.16)</li>
+				</ol>
+			</li>
+		  <li>0.8.9
+				<ol>
+				    <li>Fixed #67: Updates and Improvements for IntelliJ 14, fixed incompatibility</li>
+				</ol>
+			</li>
+			<li>0.8.8
+				<ol>
+				    <li>Fixed #52 : Invalid stub element type in index</li>
+				    <li>Fixed #54 : @Wither copies @Nullable annotation to generated method</li>
+				    <li>Fixed #62 : Intellij shows error on Lazy Getter</li>
+				    <li>Fixed #63 : Added support for @Tolerate (together with @Value, @Data)</li>
+				    <li>Fixed issue 109(on GoogleCode): Intellij freezes regularly when the lombok plugin is enabled</li>
+				    <li>Fixed issue 106(on GoogleCode): Static methods annotated with @Builder are not recognized</li>
+				    <li>Updated to lombok changes: canEqual (of @EqualsAndHashCode fame) should be protected instead of public.</li>
+				    <li>Basic autocompletion and highlighting for lombok.config files</li>
+				</ol>
+			</li>
+		<li>0.8.7
+				<ol>
+				    <li>Fixed issue 104(on GoogleCode):	Intellij reports unused field with @Getter and @Setter</li>
+				    <li>Fixed #50 : @SneakyThrows does not work for try-with-resource statements</li>
+				    <li>Fixed #51 : Delegate annotation moved to experimental</li>
+				    <li>Fixed #58 : NoSuchMethodError in IntelliJ 14 EAP</li>
+				</ol>
+			</li>
+		<li>0.8.6
+				<ol>
+				    <li>Added basic refactoring actions for Lombok @Data, @ToString and @EqualsAndHashcode methods</li>
+				    <li>Fixed #46 : @SneakyThrows does not work on methods which throws multiple exceptions</li>
+				</ol>
+			</li>
+		<li>0.8.5
+				<ol>
+				    <li>Fixed #44 : @SneakyThrows doesn't hide exception on Intellij13</li>
+				</ol>
+			</li>
+		<li>0.8.4
+				<ol>
+				    <li>Fixed #20 : Inspection of lombok annotations say I can't use @Builder on constructor</li>
+				    <li>Fixed issue 92(on Googlecode) : Plugin flags @Builder annotations when they are placed on contructors</li>
+				    <li>Fixed #41 : Error with @Builder </li>
+				    <li>Fixed #42 : Added Extension to populate Structure view</li>
+				    <li>Fixed issue 13(on GoogleCode): @SneakyThrows does not hide Unhandled Exception Error</li>
+				</ol>
+			</li>
+		<li>0.8.3
+				<ol>
+				    <li>Fixed #17: Cyclic parent child relation</li>
+				    <li>Fixed #34: Lombok plugin crashes</li>
+				    <li>Fixed #36: Possible class cast exception</li>
+				    <li>Fixed #37: Delombok of files included as library failes</li>
+				</ol>
+			</li>
+		<li>0.8.2
+				<ol>
+				    <li>Added support for "topic" annotation value of all @Log annotations (Lombok >= 1.12.6)</li>
+				    <li>Added validation of static fields/methods of @Delegate annotation (@Delegate is legal only on instance fields or no-argument instance methods)</li>
+				    <li>Fixed #19: Slf4j in static context</li>
+				    <li>Fixed #29: Renaming a class with the @Log* annotation adds extra qualification to calls</li>
+				    <li>Fixed #31: Prevent errors with invalid identifiers for builderClassName in @Builder annotation</li>
+				    <li>Fixed #32: Refactor -> Extract -> Parameter Object || Change Signature broken</li>
+				    <li>Fixed (on GoogleCode) #83: @Slf4j does not work when added for first time</li>
+				    <li>Fixed (on GoogleCode) #100:	Refactor Change Signature || Extract - Parameter Object</li>
+				</ol>
+			</li>
+		<li>0.8.1
+				<ol>
+				    <li>Issue (on Git) #23: Fixed @Delegate inspection reports error</li>
+				    <li>Issue (on Git) #27: Fixed @Delegate on a type parameter doesn't fail</li>
+				    <li>Issue #60: Fixed @Delegate on methods is not supported now</li>
+				    <li>Issue #98: Fixed Lombok Experimental Accessor Prefix does not handle non-alphanumeric prefixes</li>
+				</ol>
+			</li>
+		<li>0.8.0
+				<ol>
+				    <li>Added refactoring action for Lombok @Log and friends, @Getter and @Setter methods</li>
+				    <li>Added refactoring actions to Delombok @Data, @Value, @Wither, @Constructors, @Getter, @Setter, @EqualsAndHashCode, @ToString and @Log annotations</li>
+				    <li>Fixed problem with renaming fields in class containing lombok @Getter and @Setter</li>
+				    <li>Issue #94: Fixed Intellij does not correctly create the constructor with @RequiredAllConstructor for classes with @Value</li>
+				</ol>
+			</li>
+		<li>0.7.3
+				<ol>
+				    <li>Fix IllegalArgumentException when trying to expand method names on IntelliJ 11</li>
+				</ol>
+			</li>
+		<li>0.7.2
+				<ol>
+				    <li>Fix multiple stackoverflow exceptions</li>
+				</ol>
+			</li>
+		 <li>0.7.1
+				<ol>
+				    <li>Some performance optimizations</li>
+				</ol>
+			</li>
+		  <li>0.7
+				<ol>
+				    <li>Added partial support for @Value lombok annotations</li>
+				    <li>Added support for @Accessors lombok experimental annotation</li>
+				    <li>Added support for @Wither lombok experimental annotation</li>
+				    <li>Added support for @Builder lombok experimental annotations</li>
+				</ol>
+			</li>
+			<li>0.6.5
+				<ol>
+				    <li>Issue #20	Fixed Using @Delegate together with generic methods produced red underlining in the editor window</li>
+				    <li>Issue #29	Fixed @Delegate leads to exception in LombokLightParameter</li>
+				    <li>Issue #37 and #59	Fixed @EqualsAndHashCode inspection for callSuper parameter</li>
+				    <li>Issue #54	Valid code produces inspections errors - anonymous instance, partial implementation</li>
+				</ol>
+			</li>
+		  <li>0.6.4
+				<ol>
+				    <li>Issue #49	Deprecated fields should generate deprecated methods</li>
+				</ol>
+			</li>
+			<li>0.6.3
+				<ol>
+				    <li>Issue #41 Added support for XSlf4j and Log4j2 logger</li>
+				    <li>Issue #44 Fixed Getter- and Setter- method generation, when method is already there with a parameter(s)</li>
+				    <li>Issue #56	Removed obsolete plugin dependencies (they have been merged into intellij core)</li>
+				</ol>
+			</li>
+			<li>0.6.2
+				<ol>
+				    <li>Issue #50 Compiled with java 1.7 -> Don't work under java 1.6 vms</li>
+				</ol>
+			</li>
+			<li>0.6
+				<ol>
+				    <li>Issue #23 Updated to run with IntelliJ 12</li>
+				    <li>Issue #42 IllegalArgumentException with Intellij 12</li>
+				    <li>Issue #48 IllegalArgumentException with Intellij 12</li>
+				    <li>Issue #38 Added ability to enable/disable lombok-intellij-plugin per project-configuration
+				    and reduced logging-level of plugin</li>
+				</ol>
+			</li>
+		  <li>0.5
+				<ol>
+				    <li>Issue #23 Initial support for IntelliJ 12</li>
+				    <li>Issue #12 Added support for "Singleton" and "EnumId" annotations from lombok-pg</li>
+				    <li>Fixed Issue #27 "@EqualsAndHashCode on final classes: Should not have a canEquals in that case."</li>
+				    <li>Fixed Issue #28 "Getters and setters should be generated even if the method exists with different parameter count"</li>
+				</ol>
+			</li>
+		  <li>0.4
+				<ol>
+				    <li>fix reflection access for intellij ultimate</li>
+				</ol>
+			</li>
+			<li>0.3
+				<ol>
+            <li>Fixed issue #4 "Getter/Setter on generic types"</li>
+            <li>Fixed issue #6 "The Plugin panel in IDEA lists the plugin as "Lombook Plugin (doubled letter 'o')"</li>
+            <li>Fixed issue #7 "Added support for IntelliJ 11"</li>
+            <li>Fixed issue #9 "@Data(staticConstructor="of") is not created"</li>
+            <li>Fixed issue #10 "Empty constructor is created even if it already exists"</li>
+            <li>Fixed issue #15 "@Data with @NoArgsConstructor does not generate default constructor"</li>
+            <li>Fixed issue #17 "Incompatibility with javax.annotation.Nonnull/Nullable"</li>
+            <li>Added more inspections and QuickFixes for some of lombok annotations.</li>
+            <li>Fixed: skip constructor generation for @Data if some constructor is already defined in the class</li>
+            <li>Fixed: skip getter generation for invalid lazy-getters</li>
+            <li>Added support for "LazyGetter" and "FluentSetter" annotations from lombok-pg</li>
+				</ol>
+			</li>
+			<li>0.2
+				<ol>
+					<li>Added inspections for lombok annotations.</li>
+					<li>Added some simple QuickFixes for lombok inspections.</li>
+					<li>Fixed bug with not working auto-completion in the same source file with lombok annotations that generate methods.</li>
+					<li>Better support of lombok annotations, especially for 'staticName','types' and 'excludes' properties of @Delegate and @XXXConstructor</li>
+					<li>General bug fixing and many improvements</li>
+				</ol>
+			</li>
+			<li>0.1
+				<ol>
+					<li>Initial Release for IDEA >= 10.0</li>
+				</ol>
+			</li>
+		</ul>
+	]]>
+    </change-notes>
+</idea-plugin>

@@ -1,13 +1,21 @@
 language: java
 sudo: false
-jdk:
-  - oraclejdk8
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
-  - $HOME/.m2
-  - $HOME/Tools
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
-install:
-  - mvn install
-  - ant -f build-init.xml
-  - ant -f build-test.xml -DIDEA_HOME=./idea-IC
+jdk:
+  - oraclejdk8
+
+env:
+  - IDEA_VERSION=LATEST-EAP-SNAPSHOT
+  - IDEA_VERSION=IC-15.0.3
+  - IDEA_VERSION=IC-14.1.6
+
+before_install:
+ - chmod +x gradlew
+

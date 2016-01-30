@@ -1,4 +1,10 @@
-out
-target
-.idea
+out/
+target/
+.idea/
+.gradle/
+build/
+generated/
+idea-sandbox/
 *.iml
+*.ipr
+*.iws
