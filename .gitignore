@@ -4,4 +4,7 @@ target/
 .gradle/
 build/
 generated/
+idea-sandbox/
 *.iml
+*.ipr
+*.iws
