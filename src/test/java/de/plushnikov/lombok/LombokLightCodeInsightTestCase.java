@@ -3,7 +3,6 @@ package de.plushnikov.lombok;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import junit.framework.ComparisonFailure;
@@ -28,10 +27,6 @@ public abstract class LombokLightCodeInsightTestCase extends LightCodeInsightFix
 
   @Override
   public void setUp() throws Exception {
-    final String absoluteTestDataPath = new File(getTestDataPath(), getBasePath()).getCanonicalPath();
-    final String absoluteLombokPath = new File(LOMBOK_SRC_PATH).getCanonicalPath();
-    VfsRootAccess.allowRootAccess(absoluteTestDataPath, absoluteLombokPath);
-
     super.setUp();
     loadFilesFrom(LOMBOK_SRC_PATH);
   }
