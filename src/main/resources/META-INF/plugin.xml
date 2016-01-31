@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <idea-plugin version="2" url="https://github.com/mplushnikov/lombok-intellij-plugin">
-    <id>de.plushnikov.lombok</id>
+    <id>Lombook Plugin</id>
     <name>Lombok Plugin</name>
     <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
     <version>0.9.8</version>
@@ -54,7 +54,7 @@
         <java.elementFinder implementation="de.plushnikov.intellij.plugin.extension.LombokElementFinder" order="last"/>
     </extensions>
 
-    <extensions defaultExtensionNs="de.plushnikov.lombok">
+    <extensions defaultExtensionNs="Lombook Plugin">
         <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor"/>
         <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor"/>
         <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor"/>
