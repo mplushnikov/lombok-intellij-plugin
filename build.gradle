@@ -153,7 +153,10 @@ intellij {
     version = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
     pluginName 'lombok-plugin'
     plugins 'coverage'
-//    updateSinceUntilBuild = false
+
+    skipInstrumentNotNull = true
+
+    updateSinceUntilBuild = false
 //    sameSinceUntilBuild = version == "LATEST-EAP-SNAPSHOT"
     sandboxDirectory = "${project.projectDir}/idea-sandbox/idea-${version}"
     systemProperty 'idea.is.internal', 'false'
