@@ -19,10 +19,7 @@ import java.util.HashSet;
  */
 public class LombokInspection extends BaseJavaLocalInspectionTool {
 
-  private final LombokProcessorProvider processorProvider;
-
   public LombokInspection() {
-    processorProvider = LombokProcessorProvider.getInstance();
   }
 
   @NotNull
