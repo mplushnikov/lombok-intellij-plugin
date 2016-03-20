@@ -8,11 +8,11 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
+import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
 import lombok.Builder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,12 +24,9 @@ import java.util.List;
  */
 public class BuilderPreDefinedInnerClassMethodProcessor extends AbstractBuilderPreDefinedInnerClassProcessor {
 
-  public BuilderPreDefinedInnerClassMethodProcessor() {
-    this(Builder.class);
-  }
-
-  protected BuilderPreDefinedInnerClassMethodProcessor(@NotNull Class<? extends Annotation> builderClass) {
-    super(builderClass, PsiMethod.class);
+  @SuppressWarnings({"deprecation", "unchecked"})
+  public BuilderPreDefinedInnerClassMethodProcessor(@NotNull BuilderHandler builderHandler) {
+    super(builderHandler, PsiMethod.class, Builder.class, lombok.experimental.Builder.class);
   }
 
   protected void generatePsiElements(@NotNull PsiClass psiParentClass, @Nullable PsiMethod psiParentMethod, @NotNull PsiClass psiBuilderClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {

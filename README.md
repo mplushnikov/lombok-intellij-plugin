@@ -7,19 +7,20 @@ lombok-intellij-plugin [![Build Status](https://travis-ci.org/mplushnikov/lombok
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.9.7) released on 10.01.2016**
+**Last version (0.9.8) released on 31.01.2016**
 
-Fifteenth version of plugin released. Bugfixes and new features support!
+Sixteenth version of plugin released. Bugfixes and new features support!
 
 Install it automatically from IntelliJ Idea plugin repository.
 
-Tested and supports IntelliJ versions: 12.1.7, 13.1.6, 14.1.4 and 15.0.2  
+Tested and supports IntelliJ versions: 12.1.7, 13.1.6, 14.1.4 and 15.0.3  
 
 Support for IntelliJ 11.1.5 by plugin version 0.9.1
 
 Support for IntelliJ 10.5.4 by plugin version 0.8.7
 
 With this plugin your IntelliJ can recognize all of generated getters, setters and some other things from lombok project, so that you get code completion and are able to work without errors stating the methods don't exists.
+
 
 Features / Supports
 --------
@@ -76,7 +77,14 @@ Developed By
 - [**@siosio** siosio](https://github.com/siosio)
 - [**@Siriah** Iris Hupkens](https://github.com/Siriah)
 
+Supporters
+--------
+[<img src="https://www.yourkit.com/images/yklogo.png" />](https://www.yourkit.com/)
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of [YourKit Java Profiler](https://www.yourkit.com/java/profiler/index.jsp) and [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/index.jsp), innovative and intelligent tools for profiling Java and .NET applications.
+
 
 License
 -------
-Copyright (c) 2011-2015 Michail Plushnikov. See the [LICENSE](./LICENSE) file for license rights and limitations (BSD).
+Copyright (c) 2011-2016 Michail Plushnikov. See the [LICENSE](./LICENSE) file for license rights and limitations (BSD).

@@ -11,6 +11,7 @@ import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,6 @@ import lombok.ToString;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,12 +31,20 @@ import java.util.List;
  */
 public class ValueProcessor extends AbstractClassProcessor {
 
-  public ValueProcessor() {
-    this(Value.class);
-  }
+  private final GetterProcessor getterProcessor;
+  private final EqualsAndHashCodeProcessor equalsAndHashCodeProcessor;
+  private final ToStringProcessor toStringProcessor;
+  private final AllArgsConstructorProcessor allArgsConstructorProcessor;
 
-  protected ValueProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass) {
-    super(supportedAnnotationClass, PsiMethod.class);
+  @SuppressWarnings({"deprecation", "unchecked"})
+  public ValueProcessor(GetterProcessor getterProcessor, EqualsAndHashCodeProcessor equalsAndHashCodeProcessor,
+                        ToStringProcessor toStringProcessor, AllArgsConstructorProcessor allArgsConstructorProcessor) {
+    super(PsiMethod.class, Value.class, lombok.experimental.Value.class);
+
+    this.getterProcessor = getterProcessor;
+    this.equalsAndHashCodeProcessor = equalsAndHashCodeProcessor;
+    this.toStringProcessor = toStringProcessor;
+    this.allArgsConstructorProcessor = allArgsConstructorProcessor;
   }
 
   @Override
@@ -47,7 +55,7 @@ public class ValueProcessor extends AbstractClassProcessor {
   }
 
   protected void validateCallSuperParam(PsiAnnotation psiAnnotation, PsiClass psiClass, ProblemBuilder builder, String generatedMethodName) {
-    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, EqualsAndHashCode.class)) {
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, EqualsAndHashCode.class)) {
       if (PsiClassUtil.hasSuperClass(psiClass)) {
         builder.addWarning("Generating " + generatedMethodName + " implementation but without a call to superclass, " +
                 "even though this class does not extend java.lang.Object." +
@@ -57,7 +65,7 @@ public class ValueProcessor extends AbstractClassProcessor {
     }
   }
 
-  protected boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (psiClass.isAnnotationType() || psiClass.isInterface() || psiClass.isEnum()) {
       builder.addError("'@Value' is only supported on a class type");
@@ -75,24 +83,22 @@ public class ValueProcessor extends AbstractClassProcessor {
     }
     */
 
-    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, Getter.class)) {
-      target.addAll(new GetterProcessor().createFieldGetters(psiClass, PsiModifier.PUBLIC));
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, Getter.class)) {
+      target.addAll(getterProcessor.createFieldGetters(psiClass, PsiModifier.PUBLIC));
     }
-    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, EqualsAndHashCode.class)) {
-      target.addAll(new EqualsAndHashCodeProcessor().createEqualAndHashCode(psiClass, psiAnnotation));
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, EqualsAndHashCode.class)) {
+      target.addAll(equalsAndHashCodeProcessor.createEqualAndHashCode(psiClass, psiAnnotation));
     }
-    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, ToString.class)) {
-      target.addAll(new ToStringProcessor().createToStringMethod(psiClass, psiAnnotation));
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, ToString.class)) {
+      target.addAll(toStringProcessor.createToStringMethod(psiClass, psiAnnotation));
     }
     // create required constructor only if there are no other constructor annotations
-    if (PsiAnnotationUtil.isNotAnnotatedWith(psiClass, NoArgsConstructor.class, RequiredArgsConstructor.class, AllArgsConstructor.class,
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, NoArgsConstructor.class, RequiredArgsConstructor.class, AllArgsConstructor.class,
         lombok.experimental.Builder.class, lombok.Builder.class)) {
       final Collection<PsiMethod> definedConstructors = PsiClassUtil.collectClassConstructorIntern(psiClass);
       filterToleratedElements(definedConstructors);
       // and only if there are no any other constructors!
       if (definedConstructors.isEmpty()) {
-        final AllArgsConstructorProcessor allArgsConstructorProcessor = new AllArgsConstructorProcessor();
-
         final String staticName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticConstructor");
         final Collection<PsiField> requiredFields = allArgsConstructorProcessor.getAllFields(psiClass);
 

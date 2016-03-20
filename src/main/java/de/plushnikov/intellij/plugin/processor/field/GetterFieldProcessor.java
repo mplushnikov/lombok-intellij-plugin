@@ -15,13 +15,13 @@ import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,11 +34,7 @@ import java.util.List;
 public class GetterFieldProcessor extends AbstractFieldProcessor {
 
   public GetterFieldProcessor() {
-    super(Getter.class, PsiMethod.class);
-  }
-
-  protected GetterFieldProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
-    super(supportedAnnotationClass, supportedClass);
+    super(PsiMethod.class, Getter.class);
   }
 
   protected void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
@@ -85,11 +81,11 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
     return result;
   }
 
-  protected boolean isLazyGetter(@NotNull PsiAnnotation psiAnnotation) {
+  private boolean isLazyGetter(@NotNull PsiAnnotation psiAnnotation) {
     return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, "lazy", false);
   }
 
-  protected boolean validateExistingMethods(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
+  private boolean validateExistingMethods(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
     final PsiClass psiClass = psiField.getContainingClass();
     if (null != psiClass) {
@@ -111,7 +107,7 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
     return result;
   }
 
-  protected boolean validateAccessorPrefix(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
+  private boolean validateAccessorPrefix(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (!AccessorsInfo.build(psiField).prefixDefinedAndStartsWith(psiField.getName())) {
       builder.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
@@ -141,7 +137,7 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
     PsiModifierList modifierList = method.getModifierList();
     copyAnnotations(psiField, modifierList,
         LombokUtils.NON_NULL_PATTERN, LombokUtils.NULLABLE_PATTERN, LombokUtils.DEPRECATED_PATTERN);
-    addOnXAnnotations(PsiAnnotationUtil.findAnnotation(psiField, Getter.class), modifierList, "onMethod");
+    addOnXAnnotations(PsiAnnotationSearchUtil.findAnnotation(psiField, Getter.class), modifierList, "onMethod");
     return method;
   }
 

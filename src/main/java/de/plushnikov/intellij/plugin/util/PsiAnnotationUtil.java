@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.util;
 
-import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
@@ -12,7 +11,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiEnumConstant;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiModifierListOwner;
@@ -20,7 +18,6 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.PsiVariable;
-import com.intellij.psi.impl.PsiImplUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,60 +47,6 @@ public class PsiAnnotationUtil {
     final PsiClass psiClass = PsiTreeUtil.getParentOfType(psiModifierListOwner, PsiClass.class);
     final String valueString = StringUtil.isNotEmpty(value) ? "(" + value + ")" : "";
     return elementFactory.createAnnotationFromText("@" + annotationClass.getName() + valueString, psiClass);
-  }
-
-  @Nullable
-  public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
-    return findAnnotation(psiModifierListOwner, annotationType.getName());
-  }
-
-  @Nullable
-  public static PsiAnnotation findAnnotation(@NotNull final PsiModifierListOwner psiModifierListOwner, @NotNull final String qualifiedName) {
-    return PsiImplUtil.findAnnotation(psiModifierListOwner.getModifierList(), qualifiedName);
-  }
-
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
-    return isAnnotatedWith(psiModifierListOwner, annotationType.getName());
-  }
-
-  public static boolean isNotAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
-    return !isAnnotatedWith(psiModifierListOwner, annotationType);
-  }
-
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation>... annotationTypes) {
-    for (Class<? extends Annotation> annotationType : annotationTypes) {
-      if (isAnnotatedWith(psiModifierListOwner, annotationType)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static boolean isNotAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation>... annotationTypes) {
-    return !isAnnotatedWith(psiModifierListOwner, annotationTypes);
-  }
-
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String qualifiedName) {
-    return AnnotationUtil.isAnnotated(psiModifierListOwner, qualifiedName, false, true);
-  }
-
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Pattern annotationPattern) {
-    final PsiModifierList psiModifierList = psiModifierListOwner.getModifierList();
-    if (psiModifierList != null) {
-      for (PsiAnnotation psiAnnotation : psiModifierList.getAnnotations()) {
-        final String suspect = getSimpleNameOf(psiAnnotation);
-        if (annotationPattern.matcher(suspect).matches()) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  @NotNull
-  public static String getSimpleNameOf(@NotNull PsiAnnotation psiAnnotation) {
-    PsiJavaCodeReferenceElement referenceElement = psiAnnotation.getNameReferenceElement();
-    return StringUtil.notNullize(null == referenceElement ? null : referenceElement.getReferenceName());
   }
 
   @NotNull
@@ -192,7 +135,7 @@ public class PsiAnnotationUtil {
     PsiModifierList modifierList = psiField.getModifierList();
     if (null != modifierList) {
       for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
-        final String annotationName = getSimpleNameOf(psiAnnotation);
+        final String annotationName = PsiAnnotationSearchUtil.getSimpleNameOf(psiAnnotation);
         for (Pattern pattern : patterns) {
           if (pattern.matcher(annotationName).matches()) {
             annotationsToCopy.add(psiAnnotation.getQualifiedName());
@@ -203,16 +146,4 @@ public class PsiAnnotationUtil {
     return annotationsToCopy;
   }
 
-  public static boolean checkAnnotationsSimpleNameExistsIn(@NotNull PsiModifierListOwner modifierListOwner, @NotNull Collection<String> annotationNames) {
-    final PsiModifierList modifierList = modifierListOwner.getModifierList();
-    if (null != modifierList) {
-      for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
-        final String simpleName = getSimpleNameOf(psiAnnotation);
-        if (annotationNames.contains(simpleName)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
 }

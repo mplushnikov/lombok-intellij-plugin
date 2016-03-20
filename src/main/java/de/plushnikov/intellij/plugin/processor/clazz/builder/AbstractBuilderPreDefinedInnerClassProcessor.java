@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.clazz.builder;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -10,7 +11,8 @@ import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
-import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,10 +25,18 @@ import java.util.List;
 
 public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends AbstractClassProcessor {
 
-  protected final BuilderHandler builderHandler = new BuilderHandler();
+  protected final BuilderHandler builderHandler;
 
-  public AbstractBuilderPreDefinedInnerClassProcessor(Class<? extends Annotation> supportedAnnotationClass, Class<? extends PsiElement> supportedClass) {
-    super(supportedAnnotationClass, supportedClass);
+  AbstractBuilderPreDefinedInnerClassProcessor(@NotNull BuilderHandler builderHandler, @NotNull Class<? extends PsiElement> supportedClass,
+                                               @NotNull Class<? extends Annotation> supportedAnnotationClass,
+                                               @NotNull Class<? extends Annotation>... equivalentAnnotationClasses) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
+    this.builderHandler = builderHandler;
+  }
+
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_BUILDER_ENABLED);
   }
 
   @NotNull
@@ -39,11 +49,11 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
       result = new ArrayList<PsiElement>();
 
       final PsiClass psiParentClass = (PsiClass) parentElement;
-      PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiParentClass, getSupportedAnnotation());
+      PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiParentClass, getSupportedAnnotationClasses());
       if (null == psiAnnotation) {
         final Collection<PsiMethod> psiMethods = PsiClassUtil.collectClassMethodsIntern(psiParentClass);
         for (PsiMethod psiMethod : psiMethods) {
-          psiAnnotation = PsiAnnotationUtil.findAnnotation(psiMethod, getSupportedAnnotation());
+          psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
           if (null != psiAnnotation) {
             processMethodAnnotation(result, psiMethod, psiAnnotation, psiClass, psiParentClass);
           }
@@ -56,7 +66,7 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
     return result;
   }
 
-  protected void processMethodAnnotation(List<? super PsiElement> result, PsiMethod psiParentMethod, PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, PsiClass psiParentClass) {
+  private void processMethodAnnotation(List<? super PsiElement> result, PsiMethod psiParentMethod, PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, PsiClass psiParentClass) {
     final PsiType psiBuilderType = builderHandler.getBuilderType(psiParentClass, psiParentMethod);
     final String builderClassName;
 

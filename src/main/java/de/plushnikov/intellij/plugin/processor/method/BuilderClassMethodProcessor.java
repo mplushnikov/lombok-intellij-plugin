@@ -1,15 +1,16 @@
 package de.plushnikov.intellij.plugin.processor.method;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import lombok.Builder;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Annotation;
 import java.util.List;
 
 /**
@@ -21,14 +22,17 @@ import java.util.List;
  */
 public class BuilderClassMethodProcessor extends AbstractMethodProcessor {
 
-  private final BuilderHandler builderHandler = new BuilderHandler();
+  private final BuilderHandler builderHandler;
 
-  public BuilderClassMethodProcessor() {
-    this(Builder.class);
+  @SuppressWarnings({"deprecation", "unchecked"})
+  public BuilderClassMethodProcessor(@NotNull BuilderHandler builderHandler) {
+    super(PsiClass.class, Builder.class, lombok.experimental.Builder.class);
+    this.builderHandler = builderHandler;
   }
 
-  protected BuilderClassMethodProcessor(@NotNull Class<? extends Annotation> builderClass) {
-    super(builderClass, PsiClass.class);
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_BUILDER_ENABLED);
   }
 
   @Override

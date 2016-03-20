@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.processor.clazz;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
@@ -38,7 +39,7 @@ public class ToStringProcessor extends AbstractClassProcessor {
   public static final String METHOD_NAME = "toString";
 
   public ToStringProcessor() {
-    super(ToString.class, PsiMethod.class);
+    super(PsiMethod.class, ToString.class);
   }
 
   @Override
@@ -62,7 +63,7 @@ public class ToStringProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  protected boolean validateAnnotationOnRigthType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateAnnotationOnRigthType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {
       builder.addError("@ToString is only supported on a class or enum type");
@@ -71,7 +72,7 @@ public class ToStringProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  protected boolean validateExistingMethods(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateExistingMethods(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
 
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
@@ -88,7 +89,7 @@ public class ToStringProcessor extends AbstractClassProcessor {
   }
 
   @NotNull
-  public Collection<PsiMethod> createToStringMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+  Collection<PsiMethod> createToStringMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
     if (PsiMethodUtil.hasMethodByName(classMethods, METHOD_NAME)) {
       return Collections.emptyList();
@@ -102,17 +103,25 @@ public class ToStringProcessor extends AbstractClassProcessor {
   @NotNull
   public PsiMethod createToStringMethod(@NotNull PsiClass psiClass, @NotNull Collection<PsiField> psiFields, @NotNull PsiAnnotation psiAnnotation) {
     final PsiManager psiManager = psiClass.getManager();
-    LombokLightMethodBuilder method = new LombokLightMethodBuilder(psiManager, METHOD_NAME)
+
+    return new LombokLightMethodBuilder(psiManager, METHOD_NAME)
         .withMethodReturnType(PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
         .withContainingClass(psiClass)
         .withNavigationElement(psiAnnotation)
-        .withModifier(PsiModifier.PUBLIC);
+        .withModifier(PsiModifier.PUBLIC)
+        .withBody(createCodeBlock(psiClass, psiFields, psiAnnotation));
+  }
 
-    final String paramString = createParamString(psiClass, psiFields, psiAnnotation);
-    final String blockText = String.format("return \"%s(%s)\";", psiClass.getQualifiedName(), paramString);
-    method.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
-
-    return method;
+  @NotNull
+  private PsiCodeBlock createCodeBlock(@NotNull PsiClass psiClass, @NotNull Collection<PsiField> psiFields, @NotNull PsiAnnotation psiAnnotation) {
+    final String blockText;
+    if (isShouldGenerateFullBodyBlock()) {
+      final String paramString = createParamString(psiClass, psiFields, psiAnnotation);
+      blockText = String.format("return \"%s(%s)\";", psiClass.getQualifiedName(), paramString);
+    } else {
+      blockText = "return \"\";";
+    }
+    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
   }
 
   private String createParamString(@NotNull PsiClass psiClass, @NotNull Collection<PsiField> psiFields, @NotNull PsiAnnotation psiAnnotation) {

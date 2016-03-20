@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.processor.field;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
@@ -18,7 +19,7 @@ import de.plushnikov.intellij.plugin.psi.LombokLightParameter;
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
-import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.AllArgsConstructor;
@@ -35,10 +36,11 @@ import java.util.List;
 
 public class WitherFieldProcessor extends AbstractFieldProcessor {
 
-  private final RequiredArgsConstructorProcessor requiredArgsConstructorProcessor = new RequiredArgsConstructorProcessor();
+  private final RequiredArgsConstructorProcessor requiredArgsConstructorProcessor;
 
-  public WitherFieldProcessor() {
-    super(Wither.class, PsiMethod.class);
+  public WitherFieldProcessor(RequiredArgsConstructorProcessor requiredArgsConstructorProcessor) {
+    super(PsiMethod.class, Wither.class);
+    this.requiredArgsConstructorProcessor = requiredArgsConstructorProcessor;
   }
 
   @Override
@@ -55,7 +57,7 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
     return valid;
   }
 
-  protected boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
+  private boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
     final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation);
     return null != methodVisibility;
   }
@@ -118,13 +120,13 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
 
   @SuppressWarnings("deprecation")
   public boolean validConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    if (PsiAnnotationUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, lombok.experimental.Value.class)) {
+    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, lombok.experimental.Value.class)) {
       return true;
     }
 
     final Collection<PsiField> constructorParameters = filterFields(psiClass);
 
-    if (PsiAnnotationUtil.isAnnotatedWith(psiClass, RequiredArgsConstructor.class, Data.class)) {
+    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, RequiredArgsConstructor.class, Data.class)) {
       final Collection<PsiField> requiredConstructorParameters = requiredArgsConstructorProcessor.getRequiredFields(psiClass);
       if (constructorParameters.size() == requiredConstructorParameters.size()) {
         return true;
@@ -183,7 +185,7 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
           .withNavigationElement(psiField)
           .withModifier(methodModifier);
 
-      PsiAnnotation witherAnnotation = PsiAnnotationUtil.findAnnotation(psiField, Wither.class);
+      PsiAnnotation witherAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, Wither.class);
       addOnXAnnotations(witherAnnotation, result.getModifierList(), "onMethod");
 
       final LombokLightParameter methodParameter = new LombokLightParameter(psiFieldName, psiFieldType, result, JavaLanguage.INSTANCE);
@@ -193,11 +195,21 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
       addOnXAnnotations(witherAnnotation, methodParameterModifierList, "onParam");
       result.withParameter(methodParameter);
 
-      final String paramString = getConstructorCall(psiField, psiFieldContainingClass);
-      final String blockText = String.format("return this.%s == %s ? this : new %s(%s);", psiFieldName, psiFieldName, returnType.getCanonicalText(), paramString);
-      result.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiFieldContainingClass));
+      result.withBody(createCodeBlock(psiField, psiFieldContainingClass, returnType, psiFieldName));
     }
     return result;
+  }
+
+  @NotNull
+  private PsiCodeBlock createCodeBlock(@NotNull PsiField psiField, PsiClass psiFieldContainingClass, PsiType returnType, String psiFieldName) {
+    final String blockText;
+    if (isShouldGenerateFullBodyBlock()) {
+      final String paramString = getConstructorCall(psiField, psiFieldContainingClass);
+      blockText = String.format("return this.%s == %s ? this : new %s(%s);", psiFieldName, psiFieldName, returnType.getCanonicalText(), paramString);
+    } else {
+      blockText = "return null;";
+    }
+    return PsiMethodUtil.createCodeBlockFromText(blockText, psiFieldContainingClass);
   }
 
   private String getWitherName(@NotNull AccessorsInfo accessorsInfo, String psiFieldName, PsiType psiFieldType) {

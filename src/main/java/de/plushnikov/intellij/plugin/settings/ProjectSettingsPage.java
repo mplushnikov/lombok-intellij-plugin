@@ -1,24 +1,40 @@
 package de.plushnikov.intellij.plugin.settings;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
-import com.intellij.openapi.project.Project;
+import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ProjectSettingsPage implements SearchableConfigurable, Configurable.NoScroll {
 
-  private JPanel myPanel;
+  private JPanel myGeneralPanel;
+  private JPanel myLombokPanel;
+  private JPanel myThirdPartyPanel;
+
   private JCheckBox myEnableLombokInProject;
 
-  private Project myProject;
+  private JCheckBox myEnableValSupport;
+  private JCheckBox myEnableBuilderSupport;
+  private JCheckBox myEnableLogSupport;
+  private JCheckBox myEnableConstructorSupport;
+  private JCheckBox myEnableDelegateSupport;
+  private JCheckBox myEnableParcelableSupport;
 
-  public ProjectSettingsPage(Project project) {
-    myProject = project;
+  private PropertiesComponent myPropertiesComponent;
+  private LombokProcessorProvider myLombokProcessorProvider;
+
+  public ProjectSettingsPage(PropertiesComponent propertiesComponent,
+                             LombokProcessorProvider lombokProcessorProvider) {
+    myPropertiesComponent = propertiesComponent;
+    myLombokProcessorProvider = lombokProcessorProvider;
   }
 
   @Nls
@@ -39,28 +55,76 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
 
   @Override
   public JComponent createComponent() {
-    myEnableLombokInProject.setSelected(ProjectSettings.isEnabledInProject(myProject));
-    return myPanel;
+    initFromSettings();
+
+    // Add Listener to deactivate all checkboxes if plugin is deactivated
+    myEnableLombokInProject.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent actionEvent) {
+        JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+        boolean selected = checkBox.getModel().isSelected();
+
+        myLombokPanel.setEnabled(selected);
+        myThirdPartyPanel.setEnabled(selected);
+
+        myEnableValSupport.setEnabled(selected);
+        myEnableBuilderSupport.setEnabled(selected);
+        myEnableLogSupport.setEnabled(selected);
+        myEnableConstructorSupport.setEnabled(selected);
+        myEnableDelegateSupport.setEnabled(selected);
+        myEnableParcelableSupport.setEnabled(selected);
+      }
+    });
+    myEnableConstructorSupport.setVisible(false);
+    return myGeneralPanel;
+  }
+
+  private void initFromSettings() {
+
+    myEnableLombokInProject.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.LOMBOK_ENABLED_IN_PROJECT));
+    myEnableValSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_VAL_ENABLED));
+    myEnableBuilderSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_BUILDER_ENABLED));
+    myEnableDelegateSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_DELEGATE_ENABLED));
+
+    myEnableLogSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_LOG_ENABLED));
+    myEnableConstructorSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_CONSTRUCTOR_ENABLED));
+
+    myEnableParcelableSupport.setSelected(ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_THIRD_PARTY_ENABLED));
   }
 
   @Override
   public boolean isModified() {
-    return myEnableLombokInProject.isSelected() != ProjectSettings.isEnabledInProject(myProject);
+    return myEnableLombokInProject.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.LOMBOK_ENABLED_IN_PROJECT) ||
+        myEnableValSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_VAL_ENABLED) ||
+        myEnableBuilderSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_BUILDER_ENABLED) ||
+        myEnableDelegateSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_DELEGATE_ENABLED) ||
+        myEnableLogSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_LOG_ENABLED) ||
+        myEnableConstructorSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_CONSTRUCTOR_ENABLED) ||
+        myEnableParcelableSupport.isSelected() != ProjectSettings.isEnabled(myPropertiesComponent, ProjectSettings.IS_THIRD_PARTY_ENABLED);
   }
 
   @Override
   public void apply() throws ConfigurationException {
-    ProjectSettings.setEnabledInProject(myProject, myEnableLombokInProject.isSelected());
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.LOMBOK_ENABLED_IN_PROJECT, myEnableLombokInProject.isSelected());
+
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_VAL_ENABLED, myEnableValSupport.isSelected());
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_BUILDER_ENABLED, myEnableBuilderSupport.isSelected());
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_DELEGATE_ENABLED, myEnableDelegateSupport.isSelected());
+
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_LOG_ENABLED, myEnableLogSupport.isSelected());
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_CONSTRUCTOR_ENABLED, myEnableConstructorSupport.isSelected());
+
+    ProjectSettings.setEnabled(myPropertiesComponent, ProjectSettings.IS_THIRD_PARTY_ENABLED, myEnableParcelableSupport.isSelected());
+
+    myLombokProcessorProvider.initProcessors();
   }
 
   @Override
   public void reset() {
-    myEnableLombokInProject.setSelected(ProjectSettings.isEnabledInProject(myProject));
+    initFromSettings();
   }
 
   @Override
   public void disposeUIResources() {
-
   }
 
   @NotNull

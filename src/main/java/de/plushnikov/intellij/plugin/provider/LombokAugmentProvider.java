@@ -11,6 +11,7 @@ import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
@@ -47,9 +48,13 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     if (!(element instanceof PsiExtensibleClass) || !element.isValid()) {
       return emptyResult;
     }
+    // Skip processing of Annotations and Interfaces
+    if (((PsiClass) element).isAnnotationType() || ((PsiClass) element).isInterface()) {
+      return emptyResult;
+    }
 
     // skip processing if plugin is disabled
-    if (!ProjectSettings.loadAndGetEnabledInProject(project)) {
+    if (!ProjectSettings.isLombokEnabledInProject(project)) {
       return emptyResult;
     }
 
@@ -67,19 +72,19 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class FieldLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    public FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
+    FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass);
     }
   }
 
   private static class MethodLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    public MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
+    MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass);
     }
   }
 
   private static class ClassLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    public ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
+    ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass);
     }
   }
@@ -88,7 +93,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     private final Class<Psi> type;
     private final PsiClass psiClass;
 
-    public LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
+    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       this.type = type;
       this.psiClass = psiClass;
     }
@@ -101,11 +106,11 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       }
 
       final List<Psi> result = new ArrayList<Psi>();
-      final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance().getLombokProcessors(type);
+      final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
       for (Processor processor : lombokProcessors) {
         result.addAll((Collection<Psi>) processor.process(psiClass));
       }
-      return new Result<List<Psi>>(result, psiClass);
+      return new Result<List<Psi>>(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
     }
   }
 }

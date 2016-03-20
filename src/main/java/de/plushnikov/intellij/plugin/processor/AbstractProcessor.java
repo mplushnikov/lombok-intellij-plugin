@@ -1,20 +1,20 @@
 package de.plushnikov.intellij.plugin.processor;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.PsiType;
+import com.intellij.util.ArrayUtil;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKeys;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import lombok.experimental.Tolerate;
 import org.jetbrains.annotations.NotNull;
@@ -33,13 +33,9 @@ import java.util.List;
  */
 public abstract class AbstractProcessor implements Processor {
   /**
-   * Anntotation qualified name this processor supports
+   * Anntotation classes this processor supports
    */
-  private final String supportedAnnotation;
-  /**
-   * Anntotation class this processor supports
-   */
-  private final Class<? extends Annotation> supportedAnnotationClass;
+  private final Class<? extends Annotation>[] supportedAnnotationClasses;
   /**
    * Kind of output elements this processor supports
    */
@@ -48,25 +44,20 @@ public abstract class AbstractProcessor implements Processor {
   /**
    * Constructor for all Lombok-Processors
    *
-   * @param supportedAnnotationClass annotation this processor supports
-   * @param supportedClass           kind of output elements this processor supports
+   * @param supportedClass              kind of output elements this processor supports
+   * @param supportedAnnotationClass    annotation this processor supports
+   * @param equivalentAnnotationClasses any other aquivalent annotations
    */
-  protected AbstractProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
-    this.supportedAnnotationClass = supportedAnnotationClass;
-    this.supportedAnnotation = supportedAnnotationClass.getName();
+  protected AbstractProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                              @NotNull Class<? extends Annotation> supportedAnnotationClass,
+                              @NotNull Class<? extends Annotation>... equivalentAnnotationClasses) {
     this.supportedClass = supportedClass;
+    this.supportedAnnotationClasses = ArrayUtil.prepend(supportedAnnotationClass, equivalentAnnotationClasses);
   }
 
   @NotNull
-  @Override
-  public final String getSupportedAnnotation() {
-    return supportedAnnotation;
-  }
-
-  @NotNull
-  @Override
-  public final Class<? extends Annotation> getSupportedAnnotationClass() {
-    return supportedAnnotationClass;
+  public final Class<? extends Annotation>[] getSupportedAnnotationClasses() {
+    return supportedAnnotationClasses;
   }
 
   @NotNull
@@ -75,19 +66,14 @@ public abstract class AbstractProcessor implements Processor {
     return supportedClass;
   }
 
-  public boolean acceptAnnotation(@NotNull PsiAnnotation psiAnnotation, @NotNull Class<? extends PsiElement> type) {
-    final String annotationName = StringUtil.notNullize(psiAnnotation.getQualifiedName()).trim();
-    return supportedAnnotation.equals(annotationName) && canProduce(type);
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return true;
   }
 
   @Override
-  public boolean isEnabled(@NotNull Project project) {
-    return true;//TODO make it configurable
-  }
-
-  @Override
-  public boolean canProduce(@NotNull Class<? extends PsiElement> type) {
-    return type.isAssignableFrom(supportedClass);
+  public boolean isShouldGenerateFullBodyBlock() {
+    return ShouldGenerateFullCodeBlock.getInstance().isStateActive();
   }
 
   @NotNull
@@ -111,7 +97,7 @@ public abstract class AbstractProcessor implements Processor {
     final Iterator<? extends PsiModifierListOwner> methodIterator = definedMethods.iterator();
     while (methodIterator.hasNext()) {
       PsiModifierListOwner definedMethod = methodIterator.next();
-      if (PsiAnnotationUtil.isAnnotatedWith(definedMethod, Tolerate.class)) {
+      if (PsiAnnotationSearchUtil.isAnnotatedWith(definedMethod, Tolerate.class)) {
         methodIterator.remove();
       }
     }
@@ -146,7 +132,4 @@ public abstract class AbstractProcessor implements Processor {
     return LombokPsiElementUsage.NONE;
   }
 
-  public LombokPsiElementUsage checkMethodUsage(@NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
-    return LombokPsiElementUsage.NONE;
-  }
 }

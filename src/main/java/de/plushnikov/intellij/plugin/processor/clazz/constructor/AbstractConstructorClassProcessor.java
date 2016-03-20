@@ -1,9 +1,11 @@
 package de.plushnikov.intellij.plugin.processor.clazz.constructor;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnonymousClass;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
@@ -20,8 +22,10 @@ import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiElementUtil;
@@ -45,8 +49,13 @@ import java.util.List;
  */
 public abstract class AbstractConstructorClassProcessor extends AbstractClassProcessor {
 
-  protected AbstractConstructorClassProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
-    super(supportedAnnotationClass, supportedClass);
+  AbstractConstructorClassProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
+    super(supportedClass, supportedAnnotationClass);
+  }
+
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_CONSTRUCTOR_ENABLED);
   }
 
   @Override
@@ -65,12 +74,12 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return result;
   }
 
-  protected boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
+  private boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
     final String visibility = LombokProcessorUtil.getAccessVisibility(psiAnnotation);
     return null != visibility;
   }
 
-  protected boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {
       builder.addError("Annotation is only supported on a class or enum type");
@@ -79,7 +88,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return result;
   }
 
-  protected boolean validateBaseClassConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateBaseClassConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     if (psiClass instanceof PsiAnonymousClass || psiClass.isEnum()) {
       return true;
     }
@@ -156,7 +165,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
   @SuppressWarnings("deprecation")
   protected Collection<PsiField> getAllNotInitializedAndNotStaticFields(@NotNull PsiClass psiClass) {
     Collection<PsiField> allNotInitializedNotStaticFields = new ArrayList<PsiField>();
-    final boolean classAnnotatedWithValue = PsiAnnotationUtil.isAnnotatedWith(psiClass, Value.class, lombok.experimental.Value.class);
+    final boolean classAnnotatedWithValue = PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Value.class, lombok.experimental.Value.class);
     for (PsiField psiField : psiClass.getFields()) {
       // skip fields named $
       boolean addField = !psiField.getName().startsWith(LombokUtils.LOMBOK_INTERN_FIELD_MARKER);
@@ -182,13 +191,13 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
   @SuppressWarnings("deprecation")
   public Collection<PsiField> getRequiredFields(@NotNull PsiClass psiClass) {
     Collection<PsiField> result = new ArrayList<PsiField>();
-    final boolean classAnnotatedWithValue = PsiAnnotationUtil.isAnnotatedWith(psiClass, Value.class, lombok.experimental.Value.class);
+    final boolean classAnnotatedWithValue = PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Value.class, lombok.experimental.Value.class);
 
     for (PsiField psiField : getAllNotInitializedAndNotStaticFields(psiClass)) {
       final PsiModifierList modifierList = psiField.getModifierList();
       if (null != modifierList) {
         final boolean isFinal = isFieldFinal(psiField, modifierList, classAnnotatedWithValue);
-        final boolean isNonNull = PsiAnnotationUtil.isAnnotatedWith(psiField, LombokUtils.NON_NULL_PATTERN);
+        final boolean isNonNull = PsiAnnotationSearchUtil.isAnnotatedWith(psiField, LombokUtils.NON_NULL_PATTERN);
         // accept initialized final or nonnull fields
         if ((isFinal || isNonNull) && null == psiField.getInitializer()) {
           result.add(psiField);
@@ -198,10 +207,10 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return result;
   }
 
-  protected boolean isFieldFinal(@NotNull PsiField psiField, @NotNull PsiModifierList modifierList, boolean classAnnotatedWithValue) {
+  private boolean isFieldFinal(@NotNull PsiField psiField, @NotNull PsiModifierList modifierList, boolean classAnnotatedWithValue) {
     boolean isFinal = modifierList.hasModifierProperty(PsiModifier.FINAL);
     if (!isFinal && classAnnotatedWithValue) {
-      isFinal = PsiAnnotationUtil.isNotAnnotatedWith(psiField, NonFinal.class);
+      isFinal = PsiAnnotationSearchUtil.isNotAnnotatedWith(psiField, NonFinal.class);
     }
     return isFinal;
   }
@@ -217,7 +226,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticName");
   }
 
-  protected boolean isStaticConstructor(@Nullable String staticName) {
+  private boolean isStaticConstructor(@Nullable String staticName) {
     return !StringUtil.isEmptyOrSpaces(staticName);
   }
 
@@ -283,18 +292,39 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
         .withNavigationElement(psiAnnotation)
         .withModifier(PsiModifier.PUBLIC, PsiModifier.STATIC);
 
+    //Static method need type parameter
+    for (PsiTypeParameter typeParameter : psiClass.getTypeParameters()) {
+      method.withTypeParameter(typeParameter);
+    }
+
+//    final PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
+//    final PsiTypeParameter typeParameter = psiClass.getTypeParameters()[0];
+//    final PsiClassType methodParameterType = factory.createType(typeParameter, PsiSubstitutor.EMPTY);
+//    method.addParameter(new LightParameter("myParam1", methodParameterType, psiClass, psiClass.getLanguage()));
+
     if (!useJavaDefaults) {
       for (PsiField param : params) {
-        method.withParameter(param.getName(), param.getType());
+        final PsiType methodParameterType = param.getType();
+        method.withParameter(param.getName(), methodParameterType);
       }
     }
 
-    final String psiClassName = buildClassNameWithGenericTypeParameters(psiClass);
-    final String paramsText = useJavaDefaults ? "" : joinParameters(method.getParameterList());
-    final String blockText = String.format("return new %s(%s);", psiClassName, paramsText);
-    method.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
+    method.withBody(createStaticCodeBlock(psiClass, useJavaDefaults, method.getParameterList()));
 
     return method;
+  }
+
+  @NotNull
+  private PsiCodeBlock createStaticCodeBlock(@NotNull PsiClass psiClass, boolean useJavaDefaults, @NotNull final PsiParameterList parameterList) {
+    final String blockText;
+    if (isShouldGenerateFullBodyBlock()) {
+      final String psiClassName = buildClassNameWithGenericTypeParameters(psiClass);
+      final String paramsText = useJavaDefaults ? "" : joinParameters(parameterList);
+      blockText = String.format("return new %s(%s);", psiClassName, paramsText);
+    } else {
+      blockText = "return null;";
+    }
+    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
   }
 
   private String buildClassNameWithGenericTypeParameters(@NotNull final PsiClass psiClass) {

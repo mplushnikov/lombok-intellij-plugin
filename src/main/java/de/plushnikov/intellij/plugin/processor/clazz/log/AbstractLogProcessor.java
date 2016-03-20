@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.clazz.log;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaPsiFacade;
@@ -17,6 +18,7 @@ import de.plushnikov.intellij.plugin.lombokconfig.ConfigKeys;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
@@ -36,11 +38,16 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
   private final String loggerInitializer;
   private final String loggerCategory;
 
-  protected AbstractLogProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull String loggerType, @NotNull String loggerInitializer, @NotNull String loggerCategory) {
-    super(supportedAnnotationClass, PsiField.class);
+  AbstractLogProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull String loggerType, @NotNull String loggerInitializer, @NotNull String loggerCategory) {
+    super(PsiField.class, supportedAnnotationClass);
     this.loggerType = loggerType;
     this.loggerInitializer = loggerInitializer;
     this.loggerCategory = loggerCategory;
+  }
+
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_LOG_ENABLED);
   }
 
   @NotNull
@@ -111,11 +118,11 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     return loggerInitializerParameter;
   }
 
-  protected boolean hasFieldByName(@NotNull PsiClass psiClass, String... fieldNames) {
+  private boolean hasFieldByName(@NotNull PsiClass psiClass, String... fieldNames) {
     final Collection<PsiField> psiFields = PsiClassUtil.collectClassFieldsIntern(psiClass);
     for (PsiField psiField : psiFields) {
       for (String fieldName : fieldNames) {
-        if (psiField.getName().equals(fieldName)) {
+        if (fieldName.equals(psiField.getName())) {
           return true;
         }
       }

@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.processor.field;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
@@ -16,13 +17,13 @@ import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,11 +36,7 @@ import java.util.List;
 public class SetterFieldProcessor extends AbstractFieldProcessor {
 
   public SetterFieldProcessor() {
-    this(Setter.class, PsiMethod.class);
-  }
-
-  protected SetterFieldProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
-    super(supportedAnnotationClass, supportedClass);
+    super(PsiMethod.class, Setter.class);
   }
 
   @Override
@@ -67,7 +64,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     return result;
   }
 
-  protected boolean validateFinalModifier(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
+  private boolean validateFinalModifier(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (psiField.hasModifierProperty(PsiModifier.FINAL)) {
       builder.addError(String.format("'@%s' on final field is not allowed", psiAnnotation.getQualifiedName()),
@@ -77,12 +74,12 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     return result;
   }
 
-  protected boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
+  private boolean validateVisibility(@NotNull PsiAnnotation psiAnnotation) {
     final String methodVisibility = LombokProcessorUtil.getMethodModifier(psiAnnotation);
     return null != methodVisibility;
   }
 
-  protected boolean validateExistingMethods(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
+  private boolean validateExistingMethods(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
     final PsiClass psiClass = psiField.getContainingClass();
     if (null != psiClass) {
@@ -104,7 +101,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     return result;
   }
 
-  protected boolean validateAccessorPrefix(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
+  private boolean validateAccessorPrefix(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
     if (!AccessorsInfo.build(psiField).prefixDefinedAndStartsWith(psiField.getName())) {
       builder.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
@@ -118,7 +115,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     return LombokUtils.toAllSetterNames(accessorsInfo, psiField.getName(), isBoolean);
   }
 
-  protected String getSetterName(@NotNull PsiField psiField, boolean isBoolean) {
+  private String getSetterName(@NotNull PsiField psiField, boolean isBoolean) {
     final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
 
     return LombokUtils.toSetterName(accessorsInfo, psiField.getName(), isBoolean);
@@ -128,7 +125,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
   public PsiMethod createSetterMethod(@NotNull PsiField psiField, @NotNull PsiClass psiClass, @NotNull String methodModifier) {
     final String fieldName = psiField.getName();
     final PsiType psiFieldType = psiField.getType();
-    final PsiAnnotation setterAnnotation = PsiAnnotationUtil.findAnnotation(psiField, Setter.class);
+    final PsiAnnotation setterAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, Setter.class);
 
     final String methodName = getSetterName(psiField, PsiType.BOOLEAN.equals(psiFieldType));
 
@@ -157,14 +154,7 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
       addOnXAnnotations(setterAnnotation, methodParameterModifierList, "onParam");
     }
 
-
-    final String thisOrClass = isStatic ? psiClass.getName() : "this";
-    String blockText = String.format("%s.%s = %s;", thisOrClass, psiField.getName(), methodParameter.getName());
-    if (!isStatic && !PsiType.VOID.equals(returnType)) {
-      blockText += "return this;";
-    }
-
-    method.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, psiClass));
+    method.withBody(createCodeBlock(psiField, psiClass, returnType, isStatic, methodParameter));
 
     PsiModifierList methodModifierList = method.getModifierList();
     copyAnnotations(psiField, methodModifierList, LombokUtils.DEPRECATED_PATTERN);
@@ -173,7 +163,25 @@ public class SetterFieldProcessor extends AbstractFieldProcessor {
     return method;
   }
 
-  protected PsiType getReturnType(@NotNull PsiField psiField) {
+  @NotNull
+  private PsiCodeBlock createCodeBlock(@NotNull PsiField psiField, @NotNull PsiClass psiClass, PsiType returnType, boolean isStatic, PsiParameter methodParameter) {
+    final String blockText;
+    if (isShouldGenerateFullBodyBlock()) {
+      final String thisOrClass = isStatic ? psiClass.getName() : "this";
+      blockText = String.format("%s.%s = %s; ", thisOrClass, psiField.getName(), methodParameter.getName());
+    } else {
+      blockText = "";
+    }
+
+    String codeBlockText = blockText;
+    if (!isStatic && !PsiType.VOID.equals(returnType)) {
+      codeBlockText += "return this;";
+    }
+
+    return PsiMethodUtil.createCodeBlockFromText(codeBlockText, psiClass);
+  }
+
+  private PsiType getReturnType(@NotNull PsiField psiField) {
     PsiType result = PsiType.VOID;
     if (!psiField.hasModifierProperty(PsiModifier.STATIC) && AccessorsInfo.build(psiField).isChain()) {
       final PsiClass fieldClass = psiField.getContainingClass();

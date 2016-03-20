@@ -10,7 +10,7 @@ import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemNewBuilder;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
-import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,8 +27,8 @@ import java.util.List;
  */
 public abstract class AbstractMethodProcessor extends AbstractProcessor implements MethodProcessor {
 
-  protected AbstractMethodProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass, @NotNull Class<? extends PsiElement> supportedClass) {
-    super(supportedAnnotationClass, supportedClass);
+  AbstractMethodProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation>... equivalentAnnotationClasses) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
   }
 
   @NotNull
@@ -36,7 +36,7 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
     List<? super PsiElement> result = new ArrayList<PsiElement>();
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
-      PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiMethod, getSupportedAnnotation());
+      PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
         if (validate(psiAnnotation, psiMethod, ProblemEmptyBuilder.getInstance())) {
           processIntern(psiMethod, psiAnnotation, result);
@@ -50,7 +50,7 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
     List<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
-      PsiAnnotation psiAnnotation = PsiAnnotationUtil.findAnnotation(psiMethod, getSupportedAnnotation());
+      PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
         result.add(psiAnnotation);
       }

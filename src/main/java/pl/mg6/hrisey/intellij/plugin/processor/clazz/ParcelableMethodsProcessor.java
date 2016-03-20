@@ -1,5 +1,6 @@
 package pl.mg6.hrisey.intellij.plugin.processor.clazz;
 
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -12,6 +13,7 @@ import com.intellij.psi.PsiType;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import hrisey.Parcelable;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +23,12 @@ import java.util.List;
 public class ParcelableMethodsProcessor extends AbstractClassProcessor {
 
   public ParcelableMethodsProcessor() {
-    super(Parcelable.class, PsiMethod.class);
+    super(PsiMethod.class, Parcelable.class);
+  }
+
+  @Override
+  public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
+    return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_THIRD_PARTY_ENABLED);
   }
 
   @Override
@@ -31,12 +38,12 @@ public class ParcelableMethodsProcessor extends AbstractClassProcessor {
 
   @Override
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.add(generateDecribeContents(psiClass, psiAnnotation));
+    target.add(generateDescribeContents(psiClass, psiAnnotation));
     target.add(generateWriteToParcel(psiClass, psiAnnotation));
     target.add(generateParcelConstructor(psiClass, psiAnnotation));
   }
 
-  private PsiElement generateDecribeContents(PsiClass psiClass, PsiAnnotation psiAnnotation) {
+  private PsiElement generateDescribeContents(PsiClass psiClass, PsiAnnotation psiAnnotation) {
     return new LombokLightMethodBuilder(psiClass.getManager(), "describeContents")
         .withModifier(PsiModifier.PUBLIC)
         .withMethodReturnType(PsiType.INT)
