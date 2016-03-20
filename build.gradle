@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    lombok group: 'org.projectlombok', name: 'lombok', version: '1.16.6', classifier: 'sources', ext: 'jar'
+    lombok group: 'org.projectlombok', name: 'lombok', version: '1.16.8', classifier: 'sources', ext: 'jar'
     hrisey group: 'pl.mg6.hrisey', name: 'hrisey', version: '0.3.1', classifier: 'sources', ext: 'jar'
 
     gen 'de.jflex:jflex:1.6.0'
