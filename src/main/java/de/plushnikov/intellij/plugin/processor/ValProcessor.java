@@ -19,6 +19,8 @@ import com.intellij.psi.PsiForeachStatement;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiLambdaExpression;
 import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiNewExpression;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceParameterList;
@@ -26,14 +28,16 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.TypeConversionUtil;
-import de.plushnikov.intellij.plugin.problem.LombokProblem;
-import de.plushnikov.intellij.plugin.settings.ProjectSettings;
-import lombok.val;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
+
+import de.plushnikov.intellij.plugin.problem.LombokProblem;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import lombok.val;
 
 public class ValProcessor extends AbstractProcessor {
 
@@ -102,6 +106,17 @@ public class ValProcessor extends AbstractProcessor {
 
   private static boolean isSameName(String className) {
     return LOMBOK_VAL_SHORT_NAME.equals(className) || LOMBOK_VAL_FQN.equals(className);
+  }
+
+  public Boolean hasModifierProperty(@NotNull PsiModifierList modifierList, @NotNull String name) {
+    final PsiElement parent = modifierList.getParent();
+
+    //Only apply final modifier to val local variables
+    if (PsiModifier.FINAL.equals(name) && parent instanceof PsiLocalVariable && isVal((PsiLocalVariable) parent)) {
+      return Boolean.TRUE;
+    }
+
+    return null;
   }
 
   @Nullable

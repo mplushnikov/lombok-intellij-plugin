@@ -7,6 +7,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeElement;
 import com.intellij.psi.augment.PsiAugmentProvider;
@@ -14,9 +15,11 @@ import com.intellij.psi.impl.source.PsiExtensibleClass;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
+
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,8 +44,19 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   @Nullable
-  protected PsiType inferType(PsiTypeElement typeElement) {
-    if (null == typeElement || DumbService.isDumb(typeElement.getProject()) || !valProcessor.isEnabled(typeElement.getProject())) {
+  //@Override //May vause issues with older versions of IDEA SDK that are currently supported
+  protected Boolean hasModifierProperty(@NotNull PsiModifierList modifierList, @NotNull String name) {
+    if (DumbService.isDumb(modifierList.getProject()) || !valProcessor.isEnabled(modifierList.getProject())) {
+      return null;
+    }
+
+    return valProcessor.hasModifierProperty(modifierList, name);
+  }
+
+  @Nullable
+  @Override
+  protected PsiType inferType(@NotNull PsiTypeElement typeElement) {
+    if (DumbService.isDumb(typeElement.getProject()) || !valProcessor.isEnabled(typeElement.getProject())) {
       return null;
     }
     return valProcessor.inferType(typeElement);
