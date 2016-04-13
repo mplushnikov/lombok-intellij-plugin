@@ -22,6 +22,7 @@
 package de.plushnikov.intellij.lombok.patcher.inject;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -47,21 +48,22 @@ public class ClassRootFinder {
   public static String findClassRootOfClass(Class<?> context) {
     String name = context.getName();
     int idx = name.lastIndexOf('.');
-    String packageBase;
+
+    String packageBase = "";
     if (idx > -1) {
       packageBase = name.substring(0, idx);
       name = name.substring(idx + 1);
-    } else {
-      packageBase = "";
     }
 
     URL selfURL = context.getResource(name + ".class");
     String self = selfURL.toString();
     if (self.startsWith("file:/")) {
+
       String path = urlDecode(self.substring(5), false);
       if (!new File(path).exists()) {
         path = urlDecode(self.substring(5), true);
       }
+
       String suffix = "/" + packageBase.replace('.', '/') + "/" + name + ".class";
       if (!path.endsWith(suffix)) {
         throw new IllegalArgumentException("Unknown path structure: " + path);
@@ -69,10 +71,12 @@ public class ClassRootFinder {
 
       self = path.substring(0, path.length() - suffix.length());
     } else if (self.startsWith("jar:")) {
+
       int sep = self.indexOf('!');
       if (sep == -1) {
         throw new IllegalArgumentException("No separator in jar protocol: " + self);
       }
+
       String jarLoc = self.substring(4, sep);
       if (jarLoc.startsWith("file:/")) {
         String path = urlDecode(jarLoc.substring(5), false);
@@ -89,6 +93,16 @@ public class ClassRootFinder {
 
     if (self.isEmpty()) {
       self = "/";
+    }
+
+    // Attempt to fix system differences with pathing
+    try {
+      File file = new File(self);
+      if (file.exists()) {
+        self = file.getCanonicalPath();
+      }
+    } catch (IOException ex) {
+      throw new IllegalArgumentException("Failed to resolve to a canonical path: " + self);
     }
 
     return self;
