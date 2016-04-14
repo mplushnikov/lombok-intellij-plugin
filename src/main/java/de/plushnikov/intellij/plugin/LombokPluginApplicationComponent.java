@@ -1,10 +1,20 @@
 package de.plushnikov.intellij.plugin;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import de.plushnikov.intellij.plugin.settings.LombokSettings;
+import com.intellij.openapi.util.BuildNumber;
+
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import de.plushnikov.intellij.lombok.patcher.inject.ClassRootFinder;
+import de.plushnikov.intellij.lombok.patcher.inject.LiveInjector;
+import de.plushnikov.intellij.plugin.agent.IdeaPatcher;
+import de.plushnikov.intellij.plugin.settings.LombokSettings;
 
 /**
  * Main application component, that loads Lombok support
@@ -63,6 +73,42 @@ public class LombokPluginApplicationComponent implements ApplicationComponent {
     if (updated) {
       settings.setVersion(Version.PLUGIN_VERSION);
     }
+
+
+    injectAgent();
+  }
+
+  private void injectAgent() {
+
+    LOG.info("Starting injection of IntelliJ-Patch");
+
+    LiveInjector liveInjector = new LiveInjector();
+
+    // Quick environment validation
+    if (!liveInjector.isSupportedEnvironment()) {
+      LOG.warn("Unsupported environment - agent injection only works on a sun-derived 1.6 or higher VM\"");
+      return;
+    }
+
+    String agentSourceFile = ClassRootFinder.findClassRootOfClass(IdeaPatcher.class);
+    LOG.info("Injector use agentSourceFile: " + agentSourceFile);
+    if (!liveInjector.isInjectable(agentSourceFile)) {
+      LOG.warn("Unable to inject Lombok Idea Patcher Agent as agent source is not valid");
+      return;
+    }
+
+    final BuildNumber currentBuild = ApplicationInfo.getInstance().getBuild();
+
+    Map<String, String> options = new HashMap<String, String>();
+    options.put("ideaBuild", currentBuild.asStringWithoutProductCode());
+
+    try {
+      liveInjector.inject(agentSourceFile, options);
+    } catch (Exception ex) {
+      LOG.error("Error injecting Lombok Agent", ex);
+    }
+
+
   }
 
   @Override

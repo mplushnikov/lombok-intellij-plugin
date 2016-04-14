@@ -8,15 +8,14 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.PlatformTestUtil;
-import de.plushnikov.ApiVersionAwareLightCodeInsightFixureTestCase;
-import de.plushnikov.RequiredApiVersion;
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+
 import de.plushnikov.intellij.plugin.provider.LombokAugmentProvider;
 
 /**
  * @author Alexej Kubarev
  */
-@RequiredApiVersion("146.1154") // Modifier augmentation has been added in build 146.1154
-public class ValModifierTest extends ApiVersionAwareLightCodeInsightFixureTestCase {
+public class ValModifierTest extends LightCodeInsightFixtureTestCase {
 
   @Override
   protected String getTestDataPath() {
@@ -51,10 +50,6 @@ public class ValModifierTest extends ApiVersionAwareLightCodeInsightFixureTestCa
     myFixture.type('1');
     PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
     assertTrue(var.isValid());
-
-    PsiType type2 = var.getType();
-    assertNotNull(type2);
-    assertEquals(PsiType.INT.getCanonicalText(false), type2.getCanonicalText(false));
 
     assertNotNull(var.getModifierList());
     assertTrue("val should make variable final", var.getModifierList().hasModifierProperty(PsiModifier.FINAL));
