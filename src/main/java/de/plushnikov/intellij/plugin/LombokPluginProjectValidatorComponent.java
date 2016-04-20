@@ -14,16 +14,12 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiPackage;
-import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.event.HyperlinkEvent;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 
 /**
  * Shows notifications about project setup issues, that make the plugin not working.
@@ -54,8 +50,10 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
 
     NotificationGroup group = new NotificationGroup(Version.PLUGIN_NAME, NotificationDisplayType.BALLOON, true);
 
+    LombokDetector lombokDetector = new LombokDetector();
+
     // Lombok dependency check
-    boolean hasLombokLibrary = hasLombokLibrary(project);
+    boolean hasLombokLibrary = lombokDetector.hasLombok(project);
     if (!hasLombokLibrary) {
       Notification notification = group.createNotification(LombokBundle.message("config.warn.dependency.missing.title"),
           LombokBundle.message("config.warn.dependency.missing.message", project.getName()),
@@ -65,11 +63,13 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
       Notifications.Bus.notify(notification, project);
     }
 
+
+    // Lombok version checks
     if (hasLombokLibrary) {
       final ModuleManager moduleManager = ModuleManager.getInstance(project);
       for (Module module : moduleManager.getModules()) {
-        final OrderEntry lombokEntry = findLombokEntry(ModuleRootManager.getInstance(module));
-        final String lombokVersion = parseLombokVersion(lombokEntry);
+        final String lombokVersion = lombokDetector.getLombokVersion(module);
+        System.out.println(" Lombok Version check: " + module.getName() + " => " + lombokVersion);
 
         if (null != lombokVersion && compareVersionString(lombokVersion, Version.LAST_LOMBOK_VERSION) < 0) {
           Notification notification = group.createNotification(LombokBundle.message("config.warn.dependency.outdated.title"),
@@ -82,7 +82,7 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
     }
 
     // Annotation Processing check
-    boolean annotationProcessorsEnabled = hasAnnotationProcessorsEnabled(project);
+    boolean annotationProcessorsEnabled = hasAnnotationProcessorsEnabled();
     if (!annotationProcessorsEnabled) {
 
       String annotationProcessorsConfigName = new AnnotationProcessorsConfigurable(project).getDisplayName();
@@ -96,7 +96,8 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
     }
   }
 
-  private boolean hasAnnotationProcessorsEnabled(Project project) {
+
+  private boolean hasAnnotationProcessorsEnabled() {
     final CompilerConfiguration config = CompilerConfiguration.getInstance(project);
     boolean enabled = true;
 
@@ -108,37 +109,6 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
     }
 
     return enabled;
-  }
-
-  private boolean hasLombokLibrary(Project project) {
-    PsiPackage lombokPackage = JavaPsiFacade.getInstance(project).findPackage("lombok");
-
-    return lombokPackage != null;
-  }
-
-  @Nullable
-  private OrderEntry findLombokEntry(@NotNull ModuleRootManager moduleRootManager) {
-    final OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
-    for (OrderEntry orderEntry : orderEntries) {
-      if (orderEntry.getPresentableName().contains("lombok")) {
-        return orderEntry;
-      }
-    }
-    return null;
-  }
-
-  @Nullable
-  protected String parseLombokVersion(@Nullable OrderEntry orderEntry) {
-    String result = null;
-    if (null != orderEntry) {
-      final String presentableName = orderEntry.getPresentableName();
-      Pattern pattern = Pattern.compile("(.*:)([\\d\\.]+)(.*)");
-      final Matcher matcher = pattern.matcher(presentableName);
-      if (matcher.find()) {
-        result = matcher.group(2);
-      }
-    }
-    return result;
   }
 
   protected int compareVersionString(@NotNull String firstVersionOne, @NotNull String secondVersion) {
