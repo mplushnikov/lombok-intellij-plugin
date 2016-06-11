@@ -14,9 +14,10 @@ import java.util.List;
 public interface BuilderElementHandler {
   void addBuilderField(@NotNull List<PsiField> fields, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, @NotNull AccessorsInfo accessorsInfo);
 
-  void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String singularName);
+  void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull String fieldName, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String singularName);
 
   String createSingularName(PsiAnnotation singularAnnotation, String psiFieldName);
 
+  void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName);
   void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName);
 }

@@ -10,39 +10,39 @@ public class WitherTest extends AbstractLombokParsingTestCase {
     return false;
   }
 
-  public void testWitherAccessLevel() throws IOException {
-    doTest();
+  public void testWither$WitherAccessLevel() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherAlreadyExists() throws IOException {
-    doTest();
+  public void testWither$WitherAlreadyExists() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherAndAllArgsConstructor() throws IOException {
-    doTest();
+  public void testWither$WitherAndAllArgsConstructor() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherDeprecated() throws IOException {
-    doTest();
+  public void testWither$WitherDeprecated() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherOnClass() throws IOException {
-    doTest();
+  public void testWither$WitherOnClass() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherOnStatic() throws IOException {
-    doTest();
+  public void testWither$WitherOnStatic() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherPlain() throws IOException {
-    doTest();
+  public void testWither$WitherPlain() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherWithDollar() throws IOException {
-    doTest();
+  public void testWither$WitherWithDollar() throws IOException {
+    doTest(true);
   }
 
-  public void testWitherWithGenerics() throws IOException {
-    doTest();
+  public void testWither$WitherWithGenerics() throws IOException {
+    doTest(true);
   }
 }

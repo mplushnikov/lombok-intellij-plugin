@@ -218,8 +218,8 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
         boolean codeBlocksAreEqual = beforeMethodBody.textMatches(afterMethodBody);
         if (!codeBlocksAreEqual) {
-          String text1 = beforeMethodBody.getText().replaceAll("\\s+", "");
-          String text2 = afterMethodBody.getText().replaceAll("\\s+", "");
+          String text1 = beforeMethodBody.getText().replaceAll("java\\.lang\\.", "").replaceAll("\\s+", "");
+          String text2 = afterMethodBody.getText().replaceAll("java\\.lang\\.", "").replaceAll("\\s+", "");
           assertEquals("Methods not equal, Method: (" + afterMethod.getName() + ") Class:" + afterClass.getName(), text2, text1);
         }
       } else {

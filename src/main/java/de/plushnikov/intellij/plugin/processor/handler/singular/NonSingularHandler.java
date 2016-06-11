@@ -18,12 +18,12 @@ import org.jetbrains.annotations.NotNull;
 import java.text.MessageFormat;
 import java.util.List;
 
-public class NonSingularHandler implements BuilderElementHandler {
+class NonSingularHandler implements BuilderElementHandler {
   private static final String SETTER_PREFIX = "set";
 
   private final boolean shouldGenerateFullBodyBlock;
 
-  public NonSingularHandler(boolean shouldGenerateFullBodyBlock) {
+  NonSingularHandler(boolean shouldGenerateFullBodyBlock) {
     this.shouldGenerateFullBodyBlock = shouldGenerateFullBodyBlock;
   }
 
@@ -37,7 +37,7 @@ public class NonSingularHandler implements BuilderElementHandler {
     fields.add(fieldBuilder);
   }
 
-  public void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String psiFieldName) {
+  public void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull String fieldName, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String psiFieldName) {
     methods.add(new LombokLightMethodBuilder(psiVariable.getManager(), createSetterName(psiFieldName, fluentBuilder))
         .withMethodReturnType(returnType)
         .withContainingClass(innerClass)
@@ -71,6 +71,10 @@ public class NonSingularHandler implements BuilderElementHandler {
   private String getAllMethodBody(@NotNull String psiFieldName, boolean fluentBuilder) {
     final String codeBlockTemplate = "this.{0} = {0};{1}";
     return MessageFormat.format(codeBlockTemplate, psiFieldName, fluentBuilder ? "\nreturn this;" : "");
+  }
+
+  @Override
+  public void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName) {
   }
 
   @Override

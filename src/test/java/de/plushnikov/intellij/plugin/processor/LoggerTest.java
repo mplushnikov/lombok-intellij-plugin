@@ -9,43 +9,43 @@ import java.io.IOException;
  */
 public class LoggerTest extends AbstractLombokParsingTestCase {
 
-  public void testLoggerCommons() throws IOException {
-    doTest();
+  public void testLogger$LoggerCommons() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerJul() throws IOException {
-    doTest();
+  public void testLogger$LoggerJul() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerLog4j() throws IOException {
-    doTest();
+  public void testLogger$LoggerLog4j() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerLog4j2() throws IOException {
-    doTest();
+  public void testLogger$LoggerLog4j2() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerSlf4j() throws IOException {
-    doTest();
+  public void testLogger$LoggerSlf4j() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerSlf4jAlreadyExists() throws IOException {
-    doTest();
+  public void testLogger$LoggerSlf4jAlreadyExists() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerSlf4jOnNonType() throws IOException {
-    doTest();
+  public void testLogger$LoggerSlf4jOnNonType() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerSlf4jTypes() throws IOException {
-    doTest();
+  public void testLogger$LoggerSlf4jTypes() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerSlf4jWithPackage() throws IOException {
-    doTest();
+  public void testLogger$LoggerSlf4jWithPackage() throws IOException {
+    doTest(true);
   }
 
-  public void testLoggerXSlf4j() throws IOException {
-    doTest();
+  public void testLogger$LoggerXSlf4j() throws IOException {
+    doTest(true);
   }
 }
