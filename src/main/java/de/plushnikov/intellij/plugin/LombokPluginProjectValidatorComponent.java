@@ -17,13 +17,15 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiPackage;
-import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.event.HyperlinkEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.event.HyperlinkEvent;
+
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 
 /**
  * Shows notifications about project setup issues, that make the plugin not working.
@@ -56,7 +58,9 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
 
     // Lombok dependency check
     boolean hasLombokLibrary = hasLombokLibrary(project);
-    if (!hasLombokLibrary) {
+
+    // If dependency is missing and missing dependency notification setting is enabled (defaults to disabled)
+    if (!hasLombokLibrary && ProjectSettings.isEnabled(project, ProjectSettings.IS_MISSING_LOMBOK_CHECK_ENABLED, false)) {
       Notification notification = group.createNotification(LombokBundle.message("config.warn.dependency.missing.title"),
           LombokBundle.message("config.warn.dependency.missing.message", project.getName()),
           NotificationType.ERROR, NotificationListener.URL_OPENING_LISTENER);
@@ -64,7 +68,8 @@ public class LombokPluginProjectValidatorComponent extends AbstractProjectCompon
       Notifications.Bus.notify(notification, project);
     }
 
-    if (hasLombokLibrary && ProjectSettings.isEnabled(project, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED)) {
+    // If dependency is present and out of date notification setting is enabled (defaults to disabled)
+    if (hasLombokLibrary && ProjectSettings.isEnabled(project, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false)) {
       final ModuleManager moduleManager = ModuleManager.getInstance(project);
       for (Module module : moduleManager.getModules()) {
         String lombokVersion = parseLombokVersion(findLombokEntry(ModuleRootManager.getInstance(module)));
