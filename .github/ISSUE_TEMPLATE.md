@@ -1,10 +1,10 @@
-#### Short description
+### Short description
 _Provide a short description of the issue here. Do not include stacktraces in this sectrion_
 
-#### Expected behavior
+### Expected behavior
 _Is there a specific expected behavior?_
 
-#### Version information
+### Version information
 
  * **IDEA Version:** _Please provide full IntelliJ IDEA Version - available from About view_
  * **JDK Version:** _What is your JDK version, including update level?_
@@ -12,7 +12,7 @@ _Is there a specific expected behavior?_
  * **Lombok Plugin Version:** _What is the version of the plugin installed?`_
  * **Lombok Dependency Version:** _What version of lombok.jar are you using?_
 
-#### Steps to reproduce
+### Steps to reproduce
 _What steps do we need to take to reproduce this issue?_
 
  1. ???
@@ -20,18 +20,17 @@ _What steps do we need to take to reproduce this issue?_
  3. ???
 
 
-#### Sample project
+### Sample project
 Please provide a sample project that exhibits the problem.
 You should also include `.idea` folder so we can inspect the settings.
 
- [ ] Sample project provided
+ - [ ] Sample project provided
+ - [ ] I am able to reproduce this error on the sample project by following the steps described above
 
- [ ] I am able to reproduce this error on the sample project by following the steps described above
-
-#### Additional information
+### Additional information
 _Is there any additional information you can provide to help us understanding and solving the issue?_
 
-#### Stacktrace
+### Stacktrace
 If you are experiencing an issue and IntelliJ throws an error please provide the stacktrace.
 
 ```
