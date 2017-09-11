@@ -71,7 +71,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   @NotNull
-  @Override
+//  @Override available from 2016.2
   protected Set<String> transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
     // make copy of original modifiers
     Set<String> result = ContainerUtil.newHashSet(modifiers);
