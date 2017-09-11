@@ -325,7 +325,7 @@ public class BuilderHandler {
   private PsiType calculateResultType(@NotNull PsiMethod psiMethod, PsiClass builderPsiClass, PsiClass psiClass) {
     final Collection<PsiParameter> builderParameters = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
 
-    final Collection<PsiType> types = new ArrayList<>();
+    final Collection<PsiType> types = new ArrayList<PsiType>();
     for (PsiVariable psiVariable : builderParameters) {
 
       final PsiAnnotation obtainViaAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, BUILDER_OBTAIN_VIA_ANNOTATION);

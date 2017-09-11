@@ -30,7 +30,12 @@ allprojects {
   sourceCompatibility = javaVersion
   targetCompatibility = javaVersion
 
-  tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+  tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    if(!Boolean.valueOf(System.getenv('CI'))) {
+      options.bootClasspath = "$JDK6_HOME/lib/rt.jar"
+    }
+  }
 
   sourceSets {
     main {
