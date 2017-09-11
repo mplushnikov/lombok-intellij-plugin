@@ -20,7 +20,6 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.impl.light.LightTypeParameterBuilder;
 import com.intellij.psi.util.PsiTypesUtil;
-import com.intellij.util.StringBuilderSpinAllocator;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
@@ -92,7 +91,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return result;
   }
 
-  private boolean validateBaseClassConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  public boolean validateBaseClassConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     if (psiClass instanceof PsiAnonymousClass || psiClass.isEnum()) {
       return true;
     }
@@ -115,7 +114,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     return false;
   }
 
-  public boolean validateIsConstructorDefined(@NotNull PsiClass psiClass, @Nullable String staticConstructorName, @NotNull Collection<PsiField> params, @NotNull ProblemBuilder builder) {
+  public boolean validateIsConstructorNotDefined(@NotNull PsiClass psiClass, @Nullable String staticConstructorName, @NotNull Collection<PsiField> params, @NotNull ProblemBuilder builder) {
     boolean result = true;
 
     final List<PsiType> paramTypes = new ArrayList<PsiType>(params.size());
@@ -359,17 +358,13 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
   }
 
   private String joinParameters(PsiParameterList parameterList) {
-    final StringBuilder builder = StringBuilderSpinAllocator.alloc();
-    try {
-      for (PsiParameter psiParameter : parameterList.getParameters()) {
-        builder.append(psiParameter.getName()).append(',');
-      }
-      if (parameterList.getParameters().length > 0) {
-        builder.deleteCharAt(builder.length() - 1);
-      }
-      return builder.toString();
-    } finally {
-      StringBuilderSpinAllocator.dispose(builder);
+    final StringBuilder builder = new StringBuilder();
+    for (PsiParameter psiParameter : parameterList.getParameters()) {
+      builder.append(psiParameter.getName()).append(',');
     }
+    if (parameterList.getParameters().length > 0) {
+      builder.deleteCharAt(builder.length() - 1);
+    }
+    return builder.toString();
   }
 }

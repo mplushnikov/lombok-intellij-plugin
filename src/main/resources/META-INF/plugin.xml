@@ -5,7 +5,7 @@
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
   <version>0.15</version>
 
-  <idea-version since-build="144.00"/>
+  <idea-version since-build="171.00"/>
 
   <description><![CDATA[
       <h1>IntelliJ Lombok plugin</h1>
@@ -106,11 +106,6 @@
     <renamePsiElementProcessor implementation="de.plushnikov.intellij.plugin.extension.LombokRenameFieldReferenceProcessor"/>
 
     <java.elementFinder implementation="de.plushnikov.intellij.plugin.extension.LombokElementFinder" order="last"/>
-
-    <!--Overwrite IntelliJ Diamond inspection, to filter out val declarations-->
-    <localInspection groupPath="Java" language="JAVA" shortName="Convert2Diamond" displayName="Explicit type can be replaced with &lt;&gt;"
-                     groupName="Java language level migration aids" enabledByDefault="true" level="WARNING"
-                     implementationClass="de.plushnikov.intellij.plugin.inspection.LombokExplicitTypeCanBeDiamondInspection" order="last"/>
 
     <inlineActionHandler implementation="de.plushnikov.intellij.plugin.action.inline.LombokInlineMethodHandler"/>
 
@@ -262,12 +257,18 @@
 		<ul>
 		<li>0.15
 				<ol>
+            <li>Fixed #134: Add suppot for toBuilder = true</li>
+            <li>Fixed #145: Overriding builder() method for @Builder shows false compilation error</li>
             <li>Fixed #162: @Data/@XConstructor bug with default constructor</li>
             <li>Improved #260: Handling val - Inferred Type is Object</li>
             <li>Fixed #290: Getter and FieldDefaults with parameter AccessLevel in Enum shows "cannot access"</li>
             <li>Fixed #337: Component name collision: 'UpdateComponent'</li>
             <li>Fixed #339: Delombok for @ToString should use simpleName for class</li>
             <li>Fixed #342: @EqualsAndHashCode/@ToString should treat explicit "of = {}" differently</li>
+            <li>Fixed #359: Explicit type can be diamond inspection is overloaded with the same id</li>
+            <li>Fixed #367: @Data on parent and child should be marked as compilation error</li>
+            <li>Fixed #393: @Builder with @Singular map produces duplicated variables</li>
+            <li>Fixed #399: IndexNotReadyException in FieldFindUsagesHandler</li>
 				</ol>
 			</li>
 		<li>0.14

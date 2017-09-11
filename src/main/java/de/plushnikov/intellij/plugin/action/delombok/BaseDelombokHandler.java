@@ -26,6 +26,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.processor.ShouldGenerateFullCodeBlock;
+import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,7 @@ public class BaseDelombokHandler {
 
   protected BaseDelombokHandler(boolean processInnerClasses, AbstractProcessor... lombokProcessors) {
     this.processInnerClasses = processInnerClasses;
-    this.lombokProcessors = new ArrayList<AbstractProcessor>(Arrays.asList(lombokProcessors));
+    this.lombokProcessors = Arrays.asList(lombokProcessors);
   }
 
   public void invoke(@NotNull Project project, @NotNull PsiFile psiFile, @NotNull PsiClass psiClass) {
@@ -65,13 +66,20 @@ public class BaseDelombokHandler {
 
   private void invoke(Project project, PsiClass psiClass, boolean processInnerClasses) {
     Collection<PsiAnnotation> processedAnnotations = new HashSet<PsiAnnotation>();
+
+    // get all inner classes before first lombok processing
+    final PsiClass[] allInnerClasses = psiClass.getAllInnerClasses();
+
     for (AbstractProcessor lombokProcessor : lombokProcessors) {
       processedAnnotations.addAll(processClass(project, psiClass, lombokProcessor));
     }
 
     if (processInnerClasses) {
-      for (PsiClass innerClass : psiClass.getAllInnerClasses()) {
-        invoke(project, innerClass, processInnerClasses);
+      for (PsiClass innerClass : allInnerClasses) {
+        //skip our self generated classes
+        if (!(innerClass instanceof LombokLightClassBuilder)) {
+          invoke(project, innerClass, processInnerClasses);
+        }
       }
     }
     deleteAnnotations(processedAnnotations);
