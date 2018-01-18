@@ -2,7 +2,7 @@
 
 SET pluginVersion=0.16
 
-for %%X in (2017.2 2017.2.1 2017.2.2 2017.2.3 2017.2.4 2017.2.5 2017.2.6 2017.3 2017.3.1 2017.3.2 2017.3.3) do call :buildPlugin %%X
+for %%X in (2017.1 2017.1.1 2017.1.2 2017.1.3 2017.1.4 2017.1.5) do call :buildPlugin %%X
 
 :buildPlugin
 SETLOCAL
