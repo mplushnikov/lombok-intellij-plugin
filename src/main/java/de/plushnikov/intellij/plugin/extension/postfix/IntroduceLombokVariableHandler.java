@@ -8,6 +8,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.refactoring.introduce.inplace.OccurrencesChooser;
 import com.intellij.refactoring.introduceVariable.InputValidator;
 import com.intellij.refactoring.introduceVariable.IntroduceVariableHandler;
 import com.intellij.refactoring.introduceVariable.IntroduceVariableSettings;
@@ -25,10 +26,13 @@ public class IntroduceLombokVariableHandler extends IntroduceVariableHandler {
    * Started from 2017.2 it use JavaReplaceChoice parameter
    */
   @Override
-  public IntroduceVariableSettings getSettings(Project project, Editor editor, PsiExpression expr,
-                                               PsiExpression[] occurrences, TypeSelectorManagerImpl typeSelectorManager,
-                                               boolean declareFinalIfAll, boolean anyAssignmentLHS, InputValidator validator,
-                                               PsiElement anchor, JavaReplaceChoice replaceChoice) {
+  public IntroduceVariableSettings getSettings(Project project, Editor editor,
+                                               PsiExpression expr, PsiExpression[] occurrences,
+                                               TypeSelectorManagerImpl typeSelectorManager,
+                                               boolean declareFinalIfAll,
+                                               boolean anyAssignmentLHS,
+                                               final InputValidator validator,
+                                               PsiElement anchor, OccurrencesChooser.ReplaceChoice replaceChoice) {
     final IntroduceVariableSettings variableSettings;
 
     if (ApplicationManager.getApplication().isUnitTestMode()) {

@@ -29,8 +29,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * @author Plushnikov Michail
  */
@@ -268,7 +266,11 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     if (!getParameterList().equals(that.getParameterList())) {
       return false;
     }
-    return Objects.equals(myReturnTypeCanonicalText, that.myReturnTypeCanonicalText);
+    if (myReturnTypeCanonicalText != null) {
+      return myReturnTypeCanonicalText.equals(that.myReturnTypeCanonicalText);
+    } else {
+      return null == that.myReturnTypeCanonicalText;
+    }
   }
 
   @Override

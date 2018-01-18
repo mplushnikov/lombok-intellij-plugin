@@ -22,7 +22,7 @@ public class LombokElementFinder extends PsiElementFinder {
   private static final ThreadLocal<Set<String>> recursionPrevention = new ThreadLocal<Set<String>>() {
     @Override
     protected Set<String> initialValue() {
-      return new HashSet<>();
+      return new HashSet<String>();
     }
   };
 
