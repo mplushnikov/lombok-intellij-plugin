@@ -1,21 +1,29 @@
-lombok-intellij-plugin [![Build Status](https://travis-ci.org/mplushnikov/lombok-intellij-plugin.svg?branch=master)](https://travis-ci.org/mplushnikov/lombok-intellij-plugin) [![Code Coverage](https://img.shields.io/codecov/c/github/mplushnikov/lombok-intellij-plugin/master.svg)](https://codecov.io/github/mplushnikov/lombok-intellij-plugin?branch=master) [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
+lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
 ======================
+[![Build Status][badge-travis-img]][badge-travis] [![Code Coverage](https://img.shields.io/codecov/c/github/mplushnikov/lombok-intellij-plugin/master.svg)](https://codecov.io/github/mplushnikov/lombok-intellij-plugin?branch=master)
 
-[![Join the chat at https://gitter.im/mplushnikov/lombok-intellij-plugin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mplushnikov/lombok-intellij-plugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Version](http://phpstorm.espend.de/badge/6317/version)](https://plugins.jetbrains.com/plugin/6317)
+[![Downloads](http://phpstorm.espend.de/badge/6317/downloads)](https://plugins.jetbrains.com/plugin/6317)
+[![Downloads last month](http://phpstorm.espend.de/badge/6317/last-month)](https://plugins.jetbrains.com/plugin/6317)
+
+[![Gitter][badge-gitter-img]][badge-gitter] [![Donate][badge-paypal-img]][badge-paypal]
+
 
 ## Plugin for [IntelliJ IDEA](http://plugins.jetbrains.com/plugin/6317) to support [Lombok](https://projectlombok.org) annotations. ##
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.14) released on 14.01.2017**
+**Last version (0.15) released on 12.09.2017**
 
-Twenty-first version of plugin released. Contains a lot of bugfixes and some new features!
+Twenty-second version of plugin released. Contains a lot of bugfixes and some new features!
 
 Install it automatically from IntelliJ Idea plugin repository.
 
-Tested and supports IntelliJ versions: 14.1.7, 15.0.6, 2016.3.2
+Tested and supports IntelliJ versions: 15.0.6, 2016.3.7, 2017.2.3
 
-Last support for IntelliJ 11.1.5, 12.1.7, 13.1.6 by plugin version 0.11!
+Last support for IntelliJ 14.1.7 by plugin version 0.14!
+
+Last support for IntelliJ 11.1.5, 12.1.7, 13.1.6 by plugin version 0.11
 
 Last support for IntelliJ 10.5.4 by plugin version 0.8.7
 
@@ -77,7 +85,7 @@ In your `build.gradle`:
 ```groovy
 // 'compile' can be changed to 'compileOnly' for Gradle 2.12+
 // or 'provided' if using 'propdeps' plugin from SpringSource
-compile "org.projectlombok:lombok:1.16.16"
+compile "org.projectlombok:lombok:1.16.18"
 ```
 
 ##### Maven
@@ -87,7 +95,7 @@ In your `pom.xml`:
 	<dependency>
 		<groupId>org.projectlombok</groupId>
 		<artifactId>lombok</artifactId>
-		<version>1.16.16</version>
+		<version>1.16.18</version>
 		<scope>provided</scope>
 	</dependency>
 </dependencies>
@@ -96,7 +104,7 @@ In your `pom.xml`:
 ##### Ivy
 In your `ivy.xml`:
 ```xml
-<dependency org="org.projectlombok" name="lombok" rev="1.16.16" conf="build" />
+<dependency org="org.projectlombok" name="lombok" rev="1.16.18" conf="build" />
 ```
 
 IntelliJ and Eclipse compiler
@@ -138,3 +146,12 @@ YourKit, LLC is the creator of [YourKit Java Profiler](https://www.yourkit.com/j
 License
 -------
 Copyright (c) 2011-2016 Michail Plushnikov. See the [LICENSE](./LICENSE) file for license rights and limitations (BSD).
+
+[badge-gitter-img]:       https://badges.gitter.im/mplushnikov/lombok-intellij-plugin.svg
+[badge-gitter]:           https://gitter.im/mplushnikov/lombok-intellij-plugin
+[badge-travis-img]:       https://travis-ci.org/mplushnikov/lombok-intellij-plugin.svg
+[badge-travis]:           https://travis-ci.org/mplushnikov/lombok-intellij-plugin
+[badge-coveralls-img]:    https://coveralls.io/repos/github/mplushnikov/lombok-intellij-plugin/badge.svg?branch=master
+[badge-coveralls]:        https://coveralls.io/github/mplushnikov/lombok-intellij-plugin?branch=master
+[badge-paypal-img]:       https://img.shields.io/badge/donate-paypal-yellow.svg
+[badge-paypal]:           https://www.paypal.me/mplushnikov

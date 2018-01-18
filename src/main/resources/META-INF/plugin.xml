@@ -110,6 +110,9 @@
     <inlineActionHandler implementation="de.plushnikov.intellij.plugin.action.inline.LombokInlineMethodHandler"/>
 
     <canBeFinal implementation="de.plushnikov.intellij.plugin.extension.LombokCanBeFinalHandler"/>
+
+    <codeInsight.template.postfixTemplateProvider language="JAVA"
+                                                  implementationClass="de.plushnikov.intellij.plugin.extension.postfix.LombokPostfixTemplateProvider"/>
   </extensions>
 
   <extensions defaultExtensionNs="Lombook Plugin">
@@ -255,6 +258,22 @@
   <!--TODO @Builder is not supported on constructors with constructor type parameters..-->
   <change-notes><![CDATA[
 		<ul>
+		<li>0.16
+				<ol>
+            <li>Fixed #210: Changing log annotation requires restart of Intellij to work</li>
+            <li>Fixed #270: Compile errors after moving an @Setter annotation by using IntelliJ move keyboard shortcut ⌥⇧↑</li>
+            <li>Fixed #365: [Feature request]IDEA .var suffix feature replacement</li>
+            <li>Fixed #379: StackOverflowException occurs sporadically when plugin enabled</li>
+            <li>Fixed #419: Stackoverflow in Intellij because of recursive delegation in @Delegate</li>
+            <li>Fixed #426: PSI equals shouldn't perform resolve</li>
+            <li>Fixed #427: Exception thrown when using *Find Usages* with ideavim</li>
+				</ol>
+			</li>
+		<li>0.15.17.2
+				<ol>
+            <li>Fixed #415: Plugin Error: Lombok Plugin threw an uncaught NoClassDefFoundError</li>
+				</ol>
+			</li>
 		<li>0.15
 				<ol>
             <li>Fixed #134: Add suppot for toBuilder = true</li>
