@@ -5,6 +5,7 @@ target/
 build/
 generated/
 idea-sandbox/
+distro/
 *.iml
 *.ipr
 *.iws
