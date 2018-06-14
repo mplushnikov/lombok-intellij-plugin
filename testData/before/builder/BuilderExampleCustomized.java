@@ -1,4 +1,4 @@
-@lombok.experimental.Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute",
+@lombok.Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute",
     builderMethodName = "helloWorld", fluent = false, chain = false)
 public class BuilderExample {
   private String name;

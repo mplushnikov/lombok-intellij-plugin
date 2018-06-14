@@ -119,7 +119,7 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
 
   @SuppressWarnings("deprecation")
   public boolean validConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, lombok.experimental.Value.class)) {
+    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, lombok.Value.class)) {
       return true;
     }
 

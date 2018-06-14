@@ -1,4 +1,4 @@
-import lombok.experimental.*;
+import lombok.Value;
 
 @Value
 class ValueExperimentalStarImport {
