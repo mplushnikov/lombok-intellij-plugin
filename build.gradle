@@ -95,7 +95,7 @@ grammarKit {
   //tag or short commit hash of IntelliJ patched JFlex
   jflexRelease = '1.7.0-1'
   //tag or short commit hash of Grammar-Kit to use
-  grammarKitRelease = '34fd65b92a'
+  grammarKitRelease = '1.4.3'
 }
 
 plugins.withType(JavaPlugin) {
