@@ -13,13 +13,13 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.15) released on 12.09.2017**
+**Last version (0.16) released on 04.02.2018**
 
-Twenty-second version of plugin released. Contains a lot of bugfixes and some new features!
+Twenty-third version of plugin released. Contains a lot of bugfixes and some new features!
 
 Install it automatically from IntelliJ Idea plugin repository.
 
-Tested and supports IntelliJ versions: 15.0.6, 2016.3.7, 2017.2.3
+Tested and supports IntelliJ versions: 15.0.6, 2016.3.7, 2017.3.4
 
 Last support for IntelliJ 14.1.7 by plugin version 0.14!
 
@@ -85,7 +85,7 @@ In your `build.gradle`:
 ```groovy
 // 'compile' can be changed to 'compileOnly' for Gradle 2.12+
 // or 'provided' if using 'propdeps' plugin from SpringSource
-compile "org.projectlombok:lombok:1.16.18"
+compile "org.projectlombok:lombok:1.16.20"
 ```
 
 ##### Maven
@@ -95,7 +95,7 @@ In your `pom.xml`:
 	<dependency>
 		<groupId>org.projectlombok</groupId>
 		<artifactId>lombok</artifactId>
-		<version>1.16.18</version>
+		<version>1.16.20</version>
 		<scope>provided</scope>
 	</dependency>
 </dependencies>
@@ -104,7 +104,7 @@ In your `pom.xml`:
 ##### Ivy
 In your `ivy.xml`:
 ```xml
-<dependency org="org.projectlombok" name="lombok" rev="1.16.18" conf="build" />
+<dependency org="org.projectlombok" name="lombok" rev="1.16.20" conf="build" />
 ```
 
 IntelliJ and Eclipse compiler
@@ -123,10 +123,13 @@ Developed By
 
 **Contributors**
 - [**@akozlova** Anna Kozlova](https://github.com/akozlova)
+- [**@adamarmistead** adamarmistead](https://github.com/adamarmistead)
 - [**@AlexejK** Alexej Kubarev](https://github.com/AlexejK)
 - [**@bulgakovalexander** Alexander Bulgakov](https://github.com/bulgakovalexander)
+- [**@krzyk** Krzysztof Krasoń](https://github.com/krzyk)
 - [**@mg6maciej** Maciej Górski](https://github.com/mg6maciej)
 - [**@mlueders** Mike Lueders](https://github.com/mlueders)
+- [**@ruurd** Ruurd Pels](https://github.com/ruurd)
 - [**@Sheigutn** Florian Böhm](https://github.com/Sheigutn)
 - [**@siosio** siosio](https://github.com/siosio)
 - [**@Siriah** Iris Hupkens](https://github.com/Siriah)
@@ -145,7 +148,7 @@ YourKit, LLC is the creator of [YourKit Java Profiler](https://www.yourkit.com/j
 
 License
 -------
-Copyright (c) 2011-2016 Michail Plushnikov. See the [LICENSE](./LICENSE) file for license rights and limitations (BSD).
+Copyright (c) 2011-2018 Michail Plushnikov. See the [LICENSE](./LICENSE) file for license rights and limitations (BSD).
 
 [badge-gitter-img]:       https://badges.gitter.im/mplushnikov/lombok-intellij-plugin.svg
 [badge-gitter]:           https://gitter.im/mplushnikov/lombok-intellij-plugin
