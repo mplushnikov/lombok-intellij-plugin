@@ -12,7 +12,7 @@ cache:
     - $HOME/.gradle/wrapper/
 
 env:
-  - IDEA_VERSION=IC-2016.3.7
+  - IDEA_VERSION=IC-2016.3.8
   - IDEA_VERSION=IC-2016.2.5
   - IDEA_VERSION=IC-2016.1.4
   - IDEA_VERSION=IC-2016.1
