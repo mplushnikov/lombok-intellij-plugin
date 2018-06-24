@@ -2,7 +2,9 @@
 
 SET pluginVersion=0.18
 
-for %%X in (2016.1 2016.1.4 2016.2.5 2016.3.7) do call :buildPlugin %%X
+for %%X in (2016.1 2016.2 2016.3) do call :buildPlugin %%X
+ECHO All Done
+GOTO :eof
 
 :buildPlugin
 SETLOCAL
