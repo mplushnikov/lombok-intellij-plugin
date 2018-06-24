@@ -6,8 +6,8 @@ buildscript {
     maven { url 'https://jitpack.io' }
   }
   dependencies {
-    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.3.0-SNAPSHOT"
-    classpath "com.github.hurricup:gradle-grammar-kit-plugin:2017.1.1"
+    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.0-SNAPSHOT"
+    classpath "com.github.hurricup:gradle-grammar-kit-plugin:2018.1.2"
   }
 }
 
@@ -75,6 +75,13 @@ patchPluginXml {
   ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
 
   version pluginVersion + "-" + ideaVersion
+  // use open until build for last release
+  if(ideaVersion.contains("LATEST-EAP-SNAPSHOT")) {
+    untilBuild ""
+  }
+
+  pluginDescription(file(descriptionFile).text)
+  changeNotes(file(changesFile).text)
 }
 
 publishPlugin {
@@ -84,9 +91,9 @@ publishPlugin {
 
 grammarKit {
   //tag or short commit hash of IntelliJ patched JFlex
-  jflexRelease = '1.7.0'
+  jflexRelease = '1.7.0-1'
   //tag or short commit hash of Grammar-Kit to use
-  grammarKitRelease = '1.5.2'
+  grammarKitRelease = '34fd65b92a'
 }
 
 plugins.withType(JavaPlugin) {
@@ -105,11 +112,13 @@ jacocoTestReport {
 // Configurations
 configurations {
   lombok
+  lombok_dep
   hrisey
 }
 
 dependencies {
   lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.0', classifier: 'sources', ext: 'jar'
+  lombok_dep group: 'org.projectlombok', name: 'lombok', version: '1.16.20', classifier: 'sources', ext: 'jar'
   hrisey group: 'pl.mg6.hrisey', name: 'hrisey', version: '0.3.1', classifier: 'sources', ext: 'jar'
 
   compile(project(':patcher')) {
@@ -150,6 +159,15 @@ copy {
 
 copy {
   includeEmptyDirs = false
+  from({ zipTree(configurations.lombok_dep.singleFile) }) {
+    include 'lombok/experimental/Value.java'
+    include 'lombok/experimental/Builder.java'
+  }
+  into("generated/src")
+}
+
+copy {
+  includeEmptyDirs = false
   from({ zipTree(configurations.hrisey.singleFile) }) {
     include 'hrisey/Parcelable.java'
     include 'hrisey/Preferences.java'
@@ -168,10 +186,10 @@ copy {
 task generateLombokConfigParser(type: GenerateParser) {
   println "Generating Parser for GrammerKit: ${grammarKit.grammarKitRelease}"
 
-  source 'src/main/resources/de/plushnikov/intellij/plugin/language/lombokConfig.bnf'
-  targetRoot = 'generated/src'
-  pathToParser '/de/plushnikov/intellij/plugin/language/parser/LombokConfigParser.java'
-  pathToPsiRoot '/de/plushnikov/intellij/plugin/language/psi'
+  source "src/main/resources/de/plushnikov/intellij/plugin/language/lombokConfig.bnf"
+  targetRoot = "generated/src"
+  pathToParser "/de/plushnikov/intellij/plugin/language/parser/LombokConfigParser.java"
+  pathToPsiRoot "/de/plushnikov/intellij/plugin/language/psi"
 }
 
 task generateLombokConfigLexer(type: GenerateLexer) {
