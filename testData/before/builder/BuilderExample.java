@@ -1,4 +1,4 @@
-import lombok.Builder;
+import lombok.experimental.Builder;
 
 @Builder
 public class BuilderExample {

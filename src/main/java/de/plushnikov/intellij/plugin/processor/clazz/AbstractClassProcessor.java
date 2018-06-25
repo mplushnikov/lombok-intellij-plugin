@@ -196,7 +196,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
       final String getterName = getGetterName(classField);
 
       final boolean hasGetter;
-      if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Data.class, Value.class, lombok.Value.class, Getter.class)) {
+      if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Data.class, Value.class, lombok.experimental.Value.class, Getter.class)) {
         final PsiAnnotation getterLombokAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, Getter.class);
         hasGetter = null == getterLombokAnnotation || null != LombokProcessorUtil.getMethodModifier(getterLombokAnnotation);
       } else {

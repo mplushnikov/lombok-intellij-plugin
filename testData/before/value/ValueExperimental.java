@@ -1,9 +1,9 @@
-import lombok.Value;
+import lombok.experimental.Value;
 
 @Value
 class ValueExperimental1 {
 }
 
-@lombok.Value
+@lombok.experimental.Value
 class ValueExperimental2 {
 }

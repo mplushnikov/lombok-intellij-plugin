@@ -1,5 +1,5 @@
 import lombok.Value;
-import lombok.Builder;
+import lombok.experimental.Builder;
 
 @Value
 @Builder

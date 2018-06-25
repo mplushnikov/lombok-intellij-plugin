@@ -1,5 +1,5 @@
 import java.util.List;
-import lombok.Builder;
+import lombok.experimental.Builder;
 
 class BuilderComplex {
 	@Builder(buildMethodName = "execute")
