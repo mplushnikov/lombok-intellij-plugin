@@ -29,7 +29,8 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
     final Collection<String> booleanOptions = new HashSet<String>(Arrays.asList(
       "config.stopBubbling", "lombok.accessors.chain", "lombok.accessors.fluent",
       "lombok.anyConstructor.suppressConstructorProperties", "lombok.equalsAndHashCode.doNotUseGetters", "lombok.getter.noIsPrefix",
-      "lombok.log.fieldIsStatic", "lombok.toString.doNotUseGetters", "lombok.toString.includeFieldNames"));
+      "lombok.log.fieldIsStatic", "lombok.toString.doNotUseGetters", "lombok.toString.includeFieldNames",
+      ConfigKey.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE.getConfigKey()));
 
     final Collection<String> flagUsageOptions = new HashSet<String>(Arrays.asList(
       "lombok.accessors.flagUsage", "lombok.allArgsConstructor.flagUsage", "lombok.anyConstructor.flagUsage",
@@ -38,7 +39,7 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
       "lombok.fieldDefaults.flagUsage", "lombok.getter.flagUsage", "lombok.getter.lazy.flagUsage",
       "lombok.log.apacheCommons.flagUsage", "lombok.log.flagUsage", "lombok.log.javaUtilLogging.flagUsage",
       "lombok.log.log4j.flagUsage", "lombok.log.log4j2.flagUsage", "lombok.log.slf4j.flagUsage",
-      "lombok.log.xslf4j.flagUsage", "lombok.log.jbosslog.flagUsage",
+      "lombok.log.xslf4j.flagUsage", "lombok.log.jbosslog.flagUsage", "lombok.log.flogger.flagUsage",
       "lombok.noArgsConstructor.flagUsage", "lombok.nonNull.flagUsage",
       "lombok.requiredArgsConstructor.flagUsage", "lombok.setter.flagUsage", "lombok.sneakyThrows.flagUsage",
       "lombok.synchronized.flagUsage", "lombok.toString.flagUsage", "lombok.val.flagUsage", "lombok.value.flagUsage",
@@ -50,7 +51,8 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
 
     final Collection<String> otherOptions = new HashSet<String>(Arrays.asList(
       ConfigKey.ACCESSORS_PREFIX.getConfigKey(), ConfigKey.LOG_FIELDNAME.getConfigKey(),
-      ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(), ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey()));
+      ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(), ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey(),
+      ConfigKey.FIELD_NAME_CONSTANTS_PREFIX.getConfigKey(), ConfigKey.FIELD_NAME_CONSTANTS_SUFFIX.getConfigKey()));
 
     final Collection<String> allOptions = new HashSet<String>(booleanOptions);
     allOptions.addAll(flagUsageOptions);
