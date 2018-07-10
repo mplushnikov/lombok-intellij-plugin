@@ -101,7 +101,7 @@ public class BuilderHandler {
     this.noArgsConstructorProcessor = noArgsConstructorProcessor;
   }
 
-  public static PsiSubstitutor getBuilderSubstitutor(@NotNull PsiTypeParameterListOwner classOrMethodToBuild, @NotNull PsiClass innerClass) {
+  public PsiSubstitutor getBuilderSubstitutor(@NotNull PsiTypeParameterListOwner classOrMethodToBuild, @NotNull PsiClass innerClass) {
     PsiSubstitutor substitutor = PsiSubstitutor.EMPTY;
     if (innerClass.hasModifierProperty(PsiModifier.STATIC)) {
       PsiTypeParameter[] typeParameters = classOrMethodToBuild.getTypeParameters();

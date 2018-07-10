@@ -37,7 +37,8 @@ public class BuilderPreDefinedInnerClassMethodProcessor extends AbstractBuilderP
     }
 
     target.addAll(builderHandler.createConstructors(psiBuilderClass, psiAnnotation));
-    target.addAll(builderHandler.createMethods(psiParentClass, psiParentMethod, psiBuilderClass, psiAnnotation, builderFieldsOrParameters, BuilderHandler.getBuilderSubstitutor(psiParentClass, psiBuilderClass)));
+    target.addAll(builderHandler.createMethods(psiParentClass, psiParentMethod, psiBuilderClass, psiAnnotation, builderFieldsOrParameters,
+      builderHandler.getBuilderSubstitutor(psiParentClass, psiBuilderClass)));
   }
 
 }
