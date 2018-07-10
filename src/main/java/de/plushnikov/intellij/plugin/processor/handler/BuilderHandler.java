@@ -221,9 +221,14 @@ public class BuilderHandler {
   }
 
   public boolean notExistInnerClass(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
-    final String builderClassName = getBuilderClassName(psiClass, psiAnnotation, psiMethod);
-    final PsiClass innerBuilderClass = PsiClassUtil.getInnerClassInternByName(psiClass, builderClassName);
+    final PsiClass innerBuilderClass = getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation);
     return null == innerBuilderClass;
+  }
+
+  @Nullable
+  public PsiClass getExistInnerBuilderClass(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
+    final String builderClassName = getBuilderClassName(psiClass, psiAnnotation, psiMethod);
+    return PsiClassUtil.getInnerClassInternByName(psiClass, builderClassName);
   }
 
   private PsiType getReturnTypeOfBuildMethod(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod) {

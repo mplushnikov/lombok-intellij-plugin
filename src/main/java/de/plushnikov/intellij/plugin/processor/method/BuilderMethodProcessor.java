@@ -8,7 +8,6 @@ import com.intellij.psi.PsiMethod;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
-import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.Builder;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,8 +44,7 @@ public class BuilderMethodProcessor extends AbstractMethodProcessor {
     final PsiClass psiClass = psiMethod.getContainingClass();
     if (null != psiClass) {
 
-      final String builderClassName = builderHandler.getBuilderClassName(psiClass, psiAnnotation, psiMethod);
-      PsiClass builderClass = PsiClassUtil.getInnerClassInternByName(psiClass, builderClassName);
+      PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation);
       if (null == builderClass) {
         builderClass = builderHandler.createBuilderClass(psiClass, psiMethod, psiAnnotation);
       }
