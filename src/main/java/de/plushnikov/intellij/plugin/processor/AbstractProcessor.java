@@ -83,11 +83,6 @@ public abstract class AbstractProcessor implements Processor {
     return true;
   }
 
-  @Override
-  public boolean isShouldGenerateFullBodyBlock() {
-    return ShouldGenerateFullCodeBlock.getInstance().isStateActive();
-  }
-
   @NotNull
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
     return Collections.emptyList();

@@ -22,7 +22,6 @@ import com.intellij.psi.PsiTypeParameterListOwner;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
-import de.plushnikov.intellij.plugin.processor.ShouldGenerateFullCodeBlock;
 import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
@@ -355,72 +354,59 @@ public class BuilderHandler {
 
   @NotNull
   private PsiCodeBlock createBuilderMethodCodeBlock(@NotNull PsiClass containingClass, @NotNull PsiType psiTypeWithGenerics) {
-    final String blockText;
-    if (isShouldGenerateFullBodyBlock()) {
-      blockText = String.format("return new %s();", psiTypeWithGenerics.getPresentableText());
-    } else {
-      blockText = "return null;";
-    }
+    final String blockText = String.format("return new %s();", psiTypeWithGenerics.getPresentableText());
     return PsiMethodUtil.createCodeBlockFromText(blockText, containingClass);
   }
 
   @NotNull
   private PsiCodeBlock createToBuilderMethodCodeBlock(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod, @NotNull PsiType psiTypeWithGenerics) {
     final String codeBlockValue;
-    if (isShouldGenerateFullBodyBlock()) {
-      final AccessorsInfo accessorsInfo;
-      final Collection<? extends PsiVariable> builderVariables;
+    final AccessorsInfo accessorsInfo;
+    final Collection<? extends PsiVariable> builderVariables;
 
-      if (null == psiMethod) {
-        accessorsInfo = AccessorsInfo.build(psiClass);
-        builderVariables = getBuilderFields(psiClass, Collections.<PsiField>emptySet(), accessorsInfo);
-      } else {
-        accessorsInfo = AccessorsInfo.EMPTY;
-        builderVariables = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
-      }
+    if (null == psiMethod) {
+      accessorsInfo = AccessorsInfo.build(psiClass);
+      builderVariables = getBuilderFields(psiClass, Collections.<PsiField>emptySet(), accessorsInfo);
+    } else {
+      accessorsInfo = AccessorsInfo.EMPTY;
+      builderVariables = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
+    }
 
-      final StringBuilder methodCalls = new StringBuilder();
-      for (PsiVariable psiVariable : builderVariables) {
-        methodCalls.append('.');
-        methodCalls.append(accessorsInfo.removePrefix(psiVariable.getName()));
-        methodCalls.append('(');
+    final StringBuilder methodCalls = new StringBuilder();
+    for (PsiVariable psiVariable : builderVariables) {
+      methodCalls.append('.');
+      methodCalls.append(accessorsInfo.removePrefix(psiVariable.getName()));
+      methodCalls.append('(');
 
-        final PsiAnnotation obtainViaAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, BUILDER_OBTAIN_VIA_ANNOTATION);
-        if (null != obtainViaAnnotation) {
-          final String viaFieldName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_FIELD);
-          final String viaMethodName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_METHOD);
+      final PsiAnnotation obtainViaAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, BUILDER_OBTAIN_VIA_ANNOTATION);
+      if (null != obtainViaAnnotation) {
+        final String viaFieldName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_FIELD);
+        final String viaMethodName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_METHOD);
 
-          if (StringUtils.isNotEmpty(viaFieldName)) {
-            methodCalls.append("this.");
-            methodCalls.append(viaFieldName);
-          } else if (StringUtils.isNotEmpty(viaMethodName)) {
-            final boolean viaStaticCall = PsiAnnotationUtil.getBooleanAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_STATIC, false);
+        if (StringUtils.isNotEmpty(viaFieldName)) {
+          methodCalls.append("this.");
+          methodCalls.append(viaFieldName);
+        } else if (StringUtils.isNotEmpty(viaMethodName)) {
+          final boolean viaStaticCall = PsiAnnotationUtil.getBooleanAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_STATIC, false);
 
-            methodCalls.append(viaStaticCall ? psiClass.getName() : "this");
-            methodCalls.append('.');
-            methodCalls.append(viaMethodName);
-            methodCalls.append(viaStaticCall ? "(this)" : "()");
-          } else {
-            methodCalls.append("this.");
-            methodCalls.append(psiVariable.getName());
-          }
+          methodCalls.append(viaStaticCall ? psiClass.getName() : "this");
+          methodCalls.append('.');
+          methodCalls.append(viaMethodName);
+          methodCalls.append(viaStaticCall ? "(this)" : "()");
         } else {
           methodCalls.append("this.");
           methodCalls.append(psiVariable.getName());
         }
-
-        methodCalls.append(')');
+      } else {
+        methodCalls.append("this.");
+        methodCalls.append(psiVariable.getName());
       }
 
-      codeBlockValue = String.format("new %s()%s", psiTypeWithGenerics.getPresentableText(), methodCalls.toString());
-    } else {
-      codeBlockValue = "null";
+      methodCalls.append(')');
     }
-    return PsiMethodUtil.createCodeBlockFromText(String.format("return %s;", codeBlockValue), psiClass);
-  }
 
-  private boolean isShouldGenerateFullBodyBlock() {
-    return ShouldGenerateFullCodeBlock.getInstance().isStateActive();
+    codeBlockValue = String.format("new %s()%s", psiTypeWithGenerics.getPresentableText(), methodCalls.toString());
+    return PsiMethodUtil.createCodeBlockFromText(String.format("return %s;", codeBlockValue), psiClass);
   }
 
   @NotNull
@@ -481,7 +467,7 @@ public class BuilderHandler {
       final String fieldName = accessorsInfo.removePrefix(psiVariable.getName());
 
       final PsiAnnotation singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, Singular.class);
-      final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiVariable, singularAnnotation, isShouldGenerateFullBodyBlock());
+      final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiVariable, singularAnnotation);
 
       // skip methods already defined in builder class
       if (!existedMethodNames.contains(fieldName)) {
@@ -586,7 +572,7 @@ public class BuilderHandler {
     List<PsiField> fields = new ArrayList<PsiField>();
     for (PsiVariable psiVariable : psiVariables) {
       final PsiAnnotation singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, Singular.class);
-      BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiVariable, singularAnnotation, isShouldGenerateFullBodyBlock());
+      BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiVariable, singularAnnotation);
       handler.addBuilderField(fields, psiVariable, psiBuilderClass, accessorsInfo, builderSubstitutor);
     }
     return fields;
@@ -641,24 +627,20 @@ public class BuilderHandler {
                                                   @NotNull String buildMethodPrepare, @NotNull String buildMethodParameters) {
     final String blockText;
 
-    if (isShouldGenerateFullBodyBlock()) {
-      final String codeBlockFormat, callExpressionText;
+    final String codeBlockFormat, callExpressionText;
 
-      if (null == psiMethod || psiMethod.isConstructor()) {
-        codeBlockFormat = "%s\n return new %s(%s);";
-        callExpressionText = buildMethodReturnType.getPresentableText();
-      } else {
-        if (PsiType.VOID.equals(buildMethodReturnType)) {
-          codeBlockFormat = "%s\n %s(%s);";
-        } else {
-          codeBlockFormat = "%s\n return %s(%s);";
-        }
-        callExpressionText = calculateCallExpressionForMethod(psiMethod, psiClass);
-      }
-      blockText = String.format(codeBlockFormat, buildMethodPrepare, callExpressionText, buildMethodParameters);
+    if (null == psiMethod || psiMethod.isConstructor()) {
+      codeBlockFormat = "%s\n return new %s(%s);";
+      callExpressionText = buildMethodReturnType.getPresentableText();
     } else {
-      blockText = "return " + PsiTypeUtil.getReturnValueOfType(buildMethodReturnType) + ";";
+      if (PsiType.VOID.equals(buildMethodReturnType)) {
+        codeBlockFormat = "%s\n %s(%s);";
+      } else {
+        codeBlockFormat = "%s\n return %s(%s);";
+      }
+      callExpressionText = calculateCallExpressionForMethod(psiMethod, psiClass);
     }
+    blockText = String.format(codeBlockFormat, buildMethodPrepare, callExpressionText, buildMethodParameters);
     return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
   }
 

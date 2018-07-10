@@ -22,10 +22,7 @@ import java.util.List;
 class NonSingularHandler implements BuilderElementHandler {
   private static final String SETTER_PREFIX = "set";
 
-  private final boolean shouldGenerateFullBodyBlock;
-
-  NonSingularHandler(boolean shouldGenerateFullBodyBlock) {
-    this.shouldGenerateFullBodyBlock = shouldGenerateFullBodyBlock;
+  NonSingularHandler() {
   }
 
   public void addBuilderField(@NotNull List<PsiField> fields, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, @NotNull AccessorsInfo accessorsInfo, @NotNull PsiSubstitutor builderSubstitutor) {
@@ -50,12 +47,7 @@ class NonSingularHandler implements BuilderElementHandler {
 
   @NotNull
   private PsiCodeBlock createCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, String psiFieldName) {
-    final String blockText;
-    if (shouldGenerateFullBodyBlock) {
-      blockText = getAllMethodBody(psiFieldName, fluentBuilder);
-    } else {
-      blockText = "return null;";
-    }
+    final String blockText = getAllMethodBody(psiFieldName, fluentBuilder);
     return PsiMethodUtil.createCodeBlockFromText(blockText, innerClass);
   }
 

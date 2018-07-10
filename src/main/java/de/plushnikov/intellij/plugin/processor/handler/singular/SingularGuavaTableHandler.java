@@ -26,8 +26,8 @@ class SingularGuavaTableHandler extends SingularMapHandler {
 
   private final boolean sortedCollection;
 
-  SingularGuavaTableHandler(String guavaQualifiedName, boolean sortedCollection, boolean shouldGenerateFullBodyBlock) {
-    super(guavaQualifiedName, shouldGenerateFullBodyBlock);
+  SingularGuavaTableHandler(String guavaQualifiedName, boolean sortedCollection) {
+    super(guavaQualifiedName);
     this.sortedCollection = sortedCollection;
   }
 

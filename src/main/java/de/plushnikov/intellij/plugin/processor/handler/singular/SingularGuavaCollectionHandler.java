@@ -16,8 +16,8 @@ class SingularGuavaCollectionHandler extends SingularCollectionHandler {
   private final boolean sortedCollection;
   private final String typeCollectionQualifiedName;
 
-  SingularGuavaCollectionHandler(String collectionQualifiedName, boolean sortedCollection, boolean shouldGenerateFullBodyBlock) {
-    super(collectionQualifiedName, shouldGenerateFullBodyBlock);
+  SingularGuavaCollectionHandler(String collectionQualifiedName, boolean sortedCollection) {
+    super(collectionQualifiedName);
     this.sortedCollection = sortedCollection;
     this.typeCollectionQualifiedName = SingularCollectionClassNames.GUAVA_IMMUTABLE_COLLECTION.equals(collectionQualifiedName)
       ? SingularCollectionClassNames.GUAVA_IMMUTABLE_LIST : collectionQualifiedName;

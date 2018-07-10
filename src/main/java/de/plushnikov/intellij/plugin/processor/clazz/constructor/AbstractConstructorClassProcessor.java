@@ -355,13 +355,9 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
   @NotNull
   private PsiCodeBlock createStaticCodeBlock(@NotNull PsiType psiType, boolean useJavaDefaults, @NotNull final PsiParameterList parameterList) {
     final String blockText;
-    if (isShouldGenerateFullBodyBlock()) {
-      final String psiClassName = psiType.getPresentableText();
-      final String paramsText = useJavaDefaults ? "" : joinParameters(parameterList);
-      blockText = String.format("return new %s(%s);", psiClassName, paramsText);
-    } else {
-      blockText = "return null;";
-    }
+    final String psiClassName = psiType.getPresentableText();
+    final String paramsText = useJavaDefaults ? "" : joinParameters(parameterList);
+    blockText = String.format("return new %s(%s);", psiClassName, paramsText);
     return PsiMethodUtil.createCodeBlockFromText(blockText, parameterList);
   }
 

@@ -28,11 +28,8 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
 
   protected final String collectionQualifiedName;
 
-  private final boolean shouldGenerateFullBodyBlock;
-
-  AbstractSingularHandler(String qualifiedName, boolean shouldGenerateFullBodyBlock) {
+  AbstractSingularHandler(String qualifiedName) {
     this.collectionQualifiedName = qualifiedName;
-    this.shouldGenerateFullBodyBlock = shouldGenerateFullBodyBlock;
   }
 
   @Override
@@ -93,12 +90,7 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
 
   @NotNull
   private PsiCodeBlock createClearMethodCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, String psiFieldName) {
-    final String blockText;
-    if (shouldGenerateFullBodyBlock) {
-      blockText = getClearMethodBody(psiFieldName, fluentBuilder);
-    } else {
-      blockText = fluentBuilder ? "return this;" : "";
-    }
+    final String blockText = getClearMethodBody(psiFieldName, fluentBuilder);
     return PsiMethodUtil.createCodeBlockFromText(blockText, innerClass);
   }
 
@@ -106,23 +98,13 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
 
   @NotNull
   private PsiCodeBlock createOneAddMethodCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, @NotNull String singularName, @NotNull String psiFieldName, PsiType psiFieldType) {
-    final String blockText;
-    if (shouldGenerateFullBodyBlock) {
-      blockText = getOneMethodBody(singularName, psiFieldName, psiFieldType, innerClass.getManager(), fluentBuilder);
-    } else {
-      blockText = fluentBuilder ? "return this;" : "";
-    }
+    final String blockText = getOneMethodBody(singularName, psiFieldName, psiFieldType, innerClass.getManager(), fluentBuilder);
     return PsiMethodUtil.createCodeBlockFromText(blockText, innerClass);
   }
 
   @NotNull
   private PsiCodeBlock createAllAddMethodCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, @NotNull String psiFieldName, @NotNull PsiType psiFieldType) {
-    final String blockText;
-    if (shouldGenerateFullBodyBlock) {
-      blockText = getAllMethodBody(psiFieldName, psiFieldType, innerClass.getManager(), fluentBuilder);
-    } else {
-      blockText = fluentBuilder ? "return this;" : "";
-    }
+    final String blockText = getAllMethodBody(psiFieldName, psiFieldType, innerClass.getManager(), fluentBuilder);
     return PsiMethodUtil.createCodeBlockFromText(blockText, innerClass);
   }
 
