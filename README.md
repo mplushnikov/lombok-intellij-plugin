@@ -13,9 +13,9 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.18) released on 23.06.2018**
+**Last version (0.19) released on 09.07.2018**
 
-Twenty-fourth version of plugin released. Contains a lot of bugfixes and some new features!
+Twenty-five version of plugin released. Contains a lot of bugfixes and some new features!
 
 Install it automatically from IntelliJ Idea plugin repository.
 
@@ -85,7 +85,7 @@ In your `build.gradle`:
 ```groovy
 // 'compile' can be changed to 'compileOnly' for Gradle 2.12+
 // or 'provided' if using 'propdeps' plugin from SpringSource
-compile "org.projectlombok:lombok:1.16.20"
+compile "org.projectlombok:lombok:1.18.0"
 ```
 
 ##### Maven
@@ -138,6 +138,7 @@ Developed By
 - [**@toadzky** David Harris](https://github.com/toadzky)
 - [**@twillouer** William Delanoue](https://github.com/twillouer)
 - [**@uvpoblotzki** Ulrich von Poblotzki](https://github.com/uvpoblotzki)
+- [**@yiftizur** Yiftach Tzur](https://github.com/yiftizur)
 
 Supporters
 --------

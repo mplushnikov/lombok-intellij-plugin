@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
 
 public class OnXAnnotationHandler {
   private static final Pattern UNDERSCORES = Pattern.compile("__*");
-  private static final Pattern CANNOT_RESOLVE_UNDERSCORES_MESSAGE = Pattern.compile("Cannot resolve symbol '__*'");
+  private static final Pattern CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE = Pattern.compile("Cannot resolve symbol '__*'");
+  private static final Pattern CANNOT_RESOLVE_METHOD_UNDERSCORES_MESSAGE = Pattern.compile("Cannot resolve method '(onMethod|onConstructor|onParam)_+'");
 
   private static final String ANNOTATION_TYPE_EXPECTED = "Annotation type expected";
   private static final String CANNOT_FIND_METHOD_VALUE_MESSAGE = "Cannot find method 'value'";
@@ -35,8 +36,10 @@ public class OnXAnnotationHandler {
   );
 
   public static boolean isOnXParameterAnnotation(HighlightInfo highlightInfo, PsiFile file) {
-    if (!(ANNOTATION_TYPE_EXPECTED.equals(highlightInfo.getDescription())
-      || CANNOT_RESOLVE_UNDERSCORES_MESSAGE.matcher(StringUtil.notNullize(highlightInfo.getDescription())).matches())) {
+    final String description = StringUtil.notNullize(highlightInfo.getDescription());
+    if (!(ANNOTATION_TYPE_EXPECTED.equals(description)
+      || CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE.matcher(description).matches()
+      || CANNOT_RESOLVE_METHOD_UNDERSCORES_MESSAGE.matcher(description).matches())) {
       return false;
     }
 
@@ -48,6 +51,9 @@ public class OnXAnnotationHandler {
     }
 
     String parameterName = nameValuePair.getName();
+    if (null != parameterName && parameterName.contains("_")) {
+      parameterName = parameterName.substring(0, parameterName.indexOf('_'));
+    }
     if (!ONX_PARAMETERS.contains(parameterName)) {
       return false;
     }
