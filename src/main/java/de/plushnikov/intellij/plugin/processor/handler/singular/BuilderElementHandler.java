@@ -12,6 +12,7 @@ import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BuilderElementHandler {
@@ -21,13 +22,18 @@ public interface BuilderElementHandler {
 
   String createSingularName(PsiAnnotation singularAnnotation, String psiFieldName);
 
-  void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName);
+  default void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName) {
+  }
 
-  void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName);
+  default void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName) {
+    buildMethodParameters.append(fieldName);
+  }
 
   LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info);
 
   default LombokLightFieldBuilder renderAdditionalBuilderField(@NotNull BuilderInfo info) {
     return null;
   }
+
+  Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info);
 }

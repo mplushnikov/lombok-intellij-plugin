@@ -23,6 +23,8 @@ import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import lombok.core.handlers.Singulars;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractSingularHandler implements BuilderElementHandler {
@@ -96,6 +98,42 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
     methods.add(clearMethod);
   }
 
+  @Override
+  public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
+    List<PsiMethod> methods = new ArrayList<>();
+
+    final PsiType returnType = info.isChainBuilder() ? info.getBuilderType() : PsiType.VOID;
+    final String singularName = createSingularName(info.getSingularAnnotation(), info.getFieldName());
+
+    final LombokLightMethodBuilder oneAddMethod = new LombokLightMethodBuilder(info.getManager(), singularName)
+      .withMethodReturnType(returnType)
+      .withNavigationElement(info.getVariable())
+      .withModifier(PsiModifier.PUBLIC);
+
+    addOneMethodParameter(oneAddMethod, info.getFieldType(), singularName);
+    oneAddMethod.withBody(createOneAddMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), singularName, info.getFieldName(), info.getFieldType()));
+    methods.add(oneAddMethod);
+
+    final LombokLightMethodBuilder allAddMethod = new LombokLightMethodBuilder(info.getManager(), info.getFieldName())
+      .withMethodReturnType(returnType)
+      .withNavigationElement(info.getVariable())
+      .withModifier(PsiModifier.PUBLIC);
+
+    addAllMethodParameter(allAddMethod, info.getFieldType(), info.getFieldName());
+    allAddMethod.withBody(createAllAddMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), info.getFieldName(), info.getFieldType()));
+    methods.add(allAddMethod);
+
+    final LombokLightMethodBuilder clearMethod = new LombokLightMethodBuilder(info.getManager(), "clear" + StringUtil.capitalize(info.getFieldName()))
+      .withMethodReturnType(returnType)
+      .withNavigationElement(info.getVariable())
+      .withModifier(PsiModifier.PUBLIC)
+      .withBody(createClearMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), info.getFieldName()));
+
+    methods.add(clearMethod);
+
+    return methods;
+  }
+
   @NotNull
   private PsiCodeBlock createClearMethodCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, String psiFieldName) {
     final String blockText = getClearMethodBody(psiFieldName, fluentBuilder);
@@ -144,8 +182,4 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
     return true;
   }
 
-  @Override
-  public void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName) {
-    buildMethodParameters.append(fieldName);
-  }
 }

@@ -18,6 +18,8 @@ import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 class NonSingularHandler implements BuilderElementHandler {
@@ -52,6 +54,17 @@ class NonSingularHandler implements BuilderElementHandler {
       .withBody(createCodeBlock(innerClass, fluentBuilder, psiFieldName)));
   }
 
+  @Override
+  public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
+    return Collections.singleton(
+      new LombokLightMethodBuilder(info.getManager(), createSetterName(info.getFieldName(), info.isFluentBuilder()))
+        .withMethodReturnType(info.isChainBuilder() ? info.getBuilderType() : PsiType.VOID)
+        .withParameter(info.getFieldName(), info.getFieldType())
+        .withNavigationElement(info.getVariable())
+        .withModifier(PsiModifier.PUBLIC)
+        .withBody(createCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), info.getFieldName())));
+  }
+
   @NotNull
   private PsiCodeBlock createCodeBlock(@NotNull PsiClass innerClass, boolean fluentBuilder, String psiFieldName) {
     final String blockText = getAllMethodBody(psiFieldName, fluentBuilder);
@@ -71,14 +84,5 @@ class NonSingularHandler implements BuilderElementHandler {
   private String getAllMethodBody(@NotNull String psiFieldName, boolean fluentBuilder) {
     final String codeBlockTemplate = "this.{0} = {0};{1}";
     return MessageFormat.format(codeBlockTemplate, psiFieldName, fluentBuilder ? "\nreturn this;" : "");
-  }
-
-  @Override
-  public void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName) {
-  }
-
-  @Override
-  public void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName) {
-    buildMethodParameters.append(fieldName);
   }
 }

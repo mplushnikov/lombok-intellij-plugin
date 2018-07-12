@@ -2,10 +2,12 @@ package de.plushnikov.intellij.plugin.processor.handler;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameter;
@@ -18,6 +20,7 @@ import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerF
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
+import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,12 +32,18 @@ public class BuilderInfo {
   private PsiVariable variableInClass;
   private PsiType fieldInBuilderType;
 
+  private PsiClass builderClass;
+  private PsiType builderClassType;
+
   private String fieldInBuilderName;
   private PsiExpression fieldInitializer;
   private boolean hasBuilderDefaultAnnotation;
 
   private PsiAnnotation singularAnnotation;
   private BuilderElementHandler builderElementHandler;
+
+  private boolean fluentBuilder = true;
+  private boolean chainBuilder = true;
 
   public static BuilderInfo fromPsiParameter(PsiParameter psiParameter) {
     final BuilderInfo result = new BuilderInfo();
@@ -110,8 +119,44 @@ public class BuilderInfo {
     return variableInClass;
   }
 
+  public boolean isFluentBuilder() {
+    return fluentBuilder;
+  }
+
+  public boolean isChainBuilder() {
+    return chainBuilder;
+  }
+
+  public PsiClass getBuilderClass() {
+    return builderClass;
+  }
+
+  public PsiType getBuilderType() {
+    return builderClassType;
+  }
+
+  public PsiAnnotation getSingularAnnotation() {
+    return singularAnnotation;
+  }
+
   public BuilderInfo withSubstitutor(PsiSubstitutor builderSubstitutor) {
     fieldInBuilderType = builderSubstitutor.substitute(fieldInBuilderType);
+    return this;
+  }
+
+  public BuilderInfo withFluent(boolean fluentBuilder) {
+    this.fluentBuilder = fluentBuilder;
+    return this;
+  }
+
+  public BuilderInfo withChain(boolean chainBuilder) {
+    this.chainBuilder = chainBuilder;
+    return this;
+  }
+
+  public BuilderInfo withBuilderClass(@NotNull PsiClass builderClass) {
+    this.builderClass = builderClass;
+    this.builderClassType = PsiClassUtil.getTypeWithGenerics(builderClass);
     return this;
   }
 
@@ -126,7 +171,7 @@ public class BuilderInfo {
       if (null != additionalBuilderField) {
         result = Arrays.asList(mainBuilderField, additionalBuilderField);
       } else {
-        result = Collections.singletonList(mainBuilderField);
+        result = Collections.singleton(mainBuilderField);
       }
     } else {
       result = Collections.emptyList();
@@ -135,4 +180,17 @@ public class BuilderInfo {
     return result;
   }
 
+  public Collection<PsiMethod> renderBuilderMethods() {
+    return builderElementHandler.renderBuilderMethod(this);
+  }
+
+  public String renderBuildPrepare() {
+    final StringBuilder stringBuilder = new StringBuilder();
+    builderElementHandler.appendBuildPrepare(stringBuilder, variableInClass, fieldInBuilderName);
+    return stringBuilder.toString();
+  }
+
+  public String renderBuildCall() {
+    return fieldInBuilderName;
+  }
 }

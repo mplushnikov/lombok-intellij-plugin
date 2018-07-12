@@ -428,6 +428,9 @@ public class BuilderHandler {
 
     final List<BuilderInfo> builderInfos = NewBuilderHandler.createBuilderInfo(psiMethod)
       .map(info -> info.withSubstitutor(builderSubstitutor))
+      .map(info -> info.withBuilderClass(builderClass))
+      .map(info -> info.withFluent(isFluentBuilder(psiAnnotation)))
+      .map(info -> info.withChain(isChainBuilder(psiAnnotation)))
       .collect(Collectors.toList());
 
     // create builder Fields
@@ -436,9 +439,27 @@ public class BuilderHandler {
       .filter(Objects::nonNull)
       .forEach(builderClass::withFields);
 
-    final Collection<PsiParameter> builderParameters = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
-//    builderClass.withFields(generateFields(builderParameters, builderClass, AccessorsInfo.EMPTY, builderSubstitutor));
-    builderClass.withMethods(createMethods(psiClass, psiMethod, builderClass, psiAnnotation, builderParameters, builderSubstitutor));
+    // create builder methods
+    builderInfos.stream()
+      .map(BuilderInfo::renderBuilderMethods)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .forEach(builderClass::withMethods);
+
+
+    // create 'build' method
+    final String buildMethodPrepareString = builderInfos.stream()
+      .map(BuilderInfo::renderBuildPrepare)
+      .collect(Collectors.joining());
+
+    final String buildMethodParameterString = builderInfos.stream()
+      .map(BuilderInfo::renderBuildCall)
+      .collect(Collectors.joining(","));
+
+    final String buildMethodName = getBuildMethodName(psiAnnotation);
+    builderClass.addMethod(createBuildMethod(psiClass, psiMethod, builderClass, builderSubstitutor,
+      buildMethodName, buildMethodPrepareString, buildMethodParameterString));
+
+    // create 'toString' method
+    builderClass.addMethod(toStringProcessor.createToStringMethod(builderClass, Arrays.asList(builderClass.getFields()), psiAnnotation));
 
     return builderClass;
   }
@@ -452,9 +473,11 @@ public class BuilderHandler {
 
     final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
 
-
     final List<BuilderInfo> builderInfos = NewBuilderHandler.createBuilderInfo(psiClass)
       .map(info -> info.withSubstitutor(builderSubstitutor))
+      .map(info -> info.withBuilderClass(builderClass))
+      .map(info -> info.withFluent(isFluentBuilder(psiAnnotation)))
+      .map(info -> info.withChain(isChainBuilder(psiAnnotation)))
       .collect(Collectors.toList());
 
     // create builder fields
@@ -462,14 +485,27 @@ public class BuilderHandler {
       .map(BuilderInfo::renderBuilderFields)//.map(field -> field.withContainingClass(builderClass)) // already happens
       .forEach(builderClass::withFields);
 
+    // create builder methods
+    builderInfos.stream()
+      .map(BuilderInfo::renderBuilderMethods)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .forEach(builderClass::withMethods);
 
 
+    // create 'build' method
+    final String buildMethodPrepareString = builderInfos.stream()
+      .map(BuilderInfo::renderBuildPrepare)
+      .collect(Collectors.joining());
 
-    final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiClass);
-    final Collection<PsiField> psiFields = getBuilderFields(psiClass, Collections.<PsiField>emptySet(), accessorsInfo);
+    final String buildMethodParameterString = builderInfos.stream()
+      .map(BuilderInfo::renderBuildCall)
+      .collect(Collectors.joining(","));
 
-//    builderClass.withFields(generateFields(psiFields, builderClass, accessorsInfo, builderSubstitutor));
-    builderClass.withMethods(createMethods(psiClass, null, builderClass, psiAnnotation, psiFields, builderSubstitutor));
+    final String buildMethodName = getBuildMethodName(psiAnnotation);
+    builderClass.addMethod(createBuildMethod(psiClass, null, builderClass, builderSubstitutor,
+      buildMethodName, buildMethodPrepareString, buildMethodParameterString));
+
+    // create 'toString' method
+    builderClass.addMethod(toStringProcessor.createToStringMethod(builderClass, Arrays.asList(builderClass.getFields()), psiAnnotation));
 
     return builderClass;
   }
@@ -726,9 +762,12 @@ public class BuilderHandler {
     return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_FLUENT, true);
   }
 
+  private boolean isChainBuilder(@NotNull PsiAnnotation psiAnnotation) {
+    return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_CHAIN, true);
+  }
+
   @NotNull
-  private PsiType createSetterReturnType(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiType fieldType) {
-    final boolean isChain = PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_CHAIN, true);
-    return isChain ? fieldType : PsiType.VOID;
+  private PsiType createSetterReturnType(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiType psiType) {
+    return isChainBuilder(psiAnnotation) ? psiType : PsiType.VOID;
   }
 }

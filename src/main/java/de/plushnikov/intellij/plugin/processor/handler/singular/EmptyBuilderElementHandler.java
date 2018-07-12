@@ -12,6 +12,8 @@ import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 class EmptyBuilderElementHandler implements BuilderElementHandler {
@@ -19,8 +21,14 @@ class EmptyBuilderElementHandler implements BuilderElementHandler {
   public void addBuilderField(@NotNull List<PsiField> fields, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, @NotNull AccessorsInfo accessorsInfo, @NotNull PsiSubstitutor substitutor) {
   }
 
+  @Override
   public LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info) {
     return null;
+  }
+
+  @Override
+  public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
+    return Collections.emptyList();
   }
 
   @Override
@@ -32,12 +40,4 @@ class EmptyBuilderElementHandler implements BuilderElementHandler {
     return psiFieldName;
   }
 
-  @Override
-  public void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName) {
-  }
-
-  @Override
-  public void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName) {
-    buildMethodParameters.append(fieldName);
-  }
 }
