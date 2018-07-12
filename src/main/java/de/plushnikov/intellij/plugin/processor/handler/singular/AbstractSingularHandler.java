@@ -14,6 +14,7 @@ import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
+import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
@@ -43,6 +44,13 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
         .withNavigationElement(psiVariable)
         .withContainingClass(innerClass);
     fields.add(fieldBuilder);
+  }
+
+  public LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info) {
+    final PsiType builderFieldType = getBuilderFieldType(info.getFieldType(), info.getProject());
+    return new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), builderFieldType)
+      .withModifier(PsiModifier.PRIVATE)
+      .withNavigationElement(info.getVariable());
   }
 
   @NotNull

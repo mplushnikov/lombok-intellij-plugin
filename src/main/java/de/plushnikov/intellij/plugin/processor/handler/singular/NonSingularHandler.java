@@ -11,6 +11,7 @@ import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
+import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
@@ -33,6 +34,12 @@ class NonSingularHandler implements BuilderElementHandler {
         .withNavigationElement(psiVariable)
         .withContainingClass(innerClass);
     fields.add(fieldBuilder);
+  }
+
+  public LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info) {
+    return new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), info.getFieldType())
+      .withModifier(PsiModifier.PRIVATE)
+      .withNavigationElement(info.getVariable());
   }
 
   public void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull String fieldName, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String psiFieldName, PsiSubstitutor builderSubstitutor) {

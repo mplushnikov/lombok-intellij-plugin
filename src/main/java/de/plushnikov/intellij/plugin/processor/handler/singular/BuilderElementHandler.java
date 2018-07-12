@@ -8,6 +8,8 @@ import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
+import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
+import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -22,4 +24,10 @@ public interface BuilderElementHandler {
   void appendBuildPrepare(@NotNull StringBuilder buildMethodParameters, @NotNull PsiVariable psiVariable, @NotNull String fieldName);
 
   void appendBuildCall(@NotNull StringBuilder buildMethodParameters, @NotNull String fieldName);
+
+  LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info);
+
+  default LombokLightFieldBuilder renderAdditionalBuilderField(@NotNull BuilderInfo info) {
+    return null;
+  }
 }

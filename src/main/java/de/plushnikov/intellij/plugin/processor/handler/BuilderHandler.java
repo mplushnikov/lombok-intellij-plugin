@@ -60,7 +60,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handler methods for Builder-processing
@@ -89,7 +91,7 @@ public class BuilderHandler {
   private static final String BUILDER_OBTAIN_VIA_METHOD = "method";
   private static final String BUILDER_OBTAIN_VIA_STATIC = "isStatic";
   private static final String BUILDER_OBTAIN_VIA_ANNOTATION = Builder.ObtainVia.class.getName().replace("$", ".");
-  private static final String BUILDER_DEFAULT_ANNOTATION = Builder.Default.class.getName().replace("$", ".");
+  public static final String BUILDER_DEFAULT_ANNOTATION = Builder.Default.class.getName().replace("$", ".");
 
 
   private final ToStringProcessor toStringProcessor;
@@ -422,9 +424,20 @@ public class BuilderHandler {
       psiMethod.isConstructor() || psiMethod.hasModifierProperty(PsiModifier.STATIC), psiAnnotation);
     builderClass.withMethods(createConstructors(builderClass, psiAnnotation));
 
-    final Collection<PsiParameter> builderParameters = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
     final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
-    builderClass.withFields(generateFields(builderParameters, builderClass, AccessorsInfo.EMPTY, builderSubstitutor));
+
+    final List<BuilderInfo> builderInfos = NewBuilderHandler.createBuilderInfo(psiMethod)
+      .map(info -> info.withSubstitutor(builderSubstitutor))
+      .collect(Collectors.toList());
+
+    // create builder Fields
+    builderInfos.stream()
+      .map(BuilderInfo::renderBuilderFields)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .filter(Objects::nonNull)
+      .forEach(builderClass::withFields);
+
+    final Collection<PsiParameter> builderParameters = getBuilderParameters(psiMethod, Collections.<PsiField>emptySet());
+//    builderClass.withFields(generateFields(builderParameters, builderClass, AccessorsInfo.EMPTY, builderSubstitutor));
     builderClass.withMethods(createMethods(psiClass, psiMethod, builderClass, psiAnnotation, builderParameters, builderSubstitutor));
 
     return builderClass;
@@ -437,11 +450,25 @@ public class BuilderHandler {
     LombokLightClassBuilder builderClass = createBuilderClass(psiClass, psiClass, builderClassName, true, psiAnnotation);
     builderClass.withMethods(createConstructors(builderClass, psiAnnotation));
 
+    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
+
+
+    final List<BuilderInfo> builderInfos = NewBuilderHandler.createBuilderInfo(psiClass)
+      .map(info -> info.withSubstitutor(builderSubstitutor))
+      .collect(Collectors.toList());
+
+    // create builder fields
+    builderInfos.stream()
+      .map(BuilderInfo::renderBuilderFields)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .forEach(builderClass::withFields);
+
+
+
+
     final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiClass);
     final Collection<PsiField> psiFields = getBuilderFields(psiClass, Collections.<PsiField>emptySet(), accessorsInfo);
 
-    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
-    builderClass.withFields(generateFields(psiFields, builderClass, accessorsInfo, builderSubstitutor));
+//    builderClass.withFields(generateFields(psiFields, builderClass, accessorsInfo, builderSubstitutor));
     builderClass.withMethods(createMethods(psiClass, null, builderClass, psiAnnotation, psiFields, builderSubstitutor));
 
     return builderClass;
