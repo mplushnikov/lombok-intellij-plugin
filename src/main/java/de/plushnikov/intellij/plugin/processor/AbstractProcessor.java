@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -101,13 +100,7 @@ public abstract class AbstractProcessor implements Processor {
   }
 
   protected void filterToleratedElements(@NotNull Collection<? extends PsiModifierListOwner> definedMethods) {
-    final Iterator<? extends PsiModifierListOwner> methodIterator = definedMethods.iterator();
-    while (methodIterator.hasNext()) {
-      PsiModifierListOwner definedMethod = methodIterator.next();
-      if (PsiAnnotationSearchUtil.isAnnotatedWith(definedMethod, Tolerate.class)) {
-        methodIterator.remove();
-      }
-    }
+    definedMethods.removeIf(definedMethod -> PsiAnnotationSearchUtil.isAnnotatedWith(definedMethod, Tolerate.class));
   }
 
   protected static boolean readAnnotationOrConfigProperty(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass,

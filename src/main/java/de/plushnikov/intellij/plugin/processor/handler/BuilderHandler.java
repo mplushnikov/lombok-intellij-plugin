@@ -5,7 +5,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
@@ -26,7 +25,6 @@ import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.singular.AbstractSingularHandler;
-import de.plushnikov.intellij.plugin.processor.handler.singular.BuilderElementHandler;
 import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerFactory;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -63,6 +61,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Handler methods for Builder-processing
@@ -244,7 +243,7 @@ public class BuilderHandler {
   }
 
   @NotNull
-  private static String getBuildMethodName(@NotNull PsiAnnotation psiAnnotation) {
+  public static String getBuildMethodName(@NotNull PsiAnnotation psiAnnotation) {
     final String buildMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILD_METHOD_NAME);
     return StringUtil.isEmptyOrSpaces(buildMethodName) ? BUILD_METHOD_NAME : buildMethodName;
   }
@@ -412,6 +411,27 @@ public class BuilderHandler {
   }
 
   @NotNull
+  private Stream<BuilderInfo> createBuilderInfo(@NotNull PsiClass psiClass, @Nullable PsiMethod psiClassMethod) {
+    if (null != psiClassMethod) {
+      return Arrays.stream(psiClassMethod.getParameterList().getParameters()).map(BuilderInfo::fromPsiParameter);
+    } else {
+      return PsiClassUtil.collectClassFieldsIntern(psiClass).stream().map(BuilderInfo::fromPsiField)
+        .filter(BuilderInfo::useForBuilder);
+    }
+  }
+
+  public List<BuilderInfo> createBuilderInfos(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass,
+                                              @Nullable PsiMethod psiClassMethod, @NotNull PsiClass builderClass) {
+    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
+    return createBuilderInfo(psiClass, psiClassMethod)
+      .map(info -> info.withSubstitutor(builderSubstitutor))
+      .map(info -> info.withBuilderClass(builderClass))
+      .map(info -> info.withFluent(isFluentBuilder(psiAnnotation)))
+      .map(info -> info.withChain(isChainBuilder(psiAnnotation)))
+      .collect(Collectors.toList());
+  }
+
+  @NotNull
   public PsiClass createBuilderClass(@NotNull PsiClass psiClass, @NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
     final String builderClassName = getBuilderClassName(psiClass, psiAnnotation, psiMethod);
 
@@ -423,33 +443,21 @@ public class BuilderHandler {
 
     // create builder Fields
     builderInfos.stream()
-      .map(BuilderInfo::renderBuilderFields)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .map(BuilderInfo::renderBuilderFields)
       .filter(Objects::nonNull)
       .forEach(builderClass::withFields);
 
     // create builder methods
     builderInfos.stream()
-      .map(BuilderInfo::renderBuilderMethods)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .map(BuilderInfo::renderBuilderMethods)
       .forEach(builderClass::withMethods);
 
-
     // create 'build' method
-    final String buildMethodPrepareString = builderInfos.stream()
-      .map(BuilderInfo::renderBuildPrepare)
-      .collect(Collectors.joining());
-
-    final String buildMethodParameterString = builderInfos.stream()
-      .map(BuilderInfo::renderBuildCall)
-      .collect(Collectors.joining(","));
-
     final String buildMethodName = getBuildMethodName(psiAnnotation);
-    //TODO replace with builderinfos
-    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
-    builderClass.addMethod(createBuildMethod(psiClass, psiMethod, builderClass, builderSubstitutor,
-      buildMethodName, buildMethodPrepareString, buildMethodParameterString));
+    builderClass.addMethod(createBuildMethod(psiClass, psiMethod, builderClass, buildMethodName, builderInfos));
 
     // create 'toString' method
-    builderClass.addMethod(toStringProcessor.createToStringMethod(builderClass, Arrays.asList(builderClass.getFields()), psiAnnotation));
+    builderClass.addMethod(createToStringMethod(psiAnnotation, builderClass));
 
     return builderClass;
   }
@@ -465,45 +473,27 @@ public class BuilderHandler {
 
     // create builder fields
     builderInfos.stream()
-      .map(BuilderInfo::renderBuilderFields)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .map(BuilderInfo::renderBuilderFields)
       .forEach(builderClass::withFields);
 
     // create builder methods
     builderInfos.stream()
-      .map(BuilderInfo::renderBuilderMethods)//.map(field -> field.withContainingClass(builderClass)) // already happens
+      .map(BuilderInfo::renderBuilderMethods)
       .forEach(builderClass::withMethods);
 
-
     // create 'build' method
-    final String buildMethodPrepareString = builderInfos.stream()
-      .map(BuilderInfo::renderBuildPrepare)
-      .collect(Collectors.joining());
-
-    final String buildMethodParameterString = builderInfos.stream()
-      .map(BuilderInfo::renderBuildCall)
-      .collect(Collectors.joining(","));
-
     final String buildMethodName = getBuildMethodName(psiAnnotation);
-    //TODO replace with builderinfos
-    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
-    builderClass.addMethod(createBuildMethod(psiClass, null, builderClass, builderSubstitutor,
-      buildMethodName, buildMethodPrepareString, buildMethodParameterString));
+    builderClass.addMethod(createBuildMethod(psiClass, null, builderClass, buildMethodName, builderInfos));
 
     // create 'toString' method
-    builderClass.addMethod(toStringProcessor.createToStringMethod(builderClass, Arrays.asList(builderClass.getFields()), psiAnnotation));
+    builderClass.addMethod(createToStringMethod(psiAnnotation, builderClass));
 
     return builderClass;
   }
 
-  public List<BuilderInfo> createBuilderInfos(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass,
-                                              @Nullable PsiMethod psiClassMethod, @NotNull PsiClass builderClass) {
-    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
-    return NewBuilderHandler.createBuilderInfo(psiClass, psiClassMethod)
-      .map(info -> info.withSubstitutor(builderSubstitutor))
-      .map(info -> info.withBuilderClass(builderClass))
-      .map(info -> info.withFluent(isFluentBuilder(psiAnnotation)))
-      .map(info -> info.withChain(isChainBuilder(psiAnnotation)))
-      .collect(Collectors.toList());
+  @NotNull
+  public PsiMethod createToStringMethod(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass builderClass) {
+    return toStringProcessor.createToStringMethod(builderClass, Arrays.asList(builderClass.getFields()), psiAnnotation);
   }
 
   @NotNull
@@ -532,61 +522,6 @@ public class BuilderHandler {
       }
     }
     return noArgsConstructorProcessor.createNoArgsConstructor(psiClass, PsiModifier.PACKAGE_LOCAL, psiAnnotation);
-  }
-
-  @NotNull
-  public Collection<PsiMethod> createMethods(@NotNull PsiClass psiParentClass, @Nullable PsiMethod psiMethod, @NotNull PsiClass psiBuilderClass,
-                                             @NotNull PsiAnnotation psiAnnotation, @NotNull Collection<? extends PsiVariable> psiVariables,
-                                             @NotNull PsiSubstitutor builderSubstitutor) {
-    final Collection<PsiMethod> methodsIntern = PsiClassUtil.collectClassMethodsIntern(psiBuilderClass);
-    final Set<String> existedMethodNames = new HashSet<String>(methodsIntern.size());
-    for (PsiMethod existedMethod : methodsIntern) {
-      existedMethodNames.add(existedMethod.getName());
-    }
-
-    final List<PsiMethod> psiMethods = new ArrayList<PsiMethod>();
-
-    // use AccessorsInfo only for @Builder on class, not on method
-    final AccessorsInfo accessorsInfo = null == psiMethod ? AccessorsInfo.build(psiParentClass) : AccessorsInfo.EMPTY;
-
-    final boolean fluentBuilder = isFluentBuilder(psiAnnotation);
-    final PsiType psiBuilderClassType = PsiClassUtil.getTypeWithGenerics(psiBuilderClass);
-    final PsiType returnType = createSetterReturnType(psiAnnotation, psiBuilderClassType);
-
-    final StringBuilder buildMethodPrepareString = new StringBuilder(psiVariables.size() * 20);
-    final StringBuilder buildMethodParameterString = new StringBuilder(psiVariables.size() * 20);
-    for (PsiVariable psiVariable : psiVariables) {
-      final String fieldName = accessorsInfo.removePrefix(psiVariable.getName());
-
-      final PsiAnnotation singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiVariable, Singular.class);
-      final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiVariable, singularAnnotation);
-
-      // skip methods already defined in builder class
-      if (!existedMethodNames.contains(fieldName)) {
-        final String singularName = handler.createSingularName(singularAnnotation, fieldName);
-        handler.addBuilderMethod(psiMethods, psiVariable, fieldName, psiBuilderClass, fluentBuilder, returnType, singularName, builderSubstitutor);
-      }
-
-      handler.appendBuildPrepare(buildMethodPrepareString, psiVariable, fieldName);
-      handler.appendBuildCall(buildMethodParameterString, fieldName);
-      buildMethodParameterString.append(',');
-    }
-
-    final String buildMethodName = getBuildMethodName(psiAnnotation);
-    if (!existedMethodNames.contains(buildMethodName)) {
-
-      if (buildMethodParameterString.length() > 0) {
-        buildMethodParameterString.deleteCharAt(buildMethodParameterString.length() - 1);
-      }
-
-      psiMethods.add(createBuildMethod(psiParentClass, psiMethod, psiBuilderClass, builderSubstitutor,
-        buildMethodName, buildMethodPrepareString.toString(), buildMethodParameterString.toString()));
-    }
-
-    if (!existedMethodNames.contains(ToStringProcessor.METHOD_NAME)) {
-      psiMethods.add(toStringProcessor.createToStringMethod(psiBuilderClass, Arrays.asList(psiBuilderClass.getFields()), psiAnnotation));
-    }
-    return psiMethods;
   }
 
   @NotNull
@@ -649,10 +584,19 @@ public class BuilderHandler {
   }
 
   @NotNull
-  private PsiMethod createBuildMethod(@NotNull PsiClass parentClass, @Nullable PsiMethod psiMethod, @NotNull PsiClass builderClass, @NotNull PsiSubstitutor builderSubstitutor,
-                                      @NotNull String buildMethodName, @NotNull String buildMethodPrepare, @NotNull String buildMethodParameters) {
+  public PsiMethod createBuildMethod(@NotNull PsiClass parentClass, @Nullable PsiMethod psiMethod, @NotNull PsiClass builderClass, @NotNull String buildMethodName, List<BuilderInfo> builderInfos) {
     final PsiType builderType = getReturnTypeOfBuildMethod(parentClass, psiMethod);
+
+    final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(parentClass, builderClass);
     final PsiType returnType = builderSubstitutor.substitute(builderType);
+
+    final String buildMethodPrepare = builderInfos.stream()
+      .map(BuilderInfo::renderBuildPrepare)
+      .collect(Collectors.joining());
+
+    final String buildMethodParameters = builderInfos.stream()
+      .map(BuilderInfo::renderBuildCall)
+      .collect(Collectors.joining(","));
 
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(parentClass.getManager(), buildMethodName)
       .withMethodReturnType(returnType)
@@ -661,14 +605,15 @@ public class BuilderHandler {
       .withModifier(PsiModifier.PUBLIC)
       .withBody(createBuildMethodCodeBlock(psiMethod, builderClass, returnType, buildMethodPrepare, buildMethodParameters));
 
-    if (null == psiMethod) {
+    PsiMethod constructor = psiMethod;
+    if (null == constructor) {
       final Collection<PsiMethod> classConstructors = PsiClassUtil.collectClassConstructorIntern(parentClass);
       if (!classConstructors.isEmpty()) {
-        final PsiMethod constructor = classConstructors.iterator().next();
-        addExceptions(methodBuilder, constructor);
+        constructor = classConstructors.iterator().next();
       }
-    } else {
-      addExceptions(methodBuilder, psiMethod);
+    }
+    if (null != constructor) {
+      Arrays.stream(constructor.getThrowsList().getReferencedTypes()).forEach(methodBuilder::withException);
     }
 
     return methodBuilder;
@@ -719,12 +664,6 @@ public class BuilderHandler {
     return className + psiMethod.getName();
   }
 
-  private void addExceptions(LombokLightMethodBuilder methodBuilder, PsiMethod psiMethod) {
-    for (PsiClassType psiClassType : psiMethod.getThrowsList().getReferencedTypes()) {
-      methodBuilder.withException(psiClassType);
-    }
-  }
-
   private void addTypeParameters(PsiClass builderClass, PsiMethod psiMethod, LombokLightMethodBuilder methodBuilder) {
     final PsiTypeParameter[] psiTypeParameters;
     if (null == psiMethod || psiMethod.isConstructor()) {
@@ -748,10 +687,5 @@ public class BuilderHandler {
 
   private boolean isChainBuilder(@NotNull PsiAnnotation psiAnnotation) {
     return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_CHAIN, true);
-  }
-
-  @NotNull
-  private PsiType createSetterReturnType(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiType psiType) {
-    return isChainBuilder(psiAnnotation) ? psiType : PsiType.VOID;
   }
 }

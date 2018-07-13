@@ -53,7 +53,7 @@ class SingularCollectionHandler extends AbstractSingularHandler {
   }
 
   @Override
-  public void appendBuildPrepare(@NotNull StringBuilder buildMethodCode, @NotNull PsiVariable psiVariable, @NotNull String fieldName) {
+  public String renderBuildPrepare(@NotNull PsiVariable psiVariable, @NotNull String fieldName) {
     final PsiManager psiManager = psiVariable.getManager();
     final PsiType elementType = PsiTypeUtil.extractOneElementType(psiVariable.getType(), psiManager);
 
@@ -94,7 +94,6 @@ class SingularCollectionHandler extends AbstractSingularHandler {
         "'}'\n";
     }
 
-    buildMethodCode.append(MessageFormat.format(selectedFormat,
-      fieldName, elementType.getCanonicalText(false), collectionQualifiedName));
+    return MessageFormat.format(selectedFormat, fieldName, elementType.getCanonicalText(false), collectionQualifiedName);
   }
 }

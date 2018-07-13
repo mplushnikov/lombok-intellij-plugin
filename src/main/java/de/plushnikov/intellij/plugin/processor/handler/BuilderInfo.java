@@ -17,16 +17,13 @@ import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.singular.BuilderElementHandler;
 import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerFactory;
-import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 public class BuilderInfo {
   private PsiVariable variableInClass;
@@ -45,7 +42,7 @@ public class BuilderInfo {
   private boolean fluentBuilder = true;
   private boolean chainBuilder = true;
 
-  public static BuilderInfo fromPsiParameter(PsiParameter psiParameter) {
+  public static BuilderInfo fromPsiParameter(@NotNull PsiParameter psiParameter) {
     final BuilderInfo result = new BuilderInfo();
 
     result.variableInClass = psiParameter;
@@ -78,6 +75,27 @@ public class BuilderInfo {
     return result;
   }
 
+  public BuilderInfo withSubstitutor(PsiSubstitutor builderSubstitutor) {
+    fieldInBuilderType = builderSubstitutor.substitute(fieldInBuilderType);
+    return this;
+  }
+
+  public BuilderInfo withFluent(boolean fluentBuilder) {
+    this.fluentBuilder = fluentBuilder;
+    return this;
+  }
+
+  public BuilderInfo withChain(boolean chainBuilder) {
+    this.chainBuilder = chainBuilder;
+    return this;
+  }
+
+  public BuilderInfo withBuilderClass(@NotNull PsiClass builderClass) {
+    this.builderClass = builderClass;
+    this.builderClassType = PsiClassUtil.getTypeWithGenerics(builderClass);
+    return this;
+  }
+
   public boolean useForBuilder() {
     boolean result = true;
 
@@ -101,6 +119,10 @@ public class BuilderInfo {
 
   public boolean notAlreadyExistingField(Collection<String> alreadyExistingFieldNames) {
     return !alreadyExistingFieldNames.contains(fieldInBuilderName);
+  }
+
+  public boolean notAlreadyExistingMethod(Collection<String> existedMethodNames) {
+    return notAlreadyExistingField(existedMethodNames);
   }
 
   public Project getProject() {
@@ -143,45 +165,9 @@ public class BuilderInfo {
     return singularAnnotation;
   }
 
-  public BuilderInfo withSubstitutor(PsiSubstitutor builderSubstitutor) {
-    fieldInBuilderType = builderSubstitutor.substitute(fieldInBuilderType);
-    return this;
-  }
-
-  public BuilderInfo withFluent(boolean fluentBuilder) {
-    this.fluentBuilder = fluentBuilder;
-    return this;
-  }
-
-  public BuilderInfo withChain(boolean chainBuilder) {
-    this.chainBuilder = chainBuilder;
-    return this;
-  }
-
-  public BuilderInfo withBuilderClass(@NotNull PsiClass builderClass) {
-    this.builderClass = builderClass;
-    this.builderClassType = PsiClassUtil.getTypeWithGenerics(builderClass);
-    return this;
-  }
-
-  /////////////////////
 
   public Collection<PsiField> renderBuilderFields() {
-    final Collection<PsiField> result;
-
-    final LombokLightFieldBuilder mainBuilderField = builderElementHandler.renderBuilderField(this);
-    final LombokLightFieldBuilder additionalBuilderField = builderElementHandler.renderAdditionalBuilderField(this);
-    if (null != mainBuilderField) {
-      if (null != additionalBuilderField) {
-        result = Arrays.asList(mainBuilderField, additionalBuilderField);
-      } else {
-        result = Collections.singleton(mainBuilderField);
-      }
-    } else {
-      result = Collections.emptyList();
-    }
-
-    return result;
+    return builderElementHandler.renderBuilderFields(this);
   }
 
   public Collection<PsiMethod> renderBuilderMethods() {
@@ -189,9 +175,7 @@ public class BuilderInfo {
   }
 
   public String renderBuildPrepare() {
-    final StringBuilder stringBuilder = new StringBuilder();
-    builderElementHandler.appendBuildPrepare(stringBuilder, variableInClass, fieldInBuilderName);
-    return stringBuilder.toString();
+    return builderElementHandler.renderBuildPrepare(variableInClass, fieldInBuilderName);
   }
 
   public String renderBuildCall() {

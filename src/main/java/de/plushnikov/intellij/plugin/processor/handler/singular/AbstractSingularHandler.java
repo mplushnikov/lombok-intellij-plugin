@@ -6,12 +6,11 @@ import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiCodeBlock;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -23,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractSingularHandler implements BuilderElementHandler {
@@ -33,11 +33,13 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
     this.collectionQualifiedName = qualifiedName;
   }
 
-  public LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info) {
+  public Collection<PsiField> renderBuilderFields(@NotNull BuilderInfo info) {
     final PsiType builderFieldType = getBuilderFieldType(info.getFieldType(), info.getProject());
-    return new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), builderFieldType)
-      .withModifier(PsiModifier.PRIVATE)
-      .withNavigationElement(info.getVariable());
+    return Collections.singleton(
+      new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), builderFieldType)
+        .withContainingClass(info.getBuilderClass())
+        .withModifier(PsiModifier.PRIVATE)
+        .withNavigationElement(info.getVariable()));
   }
 
   @NotNull
@@ -49,70 +51,39 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
   }
 
   @Override
-  public void addBuilderMethod(@NotNull List<PsiMethod> methods, @NotNull PsiVariable psiVariable, @NotNull String fieldName, @NotNull PsiClass innerClass, boolean fluentBuilder, PsiType returnType, String singularName, PsiSubstitutor builderSubstitutor) {
-    final PsiType psiFieldType = builderSubstitutor.substitute(psiVariable.getType());
-    final PsiManager psiManager = psiVariable.getManager();
-
-    final LombokLightMethodBuilder oneAddMethod = new LombokLightMethodBuilder(psiManager, singularName)
-      .withMethodReturnType(returnType)
-      .withContainingClass(innerClass)
-      .withNavigationElement(psiVariable)
-      .withModifier(PsiModifier.PUBLIC);
-
-    addOneMethodParameter(oneAddMethod, psiFieldType, singularName);
-    oneAddMethod.withBody(createOneAddMethodCodeBlock(innerClass, fluentBuilder, singularName, fieldName, psiFieldType));
-    methods.add(oneAddMethod);
-
-    final LombokLightMethodBuilder allAddMethod = new LombokLightMethodBuilder(psiManager, fieldName)
-      .withMethodReturnType(returnType)
-      .withContainingClass(innerClass)
-      .withNavigationElement(psiVariable)
-      .withModifier(PsiModifier.PUBLIC);
-
-    addAllMethodParameter(allAddMethod, psiFieldType, fieldName);
-    allAddMethod.withBody(createAllAddMethodCodeBlock(innerClass, fluentBuilder, fieldName, psiFieldType));
-    methods.add(allAddMethod);
-
-    final LombokLightMethodBuilder clearMethod = new LombokLightMethodBuilder(psiManager, "clear" + StringUtil.capitalize(fieldName))
-      .withMethodReturnType(returnType)
-      .withContainingClass(innerClass)
-      .withNavigationElement(psiVariable)
-      .withModifier(PsiModifier.PUBLIC)
-      .withBody(createClearMethodCodeBlock(innerClass, fluentBuilder, fieldName));
-
-    methods.add(clearMethod);
-  }
-
-  @Override
   public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
     List<PsiMethod> methods = new ArrayList<>();
 
     final PsiType returnType = info.isChainBuilder() ? info.getBuilderType() : PsiType.VOID;
     final String singularName = createSingularName(info.getSingularAnnotation(), info.getFieldName());
 
+    final PsiClass builderClass = info.getBuilderClass();
     final LombokLightMethodBuilder oneAddMethod = new LombokLightMethodBuilder(info.getManager(), singularName)
+      .withContainingClass(builderClass)
       .withMethodReturnType(returnType)
       .withNavigationElement(info.getVariable())
       .withModifier(PsiModifier.PUBLIC);
 
     addOneMethodParameter(oneAddMethod, info.getFieldType(), singularName);
-    oneAddMethod.withBody(createOneAddMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), singularName, info.getFieldName(), info.getFieldType()));
+    oneAddMethod.withBody(createOneAddMethodCodeBlock(builderClass, info.isFluentBuilder(), singularName, info.getFieldName(), info.getFieldType()));
     methods.add(oneAddMethod);
 
     final LombokLightMethodBuilder allAddMethod = new LombokLightMethodBuilder(info.getManager(), info.getFieldName())
+      .withContainingClass(builderClass)
       .withMethodReturnType(returnType)
       .withNavigationElement(info.getVariable())
       .withModifier(PsiModifier.PUBLIC);
 
     addAllMethodParameter(allAddMethod, info.getFieldType(), info.getFieldName());
-    allAddMethod.withBody(createAllAddMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), info.getFieldName(), info.getFieldType()));
+    allAddMethod.withBody(createAllAddMethodCodeBlock(builderClass, info.isFluentBuilder(), info.getFieldName(), info.getFieldType()));
     methods.add(allAddMethod);
 
     final LombokLightMethodBuilder clearMethod = new LombokLightMethodBuilder(info.getManager(), "clear" + StringUtil.capitalize(info.getFieldName()))
+      .withContainingClass(builderClass)
       .withMethodReturnType(returnType)
       .withNavigationElement(info.getVariable())
       .withModifier(PsiModifier.PUBLIC)
-      .withBody(createClearMethodCodeBlock(info.getBuilderClass(), info.isFluentBuilder(), info.getFieldName()));
+      .withBody(createClearMethodCodeBlock(builderClass, info.isFluentBuilder(), info.getFieldName()));
 
     methods.add(clearMethod);
 
