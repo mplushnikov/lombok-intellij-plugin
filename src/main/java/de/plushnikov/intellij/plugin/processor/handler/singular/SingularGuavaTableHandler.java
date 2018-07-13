@@ -1,14 +1,10 @@
 package de.plushnikov.intellij.plugin.processor.handler.singular;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
-import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -16,7 +12,6 @@ import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
-import java.util.List;
 
 class SingularGuavaTableHandler extends SingularMapHandler {
   private static final String COM_GOOGLE_COMMON_COLLECT_TABLE = "com.google.common.collect.Table";
@@ -30,16 +25,6 @@ class SingularGuavaTableHandler extends SingularMapHandler {
   SingularGuavaTableHandler(String guavaQualifiedName, boolean sortedCollection) {
     super(guavaQualifiedName);
     this.sortedCollection = sortedCollection;
-  }
-
-  public void addBuilderField(@NotNull List<PsiField> fields, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, @NotNull AccessorsInfo accessorsInfo, @NotNull PsiSubstitutor substitutor) {
-    final String fieldName = accessorsInfo.removePrefix(psiVariable.getName());
-    final LombokLightFieldBuilder fieldBuilder =
-      new LombokLightFieldBuilder(psiVariable.getManager(), fieldName, getBuilderFieldType(substitutor.substitute(psiVariable.getType()), psiVariable.getProject()))
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(psiVariable)
-        .withContainingClass(innerClass);
-    fields.add(fieldBuilder);
   }
 
   public LombokLightFieldBuilder renderBuilderField(@NotNull BuilderInfo info) {

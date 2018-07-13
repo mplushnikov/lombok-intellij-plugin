@@ -99,6 +99,10 @@ public class BuilderInfo {
     return result;
   }
 
+  public boolean notAlreadyExistingField(Collection<String> alreadyExistingFieldNames) {
+    return !alreadyExistingFieldNames.contains(fieldInBuilderName);
+  }
+
   public Project getProject() {
     return variableInClass.getProject();
   }

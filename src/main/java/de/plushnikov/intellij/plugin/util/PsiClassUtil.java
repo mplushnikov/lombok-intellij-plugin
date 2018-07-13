@@ -137,7 +137,7 @@ public class PsiClassUtil {
   @Nullable
   public static PsiClass getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
     Collection<PsiClass> innerClasses = collectInnerClassesIntern(psiClass);
-    return innerClasses.stream().filter(innerClass -> className.equals(innerClass.getName())).findFirst().orElse(null);
+    return innerClasses.stream().filter(innerClass -> className.equals(innerClass.getName())).findAny().orElse(null);
   }
 
   public static Collection<String> getNames(Collection<? extends PsiMember> psiMembers) {

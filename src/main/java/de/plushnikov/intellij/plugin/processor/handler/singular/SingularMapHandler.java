@@ -2,14 +2,10 @@ package de.plushnikov.intellij.plugin.processor.handler.singular;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.CommonClassNames;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
-import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -17,7 +13,6 @@ import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
-import java.util.List;
 
 class SingularMapHandler extends AbstractSingularHandler {
 
@@ -28,30 +23,6 @@ class SingularMapHandler extends AbstractSingularHandler {
 
   SingularMapHandler(String qualifiedName) {
     super(qualifiedName);
-  }
-
-  public void addBuilderField(@NotNull List<PsiField> fields, @NotNull PsiVariable psiVariable, @NotNull PsiClass innerClass, @NotNull AccessorsInfo accessorsInfo, @NotNull PsiSubstitutor substitutor) {
-    final String fieldName = accessorsInfo.removePrefix(psiVariable.getName());
-
-    final Project project = psiVariable.getProject();
-    final PsiManager psiManager = psiVariable.getManager();
-
-    final PsiType psiFieldType = psiVariable.getType();
-
-    final PsiType keyType = getKeyType(psiManager, psiFieldType);
-    final PsiType valueType = getValueType(psiManager, psiFieldType);
-
-    final PsiType builderFieldKeyType = getBuilderFieldType(keyType, project);
-    fields.add(new LombokLightFieldBuilder(psiManager, fieldName + LOMBOK_KEY, builderFieldKeyType)
-      .withModifier(PsiModifier.PRIVATE)
-      .withNavigationElement(psiVariable)
-      .withContainingClass(innerClass));
-
-    final PsiType builderFieldValueType = getBuilderFieldType(valueType, project);
-    fields.add(new LombokLightFieldBuilder(psiManager, fieldName + LOMBOK_VALUE, builderFieldValueType)
-      .withModifier(PsiModifier.PRIVATE)
-      .withNavigationElement(psiVariable)
-      .withContainingClass(innerClass));
   }
 
   @NotNull
