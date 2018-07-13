@@ -17,10 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Plushnikov Michail
@@ -72,40 +73,20 @@ public class PsiClassUtil {
     }
   }
 
-  private static <T extends PsiElement> Collection<T> filterPsiElements(@NotNull PsiClass psiClass, @NotNull Class<T> disiredClass) {
-    Collection<T> result = new ArrayList<T>();
-    for (PsiElement psiElement : psiClass.getChildren()) {
-      if (disiredClass.isAssignableFrom(psiElement.getClass())) {
-        result.add((T) psiElement);
-      }
-    }
-    return result;
+  private static <T extends PsiElement> Collection<T> filterPsiElements(@NotNull PsiClass psiClass, @NotNull Class<T> desiredClass) {
+    return Arrays.stream(psiClass.getChildren()).filter(desiredClass::isInstance).map(desiredClass::cast).collect(Collectors.toList());
   }
 
   @NotNull
   public static Collection<PsiMethod> collectClassConstructorIntern(@NotNull PsiClass psiClass) {
     final Collection<PsiMethod> psiMethods = collectClassMethodsIntern(psiClass);
-
-    Collection<PsiMethod> classConstructors = new ArrayList<PsiMethod>(3);
-    for (PsiMethod psiMethod : psiMethods) {
-      if (psiMethod.isConstructor()) {
-        classConstructors.add(psiMethod);
-      }
-    }
-    return classConstructors;
+    return psiMethods.stream().filter(PsiMethod::isConstructor).collect(Collectors.toList());
   }
 
   @NotNull
   public static Collection<PsiMethod> collectClassStaticMethodsIntern(@NotNull PsiClass psiClass) {
     final Collection<PsiMethod> psiMethods = collectClassMethodsIntern(psiClass);
-
-    Collection<PsiMethod> staticMethods = new ArrayList<PsiMethod>(psiMethods.size());
-    for (PsiMethod psiMethod : psiMethods) {
-      if (psiMethod.hasModifierProperty(PsiModifier.STATIC)) {
-        staticMethods.add(psiMethod);
-      }
-    }
-    return staticMethods;
+    return psiMethods.stream().filter(psiMethod -> psiMethod.hasModifierProperty(PsiModifier.STATIC)).collect(Collectors.toList());
   }
 
   public static boolean hasSuperClass(@NotNull final PsiClass psiClass) {
@@ -156,19 +137,10 @@ public class PsiClassUtil {
   @Nullable
   public static PsiClass getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
     Collection<PsiClass> innerClasses = collectInnerClassesIntern(psiClass);
-    for (PsiClass innerClass : innerClasses) {
-      if (className.equals(innerClass.getName())) {
-        return innerClass;
-      }
-    }
-    return null;
+    return innerClasses.stream().filter(innerClass -> className.equals(innerClass.getName())).findFirst().orElse(null);
   }
 
   public static Collection<String> getNames(Collection<? extends PsiMember> psiMembers) {
-    Collection<String> result = new HashSet<String>();
-    for (PsiMember psiMember : psiMembers) {
-      result.add(psiMember.getName());
-    }
-    return result;
+    return psiMembers.stream().map(PsiMember::getName).collect(Collectors.toSet());
   }
 }
