@@ -46,7 +46,8 @@ public class BuilderMethodProcessor extends AbstractMethodProcessor {
 
       PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation).orElse(null);
       if (null == builderClass) {
-        builderClass = builderHandler.createEmptyBuilderClass(psiClass, psiMethod, psiAnnotation);
+        // have to create full class (with all methods) here, or auto completion doesn't work
+        builderClass = builderHandler.createBuilderClass(psiClass, psiMethod, psiAnnotation);
       }
 
       builderHandler.createBuilderMethodIfNecessary(psiClass, psiMethod, builderClass, psiAnnotation)
