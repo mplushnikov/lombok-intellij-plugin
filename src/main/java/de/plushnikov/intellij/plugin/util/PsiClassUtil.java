@@ -14,13 +14,13 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -134,10 +134,9 @@ public class PsiClassUtil {
    * @param psiClass psiClass to search for inner class
    * @return inner class if found
    */
-  @Nullable
-  public static PsiClass getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
+  public static Optional<PsiClass> getInnerClassInternByName(@NotNull PsiClass psiClass, @NotNull String className) {
     Collection<PsiClass> innerClasses = collectInnerClassesIntern(psiClass);
-    return innerClasses.stream().filter(innerClass -> className.equals(innerClass.getName())).findAny().orElse(null);
+    return innerClasses.stream().filter(innerClass -> className.equals(innerClass.getName())).findAny();
   }
 
   public static Collection<String> getNames(Collection<? extends PsiMember> psiMembers) {

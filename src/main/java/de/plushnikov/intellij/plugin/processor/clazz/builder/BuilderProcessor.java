@@ -74,14 +74,16 @@ public class BuilderProcessor extends AbstractClassProcessor {
       }
     }
 
-    PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, null, psiAnnotation);
+    PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, null, psiAnnotation).orElse(null);
     if (null == builderClass) {
-      builderClass = builderHandler.createBuilderClass(psiClass, psiAnnotation);
+      builderClass = builderHandler.createEmptyBuilderClass(psiClass, psiAnnotation);
     }
 
-    builderHandler.createBuilderMethodIfNecessary(target, psiClass, null, builderClass, psiAnnotation);
+    builderHandler.createBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+      .ifPresent(target::add);
 
-    builderHandler.createToBuilderMethodIfNecessary(target, psiClass, null, builderClass, psiAnnotation);
+    builderHandler.createToBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+      .ifPresent(target::add);
   }
 
   @Override

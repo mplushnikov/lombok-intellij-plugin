@@ -44,14 +44,16 @@ public class BuilderMethodProcessor extends AbstractMethodProcessor {
     final PsiClass psiClass = psiMethod.getContainingClass();
     if (null != psiClass) {
 
-      PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation);
+      PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation).orElse(null);
       if (null == builderClass) {
-        builderClass = builderHandler.createBuilderClass(psiClass, psiMethod, psiAnnotation);
+        builderClass = builderHandler.createEmptyBuilderClass(psiClass, psiMethod, psiAnnotation);
       }
 
-      builderHandler.createBuilderMethodIfNecessary(target, psiClass, psiMethod, builderClass, psiAnnotation);
+      builderHandler.createBuilderMethodIfNecessary(psiClass, psiMethod, builderClass, psiAnnotation)
+        .ifPresent(target::add);
 
-      builderHandler.createToBuilderMethodIfNecessary(target, psiClass, psiMethod, builderClass, psiAnnotation);
+      builderHandler.createToBuilderMethodIfNecessary(psiClass, psiMethod, builderClass, psiAnnotation)
+        .ifPresent(target::add);
     }
   }
 }
