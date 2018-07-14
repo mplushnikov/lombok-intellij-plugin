@@ -4,4 +4,8 @@ public class BuilderWithDeprecatedField {
 
   @Deprecated
   private String foo;
+
+  @Deprecated
+  @lombok.Singular
+  private java.util.List<String> xyzs;
 }
