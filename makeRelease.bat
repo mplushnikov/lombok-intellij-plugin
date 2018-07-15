@@ -1,6 +1,6 @@
 @ECHO OFF
 
-SET pluginVersion=0.19
+SET pluginVersion=0.20
 
 for %%X in (2017.1) do call :buildPlugin %%X
 

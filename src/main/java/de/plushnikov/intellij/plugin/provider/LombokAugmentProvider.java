@@ -99,27 +99,24 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   @Override
   public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element, @NotNull final Class<Psi> type) {
     final List<Psi> emptyResult = Collections.emptyList();
-    // skip processing during index rebuild
-    final Project project = element.getProject();
-    if (DumbService.isDumb(project)) {
-      return emptyResult;
-    }
-    // Expecting that we are only augmenting an PsiClass
-    // Don't filter !isPhysical elements or code auto completion will not work
-    if (!(element instanceof PsiExtensibleClass) || !element.isValid()) {
-      return emptyResult;
-    }
-    // Skip processing of Annotations and Interfaces
-    if (((PsiClass) element).isAnnotationType() || ((PsiClass) element).isInterface()) {
+    if ((type != PsiClass.class && type != PsiField.class && type != PsiMethod.class) || !(element instanceof PsiExtensibleClass)) {
       return emptyResult;
     }
 
+    // Don't filter !isPhysical elements or code auto completion will not work
+    if (!element.isValid()) {
+      return emptyResult;
+    }
+    final PsiClass psiClass = (PsiClass) element;
+    // Skip processing of Annotations and Interfaces
+    if (psiClass.isAnnotationType() || psiClass.isInterface()) {
+      return emptyResult;
+    }
     // skip processing if plugin is disabled
+    final Project project = element.getProject();
     if (!ProjectSettings.isLombokEnabledInProject(project)) {
       return emptyResult;
     }
-
-    final PsiClass psiClass = (PsiClass) element;
 
     if (type == PsiField.class) {
       return CachedValuesManager.getCachedValue(element, new FieldLombokCachedValueProvider<Psi>(type, psiClass));
@@ -175,7 +172,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       for (Processor processor : lombokProcessors) {
         result.addAll((Collection<Psi>) processor.process(psiClass));
       }
-      return new Result<List<Psi>>(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
+      return Result.create(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
     }
   }
 }
