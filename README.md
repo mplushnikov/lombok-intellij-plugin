@@ -69,7 +69,7 @@ Installation
 Restart IDE.
 
 ### Required IntelliJ Configuration
-In your project: Click <kbd>Preferences</kbd> -> <kbd>Build, Execution, Deployment</kbd> -> <kbd>Compiler, Annotation Processors</kbd>. Click <kbd>Enable Annotation Processing</kbd>
+In your project: Click <kbd>File</kbd> -> <kbd>Settings</kbd> -> <kbd>Build, Execution, Deployment</kbd> -> <kbd>Compiler</kbd> ->  <kbd>Annotation Processors</kbd>. Click <kbd>Enable Annotation Processing</kbd>
 
 Afterwards you might need to do a complete rebuild of your project via <kbd>Build</kbd> -> <kbd>Rebuild Project</kbd>.
 
