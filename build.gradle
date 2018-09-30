@@ -37,14 +37,12 @@ allprojects {
 
   sourceSets {
     main {
-      java {
-        srcDirs = ['src/main/java',
-                   'generated/src']
-      }
-      resources {
-        srcDirs = ['src/main/resources',
-                   'generated/resources']
-      }
+      java.srcDirs 'src/main/java', 'generated/src'
+      resources.srcDirs 'src/main/resources', 'generated/resources'
+    }
+    test {
+      java.srcDir 'test/java'
+      resources.srcDirs 'test/resources', 'testData'
     }
   }
 
@@ -57,19 +55,18 @@ allprojects {
 
 idea {
   project {
+    jdkName = javaVersion
     languageLevel = javaVersion
   }
 }
 
 intellij {
-  def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
-  version = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
+  version System.getenv().getOrDefault('IDEA_VERSION', ideaVersion)
   println "Building for IntelliJ version: ${version}"
 
   pluginName pluginName
   updateSinceUntilBuild true
   sameSinceUntilBuild false
-
   sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${version}"
 
   plugins 'coverage'
@@ -79,10 +76,11 @@ patchPluginXml {
   def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
   ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
 
-  version pluginVersion + "-" + ideaVersion
+  version pluginVersion + "." + ideaVersion
   // use open until build for last release
-  if(ideaVersion.contains("LATEST-EAP-SNAPSHOT")) {
+  if (ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")) {
     untilBuild ""
+    version pluginVersion + ".IDEA-EAP"
   }
 
   pluginDescription(file(descriptionFile).text)
@@ -122,7 +120,7 @@ configurations {
 }
 
 dependencies {
-  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.0', classifier: 'sources', ext: 'jar'
+  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.2', classifier: 'sources', ext: 'jar'
   lombok_dep group: 'org.projectlombok', name: 'lombok', version: '1.16.20', classifier: 'sources', ext: 'jar'
   hrisey group: 'pl.mg6.hrisey', name: 'hrisey', version: '0.3.1', classifier: 'sources', ext: 'jar'
 
@@ -148,7 +146,7 @@ copy {
     include 'lombok/Delegate.java'
     include 'lombok/Getter.java'
     include 'lombok/Setter.java'
-    include 'lombok/Equals*.java'
+    include 'lombok/EqualsAndHashCode.java'
     include 'lombok/NonNull.java'
     include 'lombok/Synchronized.java'
     include 'lombok/ToString.java'

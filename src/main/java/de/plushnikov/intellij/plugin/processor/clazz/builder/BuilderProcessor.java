@@ -62,7 +62,8 @@ public class BuilderProcessor extends AbstractClassProcessor {
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    return builderHandler.validate(psiClass, psiAnnotation, builder);
+    // we skip validation here, bacause it will be validated by other BuilderClassProcessor
+    return true;//builderHandler.validate(psiClass, psiAnnotation, builder);
   }
 
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
@@ -74,15 +75,17 @@ public class BuilderProcessor extends AbstractClassProcessor {
       }
     }
 
-    final String builderClassName = builderHandler.getBuilderClassName(psiClass, psiAnnotation);
-    PsiClass builderClass = PsiClassUtil.getInnerClassInternByName(psiClass, builderClassName);
+    PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, null, psiAnnotation).orElse(null);
     if (null == builderClass) {
+      // have to create full class (with all methods) here, or auto completion doesn't work
       builderClass = builderHandler.createBuilderClass(psiClass, psiAnnotation);
     }
 
-    builderHandler.createBuilderMethodIfNecessary(target, psiClass, null, builderClass, psiAnnotation);
+    builderHandler.createBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+      .ifPresent(target::add);
 
-    builderHandler.createToBuilderMethodIfNecessary(target, psiClass, null, builderClass, psiAnnotation);
+    builderHandler.createToBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+      .ifPresent(target::add);
   }
 
   @Override

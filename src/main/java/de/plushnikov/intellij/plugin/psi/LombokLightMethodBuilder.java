@@ -14,6 +14,7 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReferenceList;
 import com.intellij.psi.PsiType;
@@ -29,6 +30,9 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Objects;
+
 /**
  * @author Plushnikov Michail
  */
@@ -37,7 +41,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   private ASTNode myASTNode;
   private PsiCodeBlock myBodyCodeBlock;
   // used to simplify comparing of returnType in equal method
-  private String myReturnTypeCanonicalText;
+  private String myReturnTypeAsText;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, JavaLanguage.INSTANCE, name,
@@ -72,7 +76,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
 
   @Override
   public LightMethodBuilder setMethodReturnType(PsiType returnType) {
-    myReturnTypeCanonicalText = returnType.getCanonicalText();
+    myReturnTypeAsText = returnType.getPresentableText();
     return super.setMethodReturnType(returnType);
   }
 
@@ -107,6 +111,17 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
 
   public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {
     myBodyCodeBlock = codeBlock;
+    return this;
+  }
+
+  public LombokLightMethodBuilder withAnnotation(@NotNull String annotation) {
+    getModifierList().addAnnotation(annotation);
+    return this;
+  }
+
+  public LombokLightMethodBuilder withAnnotations(Collection<String> annotations) {
+    final PsiModifierList modifierList = getModifierList();
+    annotations.forEach(modifierList::addAnnotation);
     return this;
   }
 
@@ -266,11 +281,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     if (!getParameterList().equals(that.getParameterList())) {
       return false;
     }
-    if (myReturnTypeCanonicalText != null) {
-      return myReturnTypeCanonicalText.equals(that.myReturnTypeCanonicalText);
-    } else {
-      return null == that.myReturnTypeCanonicalText;
-    }
+    return Objects.equals(myReturnTypeAsText, that.myReturnTypeAsText);
   }
 
   @Override

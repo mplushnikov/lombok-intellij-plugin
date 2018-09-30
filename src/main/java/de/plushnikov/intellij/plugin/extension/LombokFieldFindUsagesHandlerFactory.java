@@ -6,16 +6,13 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiUtilCore;
-import com.intellij.util.containers.ContainerUtil;
-import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
-import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
-import gnu.trove.THashSet;
+import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * It should find calls to getters/setters of some filed changed by lombok accessors
@@ -31,11 +28,8 @@ public class LombokFieldFindUsagesHandlerFactory extends FindUsagesHandlerFactor
       final PsiField psiField = (PsiField) element;
       final PsiClass containingClass = psiField.getContainingClass();
       if (containingClass != null) {
-        final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
-        final String psiFieldName = psiField.getName();
-
-        final String fieldName = accessorsInfo.removePrefix(psiFieldName);
-        return !fieldName.equals(psiFieldName);
+        return Arrays.stream(containingClass.getAllMethods())
+          .anyMatch(LombokLightMethodBuilder.class::isInstance);
       }
     }
     return false;
@@ -50,26 +44,23 @@ public class LombokFieldFindUsagesHandlerFactory extends FindUsagesHandlerFactor
         final PsiField psiField = (PsiField) getPsiElement();
         final PsiClass containingClass = psiField.getContainingClass();
         if (containingClass != null) {
-          final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
-          final String psiFieldName = psiField.getName();
 
-          final String fieldName = accessorsInfo.removePrefix(psiFieldName);
-          if (!fieldName.equals(psiFieldName)) {
-            final boolean isBoolean = PsiType.BOOLEAN.equals(psiField.getType());
+          final Collection<PsiElement> elements = new ArrayList<>();
+          processClassMethods(containingClass, psiField, elements);
 
-            final String getterName = LombokUtils.toGetterName(accessorsInfo, psiFieldName, isBoolean);
-            final String setterName = LombokUtils.toSetterName(accessorsInfo, psiFieldName, isBoolean);
+          Arrays.stream(containingClass.getInnerClasses())
+            .forEach(psiClass -> processClassMethods(psiClass, psiField, elements));
 
-            final PsiMethod[] psiGetterMethods = containingClass.findMethodsByName(getterName, false);
-            final PsiMethod[] psiSetterMethods = containingClass.findMethodsByName(setterName, false);
-
-            final Set<PsiElement> elements = new THashSet<PsiElement>(psiGetterMethods.length + psiSetterMethods.length);
-            ContainerUtil.addAll(elements, psiGetterMethods);
-            ContainerUtil.addAll(elements, psiSetterMethods);
-            return PsiUtilCore.toPsiElementArray(elements);
-          }
+          return PsiUtilCore.toPsiElementArray(elements);
         }
         return PsiElement.EMPTY_ARRAY;
+      }
+
+      private void processClassMethods(PsiClass containingClass, PsiField refPsiField, Collection<PsiElement> collector) {
+        Arrays.stream(containingClass.getMethods())
+          .filter(LombokLightMethodBuilder.class::isInstance)
+          .filter(psiMethod -> psiMethod.getNavigationElement() == refPsiField)
+          .forEach(collector::add);
       }
     };
   }
