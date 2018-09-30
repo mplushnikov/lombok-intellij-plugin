@@ -14,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
+/**
+ * Annas example: org.jetbrains.plugins.javaFX.fxml.refs.JavaFxControllerFieldSearcher
+ */
 public class LombokReferenceSearcher extends QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters> {
 
   public LombokReferenceSearcher() {
@@ -21,7 +24,7 @@ public class LombokReferenceSearcher extends QueryExecutorBase<PsiReference, Ref
   }
 
   @Override
-  public void processQuery(@NotNull ReferencesSearch.SearchParameters queryParameters, @NotNull Processor<PsiReference> consumer) {
+  public void processQuery(@NotNull ReferencesSearch.SearchParameters queryParameters, @NotNull Processor consumer) {
     PsiElement refElement = queryParameters.getElementToSearch();
 
     if (refElement instanceof PsiField) {
