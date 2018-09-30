@@ -4,8 +4,10 @@ SET pluginVersion=0.20
 
 for %%X in (2017.1) do call :buildPlugin %%X
 
+echo.&pause&goto:eof
+
 :buildPlugin
-SETLOCAL
+SETLOCALj
 echo Called with %1
 SET IDEA_VERSION=%1
 call gradlew clean
