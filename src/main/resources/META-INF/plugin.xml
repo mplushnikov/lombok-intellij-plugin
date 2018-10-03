@@ -3,7 +3,7 @@
   <id>Lombook Plugin</id>
   <name>Lombok Plugin</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.15</version>
+  <version>0.21</version>
 
   <idea-version since-build="144.00" until-build="170.*"/>
 
@@ -120,10 +120,6 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.FieldNameConstantsFieldProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.method.DelegateMethodProcessor"/>
-
-    <!-- hrisey -->
-    <processor implementation="pl.mg6.hrisey.intellij.plugin.processor.clazz.ParcelableMethodsProcessor"/>
-    <processor implementation="pl.mg6.hrisey.intellij.plugin.processor.clazz.ParcelableFieldsProcessor"/>
 
     <modifierProcessor implementation="de.plushnikov.intellij.plugin.processor.modifier.ValueModifierProcessor"/>
     <modifierProcessor implementation="de.plushnikov.intellij.plugin.processor.modifier.ValModifierProcessor"/>
