@@ -1,13 +1,14 @@
 @ECHO OFF
 
-SET pluginVersion=0.20
+SET pluginVersion=0.21
 
 for %%X in (2017.1) do call :buildPlugin %%X
+ECHO All Done
 
 echo.&pause&goto:eof
 
 :buildPlugin
-SETLOCALj
+SETLOCAL
 echo Called with %1
 SET IDEA_VERSION=%1
 call gradlew clean
