@@ -1,17 +1,6 @@
 package de.plushnikov.intellij.plugin.util;
 
-import com.intellij.psi.CommonClassNames;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMember;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,7 +26,7 @@ public class PsiClassUtil {
   @NotNull
   public static Collection<PsiMethod> collectClassMethodsIntern(@NotNull PsiClass psiClass) {
     if (psiClass instanceof PsiExtensibleClass) {
-      return new ArrayList<PsiMethod>(((PsiExtensibleClass) psiClass).getOwnMethods());
+      return new ArrayList<>(((PsiExtensibleClass) psiClass).getOwnMethods());
     } else {
       return filterPsiElements(psiClass, PsiMethod.class);
     }
@@ -73,6 +62,11 @@ public class PsiClassUtil {
     }
   }
 
+  @NotNull
+  public static Collection<PsiMember> collectClassMemberIntern(@NotNull PsiClass psiClass) {
+    return Arrays.stream(psiClass.getChildren()).filter(e -> e instanceof PsiField || e instanceof PsiMethod).map(PsiMember.class::cast).collect(Collectors.toList());
+  }
+
   private static <T extends PsiElement> Collection<T> filterPsiElements(@NotNull PsiClass psiClass, @NotNull Class<T> desiredClass) {
     return Arrays.stream(psiClass.getChildren()).filter(desiredClass::isInstance).map(desiredClass::cast).collect(Collectors.toList());
   }
@@ -101,31 +95,32 @@ public class PsiClassUtil {
     return superTypes.length == 0 || superTypes.length > 1 || CommonClassNames.JAVA_LANG_OBJECT.equals(superTypes[0].getCanonicalText());
   }
 
-  /**
-   * Creates a PsiType for a PsiClass enriched with generic substitution information if available
-   */
   @NotNull
-  public static PsiType getTypeWithGenerics(@NotNull PsiClass psiClass) {
-    return getTypeWithGenerics(psiClass, psiClass.getTypeParameters());
+  public static PsiType getWildcardClassType(@NotNull PsiClass psiClass) {
+    if (psiClass.hasTypeParameters()) {
+      PsiType[] wildcardTypes = new PsiType[psiClass.getTypeParameters().length];
+      Arrays.fill(wildcardTypes, PsiWildcardType.createUnbounded(psiClass.getManager()));
+      return JavaPsiFacade.getElementFactory(psiClass.getProject()).createType(psiClass, wildcardTypes);
+    }
+    return JavaPsiFacade.getElementFactory(psiClass.getProject()).createType(psiClass);
   }
 
   /**
    * Creates a PsiType for a PsiClass enriched with generic substitution information if available
    */
   @NotNull
-  private static PsiType getTypeWithGenerics(@NotNull PsiClass psiClass, @NotNull PsiTypeParameter... classTypeParameters) {
-    PsiType result;
+  public static PsiType getTypeWithGenerics(@NotNull PsiClass psiClass) {
+    PsiTypeParameter[] classTypeParameters = psiClass.getTypeParameters();
     final PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
     if (classTypeParameters.length > 0) {
-      Map<PsiTypeParameter, PsiType> substitutionMap = new HashMap<PsiTypeParameter, PsiType>();
+      Map<PsiTypeParameter, PsiType> substitutionMap = new HashMap<>();
       for (PsiTypeParameter typeParameter : classTypeParameters) {
         substitutionMap.put(typeParameter, factory.createType(typeParameter));
       }
-      result = factory.createType(psiClass, factory.createSubstitutor(substitutionMap));
+      return factory.createType(psiClass, factory.createSubstitutor(substitutionMap));
     } else {
-      result = factory.createType(psiClass);
+      return factory.createType(psiClass);
     }
-    return result;
   }
 
   /**
