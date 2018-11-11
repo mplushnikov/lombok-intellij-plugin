@@ -25,7 +25,7 @@ public class BuilderPreDefinedInnerClassFieldProcessor extends AbstractBuilderPr
 
   @SuppressWarnings({"deprecation", "unchecked"})
   public BuilderPreDefinedInnerClassFieldProcessor(@NotNull BuilderHandler builderHandler) {
-    super(builderHandler, PsiField.class, Builder.class, lombok.experimental.Builder.class);
+    super(builderHandler, PsiField.class, Builder.class);
   }
 
   @Override
