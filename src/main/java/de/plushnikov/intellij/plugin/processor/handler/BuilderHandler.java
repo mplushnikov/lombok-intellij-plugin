@@ -315,8 +315,7 @@ public class BuilderHandler {
       result = PsiClassUtil.collectClassFieldsIntern(psiClass).stream().map(BuilderInfo::fromPsiField)
         .filter(BuilderInfo::useForBuilder);
     }
-    return result.map(info -> info.withFluent(isFluentBuilder(psiAnnotation)))
-      .map(info -> info.withChain(isChainBuilder(psiAnnotation)));
+    return result;
   }
 
   public List<BuilderInfo> createBuilderInfos(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass,
@@ -521,17 +520,5 @@ public class BuilderHandler {
     for (PsiTypeParameter psiTypeParameter : psiTypeParameters) {
       methodBuilder.withTypeParameter(psiTypeParameter);
     }
-  }
-
-  // These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
-  private static final String ANNOTATION_FLUENT = "fluent";
-  private static final String ANNOTATION_CHAIN = "chain";
-
-  private boolean isFluentBuilder(@NotNull PsiAnnotation psiAnnotation) {
-    return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_FLUENT, true);
-  }
-
-  private boolean isChainBuilder(@NotNull PsiAnnotation psiAnnotation) {
-    return PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, ANNOTATION_CHAIN, true);
   }
 }

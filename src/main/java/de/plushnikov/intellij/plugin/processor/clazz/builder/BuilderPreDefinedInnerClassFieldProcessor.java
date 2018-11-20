@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
  */
 public class BuilderPreDefinedInnerClassFieldProcessor extends AbstractBuilderPreDefinedInnerClassProcessor {
 
-  @SuppressWarnings({"deprecation", "unchecked"})
   public BuilderPreDefinedInnerClassFieldProcessor(@NotNull BuilderHandler builderHandler) {
     super(builderHandler, PsiField.class, Builder.class);
   }

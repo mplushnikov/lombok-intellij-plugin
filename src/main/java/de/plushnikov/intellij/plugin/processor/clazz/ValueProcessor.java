@@ -37,7 +37,6 @@ public class ValueProcessor extends AbstractClassProcessor {
   private final AllArgsConstructorProcessor allArgsConstructorProcessor;
   private final NoArgsConstructorProcessor noArgsConstructorProcessor;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
   public ValueProcessor(GetterProcessor getterProcessor, EqualsAndHashCodeProcessor equalsAndHashCodeProcessor,
                         ToStringProcessor toStringProcessor, AllArgsConstructorProcessor allArgsConstructorProcessor, NoArgsConstructorProcessor noArgsConstructorProcessor) {
     super(PsiMethod.class, Value.class);
@@ -68,7 +67,7 @@ public class ValueProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings({"unchecked"})
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
 
     if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, Getter.class)) {

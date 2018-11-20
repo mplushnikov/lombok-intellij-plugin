@@ -36,7 +36,6 @@ public class LombokElementFinder extends PsiElementFinder {
 
   @Nullable
   @Override
-  @SuppressWarnings("deprecation")
   public PsiClass findClass(@NotNull String qualifiedName, @NotNull GlobalSearchScope scope) {
     final int lastDot = qualifiedName.lastIndexOf('.');
     if (lastDot < 0) {

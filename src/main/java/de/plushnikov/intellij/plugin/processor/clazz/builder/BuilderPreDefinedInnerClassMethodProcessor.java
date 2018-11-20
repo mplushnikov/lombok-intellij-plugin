@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
  */
 public class BuilderPreDefinedInnerClassMethodProcessor extends AbstractBuilderPreDefinedInnerClassProcessor {
 
-  @SuppressWarnings({"deprecation", "unchecked"})
   public BuilderPreDefinedInnerClassMethodProcessor(@NotNull BuilderHandler builderHandler) {
     super(builderHandler, PsiMethod.class, Builder.class);
   }
