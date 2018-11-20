@@ -120,8 +120,7 @@ public class WitherFieldProcessor extends AbstractFieldProcessor {
 
   @SuppressWarnings({"unchecked"})
   public boolean validConstructor(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, lombok.Value.class,
-      Builder.class)) {
+    if (PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, AllArgsConstructor.class, Value.class, Builder.class)) {
       return true;
     }
 
