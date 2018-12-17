@@ -12,11 +12,8 @@ cache:
     - $HOME/.gradle/wrapper/
 
 env:
-  - IDEA_VERSION=IC-2017.1.5
-  - IDEA_VERSION=IC-2017.1.4
-  - IDEA_VERSION=IC-2017.1.3
-  - IDEA_VERSION=IC-2017.1.2
-  - IDEA_VERSION=IC-2017.1
+  - IDEA_VERSION=2017.1.5
+  - IDEA_VERSION=2017.1
 
 before_install:
  - chmod +x gradlew
