@@ -2,25 +2,7 @@ package de.plushnikov.intellij.plugin.processor.handler;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiCodeBlock;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMember;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierListOwner;
-import com.intellij.psi.PsiNamedElement;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiReferenceList;
-import com.intellij.psi.PsiSubstitutor;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.psi.util.PsiUtil;
@@ -284,6 +266,7 @@ public class DelegateHandler {
       checkModifierListOwner(psiMethod);
     }
 
+    @SuppressWarnings("deprecation")
     private void checkModifierListOwner(PsiModifierListOwner modifierListOwner) {
       if (PsiAnnotationSearchUtil.isAnnotatedWith(modifierListOwner, Delegate.class, lombok.experimental.Delegate.class)) {
         builder.addError("@Delegate does not support recursion (delegating to a type that itself has @Delegate members). " +
