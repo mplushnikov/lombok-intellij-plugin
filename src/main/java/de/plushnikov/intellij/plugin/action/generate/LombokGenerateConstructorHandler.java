@@ -9,7 +9,6 @@ import com.intellij.codeInsight.generation.PsiGenerationInfo;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiModifier;
 import com.intellij.util.IncorrectOperationException;
 import de.plushnikov.intellij.plugin.provider.LombokImplicitUsageProvider;
@@ -46,7 +45,7 @@ public class LombokGenerateConstructorHandler extends GenerateConstructorHandler
       }
       array.add(new PsiFieldMember(field));
     }
-    return array.toArray(new ClassMember[array.size()]);
+    return array.toArray(new ClassMember[0]);
   }
 
   @Override
