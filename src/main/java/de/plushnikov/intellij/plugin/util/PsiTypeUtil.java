@@ -130,8 +130,8 @@ public class PsiTypeUtil {
       final PsiClassType.ClassResolveResult classResolveResult = psiType.resolveGenerics();
       final PsiSubstitutor derivedSubstitutor = classResolveResult.getSubstitutor();
 
-      final List<PsiType> typeList = new ArrayList<PsiType>(2);
-      final Map<String, PsiType> nameTypeMap = new HashMap<String, PsiType>();
+      final List<PsiType> typeList = new ArrayList<>(2);
+      final Map<String, PsiType> nameTypeMap = new HashMap<>();
       for (Map.Entry<PsiTypeParameter, PsiType> entry : derivedSubstitutor.getSubstitutionMap().entrySet()) {
         final PsiType entryValue = entry.getValue();
         if (null != entryValue) {
