@@ -33,8 +33,8 @@ public abstract class BaseRefactorHandler implements Runnable {
     PsiClass psiClass = OverrideImplementUtil.getContextClass(project, editor, psiFile, false);
 
     List<EncapsulatableClassMember> classMembers = getEncapsulatableClassMembers(psiClass);
-    chooser = new MemberChooser<ClassMember>(
-      classMembers.toArray(new ClassMember[classMembers.size()]), true, true, project);
+    chooser = new MemberChooser<>(
+      classMembers.toArray(new ClassMember[0]), true, true, project);
     chooser.setTitle(getChooserTitle());
     chooser.setCopyJavadocVisible(false);
   }

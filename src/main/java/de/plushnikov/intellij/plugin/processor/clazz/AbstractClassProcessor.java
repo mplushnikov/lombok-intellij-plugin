@@ -45,12 +45,6 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     super(supportedClass, supportedAnnotationClass);
   }
 
-  protected AbstractClassProcessor(@NotNull Class<? extends PsiElement> supportedClass,
-                                   @NotNull Class<? extends Annotation> supportedAnnotationClass,
-                                   @NotNull Class<? extends Annotation>... equivalentAnnotationClasses) {
-    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
-  }
-
   @NotNull
   @Override
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
@@ -68,7 +62,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
 
   @NotNull
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
-    Collection<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
+    Collection<PsiAnnotation> result = new ArrayList<>();
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation) {
       result.add(psiAnnotation);
@@ -90,6 +84,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
   public Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation) {
     Collection<LombokProblem> result = Collections.emptyList();
     // check first for fields, methods and filter it out, because PsiClass is parent of all annotations and will match other parents too
+    @SuppressWarnings("unchecked")
     PsiElement psiElement = PsiTreeUtil.getParentOfType(psiAnnotation, PsiField.class, PsiMethod.class, PsiClass.class);
     if (psiElement instanceof PsiClass) {
       ProblemNewBuilder problemNewBuilder = new ProblemNewBuilder();

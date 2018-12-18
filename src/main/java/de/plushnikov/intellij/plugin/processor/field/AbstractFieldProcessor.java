@@ -34,14 +34,14 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
     super(supportedClass, supportedAnnotationClass);
   }
 
-  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation>... equivalentAnnotationClasses) {
-    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
+  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation> equivalentAnnotationClass) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClass);
   }
 
   @NotNull
   @Override
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
-    List<? super PsiElement> result = new ArrayList<PsiElement>();
+    List<? super PsiElement> result = new ArrayList<>();
     for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
@@ -55,7 +55,7 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
 
   @NotNull
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
-    List<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
+    List<PsiAnnotation> result = new ArrayList<>();
     for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {

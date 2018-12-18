@@ -31,14 +31,14 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
     super(supportedClass, supportedAnnotationClass);
   }
 
-  AbstractMethodProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation>... equivalentAnnotationClasses) {
-    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
+  AbstractMethodProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation> equivalentAnnotationClass) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClass);
   }
 
   @NotNull
   @Override
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
-    List<? super PsiElement> result = new ArrayList<PsiElement>();
+    List<? super PsiElement> result = new ArrayList<>();
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
@@ -52,7 +52,7 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
 
   @NotNull
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
-    List<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
+    List<PsiAnnotation> result = new ArrayList<>();
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
