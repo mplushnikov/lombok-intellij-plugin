@@ -32,13 +32,6 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
     this.builderHandler = builderHandler;
   }
 
-  AbstractBuilderPreDefinedInnerClassProcessor(@NotNull BuilderHandler builderHandler, @NotNull Class<? extends PsiElement> supportedClass,
-                                               @NotNull Class<? extends Annotation> supportedAnnotationClass,
-                                               @NotNull Class<? extends Annotation>... equivalentAnnotationClasses) {
-    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
-    this.builderHandler = builderHandler;
-  }
-
   @Override
   public boolean isEnabled(@NotNull PropertiesComponent propertiesComponent) {
     return ProjectSettings.isEnabled(propertiesComponent, ProjectSettings.IS_BUILDER_ENABLED);
@@ -51,7 +44,7 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
 
     final PsiElement parentElement = psiClass.getParent();
     if (parentElement instanceof PsiClass && !(parentElement instanceof LombokLightClassBuilder)) {
-      result = new ArrayList<PsiElement>();
+      result = new ArrayList<>();
 
       final PsiClass psiParentClass = (PsiClass) parentElement;
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiParentClass, getSupportedAnnotationClasses());

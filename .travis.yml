@@ -16,8 +16,8 @@ env:
   - IDEA_VERSION=2017.1
 
 before_install:
- - chmod +x gradlew
- - pip install --user codecov
+  - chmod +x gradlew
+  - pip install --user codecov
 
 after_success:
   - codecov
