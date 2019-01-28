@@ -26,10 +26,17 @@ public class LombokLightModifierList extends LightModifierList {
   private static final Set<String> ALL_MODIFIERS = new HashSet<>(Arrays.asList(PsiModifier.MODIFIERS));
 
   private final Map<String, PsiAnnotation> myAnnotations;
+  private final Set<String> implicitModifiers;
 
-  public LombokLightModifierList(PsiManager manager, final Language language, String... modifiers) {
+  public LombokLightModifierList(PsiManager manager, final Language language, Set<String> implicitModifiers, String... modifiers) {
     super(manager, language, modifiers);
     myAnnotations = new HashMap<>();
+    this.implicitModifiers = implicitModifiers;
+  }
+
+  @Override
+  public boolean hasModifierProperty(@NotNull String name) {
+    return implicitModifiers.contains(name) || super.hasModifierProperty(name);
   }
 
   public void setModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
