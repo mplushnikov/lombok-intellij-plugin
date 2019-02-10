@@ -30,6 +30,9 @@ import java.util.List;
  */
 public class FieldNameConstantsProcessor extends AbstractClassProcessor {
 
+  private static final String FIELD_NAME_CONSTANTS_INCLUDE = FieldNameConstants.Include.class.getName().replace("$", ".");
+  private static final String FIELD_NAME_CONSTANTS_EXCLUDE = FieldNameConstants.Exclude.class.getName().replace("$", ".");
+
   public FieldNameConstantsProcessor(@NotNull ConfigDiscovery configDiscovery) {
     super(configDiscovery, PsiClass.class, FieldNameConstants.class);
   }
@@ -62,13 +65,12 @@ public class FieldNameConstantsProcessor extends AbstractClassProcessor {
     final Collection<PsiField> psiFields = new ArrayList<>();
 
     final boolean onlyExplicitlyIncluded = PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, "onlyExplicitlyIncluded", false);
-    final String annotationIncludeFQN = psiAnnotation.getQualifiedName() + ".Include";
-    final String annotationExcludeFQN = psiAnnotation.getQualifiedName() + ".Exclude";
 
     for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       boolean useField = true;
       PsiModifierList modifierList = psiField.getModifierList();
       if (null != modifierList) {
+
         //Skip static fields.
         useField = !modifierList.hasModifierProperty(PsiModifier.STATIC);
         //Skip transient fields
@@ -77,11 +79,11 @@ public class FieldNameConstantsProcessor extends AbstractClassProcessor {
       //Skip fields that start with $
       useField &= !psiField.getName().startsWith(LombokUtils.LOMBOK_INTERN_FIELD_MARKER);
       //Skip fields annotated with @FieldNameConstants.Exclude
-      useField &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, annotationExcludeFQN);
+      useField &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, FIELD_NAME_CONSTANTS_EXCLUDE);
 
       if (onlyExplicitlyIncluded) {
         //Only use fields annotated with @FieldNameConstants.Include, Include annotation overrides other rules
-        useField = PsiAnnotationSearchUtil.isAnnotatedWith(psiField, annotationIncludeFQN);
+        useField = PsiAnnotationSearchUtil.isAnnotatedWith(psiField, FIELD_NAME_CONSTANTS_INCLUDE);
       }
 
       if (useField) {
@@ -89,6 +91,14 @@ public class FieldNameConstantsProcessor extends AbstractClassProcessor {
       }
     }
     return psiFields;
+  }
+
+  @NotNull
+  @Override
+  public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
+    final Collection<PsiAnnotation> result = super.collectProcessedAnnotations(psiClass);
+    addFieldsAnnotation(result, psiClass, FIELD_NAME_CONSTANTS_INCLUDE, FIELD_NAME_CONSTANTS_EXCLUDE);
+    return result;
   }
 
   @Override

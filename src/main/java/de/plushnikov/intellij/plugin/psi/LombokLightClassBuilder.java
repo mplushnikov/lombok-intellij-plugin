@@ -19,16 +19,27 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Collection;
+import java.util.Collections;
 
 public class LombokLightClassBuilder extends LightPsiClassBuilder {
+  private boolean myIsEnum;
   private final String myQualifiedName;
   private final Icon myBaseIcon;
+  private final LombokLightModifierList myModifierList;
   private Collection<PsiField> myFields = ContainerUtil.newArrayList();
 
   public LombokLightClassBuilder(@NotNull PsiElement context, @NotNull String simpleName, @NotNull String qualifiedName) {
     super(context, simpleName);
+    myIsEnum = false;
     myQualifiedName = qualifiedName;
     myBaseIcon = LombokIcons.CLASS_ICON;
+    myModifierList = new LombokLightModifierList(context.getManager(), context.getLanguage(), Collections.emptyList());
+  }
+
+  @NotNull
+  @Override
+  public LombokLightModifierList getModifierList() {
+    return myModifierList;
   }
 
   @Override
@@ -37,12 +48,11 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder {
     return myFields.toArray(new PsiField[0]);
   }
 
-  public LightPsiClassBuilder addField(PsiField field) {
+  private void addField(PsiField field) {
     if (field instanceof LightFieldBuilder) {
       ((LightFieldBuilder) field).setContainingClass(this);
     }
     myFields.add(field);
-    return this;
   }
 
   @Override
@@ -83,8 +93,23 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder {
     return super.getContainingFile();
   }
 
+  @Override
+  public boolean isEnum() {
+    return myIsEnum;
+  }
+
+  public LombokLightClassBuilder withEnum(boolean isEnum) {
+    myIsEnum = isEnum;
+    return this;
+  }
+
+  public LombokLightClassBuilder withImplicitModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String modifier) {
+    myModifierList.addImplicitModifierProperty(modifier);
+    return this;
+  }
+
   public LombokLightClassBuilder withModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String modifier) {
-    getModifierList().addModifier(modifier);
+    myModifierList.addModifier(modifier);
     return this;
   }
 

@@ -4,9 +4,8 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
+import de.plushnikov.intellij.plugin.psi.LombokEnumConstantBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
-import de.plushnikov.intellij.plugin.psi.LombokLightEnum;
-import de.plushnikov.intellij.plugin.psi.LombokLightEnumConst;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
@@ -14,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-
 
 public class FieldNameConstantsHandler {
 
@@ -39,14 +37,27 @@ public class FieldNameConstantsHandler {
 
   @NotNull
   private static PsiClass createEnum(@NotNull String name, @NotNull PsiClass containingClass, @NotNull Collection<PsiField> fields, @NotNull String accessLevel, @NotNull PsiElement navigationElement) {
+    final String innerClassQualifiedName = containingClass.getQualifiedName() + "." + name;
+    final LombokLightClassBuilder classBuilder = new LombokLightClassBuilder(containingClass, name, innerClassQualifiedName);
+    classBuilder.withContainingClass(containingClass)
+      .withNavigationElement(navigationElement)
+      .withEnum(true)
+      .withModifier(accessLevel)
+      .withImplicitModifier(PsiModifier.STATIC)
+      .withImplicitModifier(PsiModifier.FINAL);
+
     final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(containingClass.getProject());
-    PsiClass anEnum = psiElementFactory.createEnum(name);
-    LombokLightEnum lightEnum = new LombokLightEnum(anEnum.getManager(), anEnum.getLanguage(), anEnum, accessLevel, navigationElement, containingClass);
+    final PsiClassType classType = psiElementFactory.createType(classBuilder);
     fields.forEach(field -> {
-      PsiEnumConstant enumConstant = psiElementFactory.createEnumConstantFromText(field.getName(), lightEnum);
-      lightEnum.addEnumConstant(new LombokLightEnumConst(lightEnum.getManager(), enumConstant, lightEnum));
+      final LombokLightFieldBuilder enumConstantBuilder = new LombokEnumConstantBuilder(containingClass.getManager(), field.getName(), classType)
+        .withContainingClass(containingClass)
+        .withModifier(PsiModifier.PUBLIC)
+        .withImplicitModifier(PsiModifier.STATIC)
+        .withImplicitModifier(PsiModifier.FINAL)
+        .withNavigationElement(field);
+      classBuilder.withField(enumConstantBuilder);
     });
-    return lightEnum;
+    return classBuilder;
   }
 
   @NotNull

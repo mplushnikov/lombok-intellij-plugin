@@ -8,12 +8,16 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
-import de.plushnikov.intellij.plugin.psi.LombokLightEnum;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 public class DelombokHandler {
   private final boolean processInnerClasses;
@@ -55,7 +59,7 @@ public class DelombokHandler {
     if (processInnerClasses) {
       for (PsiClass innerClass : allInnerClasses) {
         //skip our self generated classes
-        if (!(innerClass instanceof LombokLightClassBuilder || innerClass instanceof LombokLightEnum)) {
+        if (!(innerClass instanceof LombokLightClassBuilder)) {
           invoke(project, innerClass, true);
         }
       }

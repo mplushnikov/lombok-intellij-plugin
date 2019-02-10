@@ -8,11 +8,12 @@ import com.intellij.ide.structureView.impl.java.PsiMethodTreeElement;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import de.plushnikov.intellij.plugin.psi.*;
+import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
+import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
+import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.stream.Stream;
 
 /**
@@ -38,19 +39,9 @@ public class LombokStructureViewExtension implements StructureViewExtension {
 
     final Stream<JavaClassTreeElement> lombokInnerClasses = Arrays.stream(parentClass.getInnerClasses())
       .filter(LombokLightClassBuilder.class::isInstance)
-      .map(psiClass -> new JavaClassTreeElement(psiClass, false, new HashSet<PsiClass>() {{
-        add(parentClass);
-      }}));
-
-    final Stream<JavaClassTreeElement> lombokInnerEnum = Arrays.stream(parentClass.getInnerClasses())
-      .filter(LombokLightEnum.class::isInstance)
       .map(psiClass -> new JavaClassTreeElement(psiClass, false));
 
-    final Stream<PsiFieldTreeElement> lombokInnerEnumConst = Arrays.stream(parentClass.getFields())
-      .filter(LombokLightEnumConst.class::isInstance)
-      .map(psiField -> new PsiFieldTreeElement(psiField, false));
-
-    return Stream.concat(Stream.concat(lombokFields, lombokMethods), Stream.concat(lombokInnerClasses, Stream.concat(lombokInnerEnum, lombokInnerEnumConst)))
+    return Stream.concat(Stream.concat(lombokFields, lombokMethods), lombokInnerClasses)
       .toArray(StructureViewTreeElement[]::new);
   }
 
