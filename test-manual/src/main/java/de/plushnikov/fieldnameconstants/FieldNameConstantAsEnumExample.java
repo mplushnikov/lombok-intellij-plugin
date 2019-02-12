@@ -21,6 +21,14 @@ public class FieldNameConstantAsEnumExample {
     System.out.println(iAmAField);
 
     print(iAmAField);
+    print(NAMES.valueOf("stringField"));
+    print(NAMES.valueOf("intField"));
+    assert iAmAField.compareTo(NAMES.valueOf("stringField")) == 0;
+
+    for (NAMES value : NAMES.values()) {
+      System.out.println("enum name is " + value.name());
+      print(value);
+    }
   }
 
   private static void print(NAMES iAmAField) {

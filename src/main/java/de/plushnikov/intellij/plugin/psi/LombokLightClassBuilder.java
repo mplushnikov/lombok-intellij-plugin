@@ -9,8 +9,13 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.PsiTypeParameterList;
+import com.intellij.psi.ResolveState;
+import com.intellij.psi.impl.PsiClassImplUtil;
 import com.intellij.psi.impl.light.LightFieldBuilder;
 import com.intellij.psi.impl.light.LightPsiClassBuilder;
+import com.intellij.psi.impl.source.ClassInnerStuffCache;
+import com.intellij.psi.impl.source.PsiExtensibleClass;
+import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.icon.LombokIcons;
 import org.jetbrains.annotations.NonNls;
@@ -18,15 +23,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
-public class LombokLightClassBuilder extends LightPsiClassBuilder {
+public class LombokLightClassBuilder extends LightPsiClassBuilder implements PsiExtensibleClass {
   private boolean myIsEnum;
   private final String myQualifiedName;
   private final Icon myBaseIcon;
   private final LombokLightModifierList myModifierList;
   private Collection<PsiField> myFields = ContainerUtil.newArrayList();
+  private ClassInnerStuffCache myInnerCache = new ClassInnerStuffCache(this);
 
   public LombokLightClassBuilder(@NotNull PsiElement context, @NotNull String simpleName, @NotNull String qualifiedName) {
     super(context, simpleName);
@@ -149,6 +157,34 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder {
       }
     }
     return this;
+  }
+
+  @NotNull
+  @Override
+  public List<PsiField> getOwnFields() {
+    return Arrays.asList(getFields());
+  }
+
+  @NotNull
+  @Override
+  public List<PsiMethod> getOwnMethods() {
+    return Arrays.asList(getMethods());
+  }
+
+  @NotNull
+  @Override
+  public List<PsiClass> getOwnInnerClasses() {
+    return Arrays.asList(getInnerClasses());
+  }
+
+  @Override
+  public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, PsiElement lastParent, @NotNull PsiElement place) {
+    if (isEnum()) {
+      if (!PsiClassImplUtil.processDeclarationsInEnum(processor, state, myInnerCache)){
+        return false;
+      }
+    }
+    return super.processDeclarations(processor, state, lastParent, place);
   }
 
   @Override
