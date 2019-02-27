@@ -9,6 +9,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
+import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -33,8 +34,8 @@ import java.util.List;
  */
 public class GetterFieldProcessor extends AbstractFieldProcessor {
 
-  public GetterFieldProcessor() {
-    super(PsiMethod.class, Getter.class);
+  public GetterFieldProcessor(@NotNull ConfigDiscovery configDiscovery) {
+    super(configDiscovery, PsiMethod.class, Getter.class);
   }
 
   protected void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
@@ -109,7 +110,7 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
 
   private boolean validateAccessorPrefix(@NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
     boolean result = true;
-    if (!AccessorsInfo.build(psiField).prefixDefinedAndStartsWith(psiField.getName())) {
+    if (AccessorsInfo.build(psiField).isPrefixUnDefinedOrNotStartsWith(psiField.getName())) {
       builder.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
       result = false;
     }
@@ -120,25 +121,26 @@ public class GetterFieldProcessor extends AbstractFieldProcessor {
   public PsiMethod createGetterMethod(@NotNull PsiField psiField, @NotNull PsiClass psiClass, @NotNull String methodModifier) {
     final String methodName = LombokUtils.getGetterName(psiField);
 
-    LombokLightMethodBuilder method = new LombokLightMethodBuilder(psiField.getManager(), methodName)
+    LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiField.getManager(), methodName)
       .withMethodReturnType(psiField.getType())
       .withContainingClass(psiClass)
       .withNavigationElement(psiField);
     if (StringUtil.isNotEmpty(methodModifier)) {
-      method.withModifier(methodModifier);
+      methodBuilder.withModifier(methodModifier);
     }
     boolean isStatic = psiField.hasModifierProperty(PsiModifier.STATIC);
     if (isStatic) {
-      method.withModifier(PsiModifier.STATIC);
+      methodBuilder.withModifier(PsiModifier.STATIC);
     }
 
-    method.withBody(PsiMethodUtil.createCodeBlockFromText(String.format("return %s.%s;", isStatic ? psiClass.getName() : "this", psiField.getName()), psiClass));
+    final String blockText = String.format("return %s.%s;", isStatic ? psiClass.getName() : "this", psiField.getName());
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
 
-    PsiModifierList modifierList = method.getModifierList();
+    PsiModifierList modifierList = methodBuilder.getModifierList();
     copyAnnotations(psiField, modifierList,
       LombokUtils.NON_NULL_PATTERN, LombokUtils.NULLABLE_PATTERN, LombokUtils.DEPRECATED_PATTERN);
     addOnXAnnotations(PsiAnnotationSearchUtil.findAnnotation(psiField, Getter.class), modifierList, "onMethod");
-    return method;
+    return methodBuilder;
   }
 
   @Override

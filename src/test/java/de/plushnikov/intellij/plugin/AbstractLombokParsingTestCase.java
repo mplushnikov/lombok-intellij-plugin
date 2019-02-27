@@ -59,8 +59,8 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
   @NotNull
   private PsiJavaFile getPsiJavaFile(String testName, String type) {
     final String fileName = testName.replace('$', '/') + ".java";
-    final String beforeFileName = type + "/" + fileName;
-    final PsiFile psiFile = loadToPsiFile(beforeFileName);
+    final String filePath = type + "/" + fileName;
+    final PsiFile psiFile = loadToPsiFile(filePath);
     if (!(psiFile instanceof PsiJavaFile)) {
       fail("The test file type is not supported");
     }
@@ -161,8 +161,8 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
     for (String modifier : PsiModifier.MODIFIERS) {
       boolean haveSameModifiers = afterModifierList.hasModifierProperty(modifier) == beforeModifierList.hasModifierProperty(modifier);
-      final PsiMethod afterModifierListParent = PsiTreeUtil.getParentOfType(afterModifierList, PsiMethod.class);
-      assertTrue(modifier + " Modifier is not equal for " + (null == afterModifierListParent ? "..." : afterModifierListParent.getText()), haveSameModifiers);
+      final PsiElement afterModifierListParent = PsiTreeUtil.getParentOfType(afterModifierList, PsiElement.class);
+      assertTrue(modifier + " modifier is not equal for " + (null == afterModifierListParent ? "..." : afterModifierListParent.getText()), haveSameModifiers);
     }
 
     if (shouldCompareAnnotations()) {
