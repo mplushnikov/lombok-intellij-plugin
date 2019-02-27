@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.inspection;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -27,10 +26,11 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
   public void setUp() throws Exception {
     super.setUp();
 
-    final String lombokLibPath = PathUtil.toSystemIndependentName(new File(TEST_DATA_INSPECTION_DIRECTORY, "lib").getAbsolutePath());
-    final Disposable projectDisposable = myFixture.getProjectDisposable();
-    VfsRootAccess.allowRootAccess(projectDisposable, lombokLibPath);
-    PsiTestUtil.addLibrary(projectDisposable, getModule(), "Lombok Library", lombokLibPath, "lombok.jar");
+    final String lombokLibPath = PathUtil.toSystemIndependentName(
+      new File(TEST_DATA_INSPECTION_DIRECTORY, "lib").getAbsolutePath());
+
+    VfsRootAccess.allowRootAccess(lombokLibPath);
+    PsiTestUtil.addLibrary(getModule(), "Lombok", lombokLibPath, "lombok.jar");
   }
 
   @NotNull

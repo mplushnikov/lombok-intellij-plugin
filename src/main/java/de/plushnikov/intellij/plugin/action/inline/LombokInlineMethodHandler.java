@@ -90,7 +90,7 @@ public class LombokInlineMethodHandler extends JavaInlineActionHandler {
     }
 
     if (reference != null) {
-      final String errorMessage = InlineMethodProcessor.checkUnableToInsertCodeBlock(methodBody, reference.getElement());
+      final String errorMessage = InlineMethodProcessor.checkCalledInSuperOrThisExpr(methodBody, reference.getElement());
       if (errorMessage != null) {
         CommonRefactoringUtil.showErrorHint(project, editor, errorMessage, REFACTORING_NAME, HelpID.INLINE_METHOD);
         return;
