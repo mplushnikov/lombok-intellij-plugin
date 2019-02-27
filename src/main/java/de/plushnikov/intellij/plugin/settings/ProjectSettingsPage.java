@@ -7,6 +7,7 @@ import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -40,6 +41,12 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
   @Override
   public String getDisplayName() {
     return Version.PLUGIN_NAME;
+  }
+
+  @Nullable
+  @Override
+  public String getHelpTopic() {
+    return null;
   }
 
   @Override
