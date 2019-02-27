@@ -117,10 +117,21 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     initFromSettings();
   }
 
+  @Override
+  public void disposeUIResources() {
+
+  }
+
   @NotNull
   @Override
   public String getId() {
     return getDisplayName();
+  }
+
+  @Nullable
+  @Override
+  public Runnable enableSearch(String option) {
+    return null;
   }
 
 }
