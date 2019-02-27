@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <idea-plugin url="https://github.com/mplushnikov/lombok-intellij-plugin">
   <id>Lombook Plugin</id>
-  <name>Lombok Plugin</name>
+  <name>Lombok</name>
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail Plushnikov</vendor>
-  <version>0.21</version>
+  <version>XXX</version>
 
   <idea-version since-build="144.00" until-build="170.*"/>
 
-  <description><![CDATA[ ]]></description>
+  <description><![CDATA[ Description will be added by gradle build]]></description>
   <category>Tools Integration</category>
 
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.java</depends>
-
-  <project-components>
-    <component>
-      <implementation-class>de.plushnikov.intellij.plugin.LombokPluginUpdateProjectComponent</implementation-class>
-    </component>
-    <component>
-      <implementation-class>de.plushnikov.intellij.plugin.LombokPluginProjectValidatorComponent</implementation-class>
-    </component>
-  </project-components>
 
   <extensionPoints>
     <extensionPoint name="processor" interface="de.plushnikov.intellij.plugin.processor.Processor"/>
@@ -29,8 +20,15 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="de.plushnikov.intellij.plugin.activity.LombokPluginUpdateActivity"/>
+    <postStartupActivity implementation="de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity"/>
+
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.handler.BuilderHandler"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.handler.DelegateHandler"/>
+    <applicationService
+      serviceImplementation="de.plushnikov.intellij.plugin.processor.handler.EqualsAndHashCodeToStringHandler"/>
+
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.ValProcessor"/>
 
     <projectService serviceImplementation="de.plushnikov.intellij.plugin.provider.LombokProcessorProvider"/>
 
@@ -111,7 +109,6 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.GetterFieldProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.SetterFieldProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.field.WitherFieldProcessor"/>
-    <processor implementation="de.plushnikov.intellij.plugin.processor.field.FieldNameConstantsFieldProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.method.DelegateMethodProcessor"/>
 
@@ -217,6 +214,6 @@
 
   <!--TODO @Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.-->
   <!--TODO @Builder is not supported on constructors with constructor type parameters..-->
-  <change-notes><![CDATA[	]]>
+  <change-notes><![CDATA[	Change notes will be filled by gradle build ]]>
   </change-notes>
 </idea-plugin>

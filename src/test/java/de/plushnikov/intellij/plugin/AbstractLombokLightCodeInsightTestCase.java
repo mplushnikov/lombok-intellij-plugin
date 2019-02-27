@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeInsightFixtureTestCase {
   private static final String LOMBOK_SRC_PATH = "./generated/src/lombok";
-  private static final String HRISEY_SRC_PATH = "./generated/src/hrisey";
 
   @Override
   protected String getTestDataPath() {
@@ -44,12 +43,12 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeIn
     return new DefaultLightProjectDescriptor() {
       @Override
       public Sdk getSdk() {
-        return JavaSdk.getInstance().createJdk("java 1.7", "lib/mockJDK-1.7", false);
+        return JavaSdk.getInstance().createJdk("java 1.8", "lib/mockJDK-1.8", false);
       }
 
       @Override
       public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
-        model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_7);
+        model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_8);
       }
     };
   }
@@ -57,11 +56,10 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeIn
   @Override
   public void setUp() throws Exception {
     VfsRootAccess.allowRootAccess(new File(getTestDataPath(), getBasePath()).getCanonicalPath(),
-      new File(LOMBOK_SRC_PATH).getCanonicalPath(), new File(HRISEY_SRC_PATH).getCanonicalPath());
+      new File(LOMBOK_SRC_PATH).getCanonicalPath());
 
     super.setUp();
     loadFilesFrom(LOMBOK_SRC_PATH);
-    loadFilesFrom(HRISEY_SRC_PATH);
   }
 
   private void loadFilesFrom(final String srcPath) {

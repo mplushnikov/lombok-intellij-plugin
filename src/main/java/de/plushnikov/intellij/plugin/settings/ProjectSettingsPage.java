@@ -10,8 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class ProjectSettingsPage implements SearchableConfigurable, Configurable.NoScroll {
 
@@ -46,10 +44,6 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
   }
 
   @Nullable
-  public Icon getIcon() {
-    return null;
-  }
-
   @Override
   public String getHelpTopic() {
     return null;
@@ -60,18 +54,16 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     initFromSettings();
 
     // Add Listener to deactivate all checkboxes if plugin is deactivated
-    myEnableLombokInProject.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent actionEvent) {
-        JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
-        boolean selected = checkBox.getModel().isSelected();
+    myEnableLombokInProject.addActionListener(actionEvent -> {
+      JCheckBox checkBox = (JCheckBox) actionEvent.getSource();
+      boolean selected = checkBox.getModel().isSelected();
 
-        myLombokPanel.setEnabled(selected);
-        myEnableValSupport.setEnabled(selected);
-        myEnableBuilderSupport.setEnabled(selected);
-        myEnableLogSupport.setEnabled(selected);
-        myEnableConstructorSupport.setEnabled(selected);
-        myEnableDelegateSupport.setEnabled(selected);
-      }
+      myLombokPanel.setEnabled(selected);
+      myEnableValSupport.setEnabled(selected);
+      myEnableBuilderSupport.setEnabled(selected);
+      myEnableLogSupport.setEnabled(selected);
+      myEnableConstructorSupport.setEnabled(selected);
+      myEnableDelegateSupport.setEnabled(selected);
     });
     myEnableConstructorSupport.setVisible(false);
     return myGeneralPanel;
@@ -125,19 +117,10 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     initFromSettings();
   }
 
-  @Override
-  public void disposeUIResources() {
-  }
-
   @NotNull
   @Override
   public String getId() {
     return getDisplayName();
-  }
-
-  @Override
-  public Runnable enableSearch(String option) {
-    return null;
   }
 
 }

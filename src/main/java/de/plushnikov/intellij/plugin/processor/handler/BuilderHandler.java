@@ -49,7 +49,6 @@ public class BuilderHandler {
   private static final String TO_BUILDER_METHOD_NAME = "toBuilder";
   private static final String TO_BUILDER_ANNOTATION_KEY = "toBuilder";
 
-  @SuppressWarnings("deprecation")
   private static final Collection<String> INVALID_ON_BUILDERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
     Getter.class.getSimpleName(), Setter.class.getSimpleName(), Wither.class.getSimpleName(), ToString.class.getSimpleName(), EqualsAndHashCode.class.getSimpleName(),
     RequiredArgsConstructor.class.getSimpleName(), AllArgsConstructor.class.getSimpleName(), NoArgsConstructor.class.getSimpleName(),
@@ -58,7 +57,7 @@ public class BuilderHandler {
   private final ToStringProcessor toStringProcessor;
   private final NoArgsConstructorProcessor noArgsConstructorProcessor;
 
-  public BuilderHandler(ToStringProcessor toStringProcessor, NoArgsConstructorProcessor noArgsConstructorProcessor) {
+  public BuilderHandler(@NotNull ToStringProcessor toStringProcessor, @NotNull NoArgsConstructorProcessor noArgsConstructorProcessor) {
     this.toStringProcessor = toStringProcessor;
     this.noArgsConstructorProcessor = noArgsConstructorProcessor;
   }
@@ -241,19 +240,20 @@ public class BuilderHandler {
     if (!hasMethod(containingClass, builderMethodName)) {
       final PsiType psiTypeWithGenerics = PsiClassUtil.getTypeWithGenerics(builderPsiClass);
 
-      final LombokLightMethodBuilder method = new LombokLightMethodBuilder(containingClass.getManager(), builderMethodName)
+      final String blockText = String.format("return new %s();", psiTypeWithGenerics.getPresentableText());
+      final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(containingClass.getManager(), builderMethodName)
         .withMethodReturnType(psiTypeWithGenerics)
         .withContainingClass(containingClass)
         .withNavigationElement(psiAnnotation)
-        .withModifier(PsiModifier.PUBLIC)
-        .withBody(createBuilderMethodCodeBlock(containingClass, psiTypeWithGenerics));
+        .withModifier(PsiModifier.PUBLIC);
+      methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
 
-      addTypeParameters(builderPsiClass, psiMethod, method);
+      addTypeParameters(builderPsiClass, psiMethod, methodBuilder);
 
       if (null == psiMethod || psiMethod.isConstructor() || psiMethod.hasModifierProperty(PsiModifier.STATIC)) {
-        method.withModifier(PsiModifier.STATIC);
+        methodBuilder.withModifier(PsiModifier.STATIC);
       }
-      return Optional.of(method);
+      return Optional.of(methodBuilder);
     }
     return Optional.empty();
   }
@@ -271,7 +271,7 @@ public class BuilderHandler {
         psiTypeWithGenerics = PsiClassUtil.getTypeWithGenerics(builderPsiClass);
       }
 
-      final LombokLightMethodBuilder method = new LombokLightMethodBuilder(containingClass.getManager(), TO_BUILDER_METHOD_NAME)
+      final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(containingClass.getManager(), TO_BUILDER_METHOD_NAME)
         .withMethodReturnType(psiTypeWithGenerics)
         .withContainingClass(containingClass)
         .withNavigationElement(psiAnnotation)
@@ -281,11 +281,10 @@ public class BuilderHandler {
         .map(BuilderInfo::renderToBuilderCall)
         .collect(Collectors.joining(".", ".", ""));
 
-      method.withBody(PsiMethodUtil.createCodeBlockFromText(
-        String.format("return new %s()%s;", psiTypeWithGenerics.getPresentableText(), toBuilderMethodCalls),
-        containingClass));
+      final String blockText = String.format("return new %s()%s;", psiTypeWithGenerics.getPresentableText(), toBuilderMethodCalls);
+      methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
 
-      return Optional.of(method);
+      return Optional.of(methodBuilder);
     }
     return Optional.empty();
   }
@@ -298,12 +297,6 @@ public class BuilderHandler {
       .map(Optional::get)
       .toArray(PsiType[]::new);
     return factory.createType(builderPsiClass, psiTypes);
-  }
-
-  @NotNull
-  private PsiCodeBlock createBuilderMethodCodeBlock(@NotNull PsiClass containingClass, @NotNull PsiType psiTypeWithGenerics) {
-    final String blockText = String.format("return new %s();", psiTypeWithGenerics.getPresentableText());
-    return PsiMethodUtil.createCodeBlockFromText(blockText, containingClass);
   }
 
   @NotNull
@@ -453,8 +446,9 @@ public class BuilderHandler {
       .withMethodReturnType(returnType)
       .withContainingClass(builderClass)
       .withNavigationElement(parentClass)
-      .withModifier(PsiModifier.PUBLIC)
-      .withBody(createBuildMethodCodeBlock(psiMethod, builderClass, returnType, buildMethodPrepare, buildMethodParameters));
+      .withModifier(PsiModifier.PUBLIC);
+    final String codeBlockText = createBuildMethodCodeBlockText(psiMethod, builderClass, returnType, buildMethodPrepare, buildMethodParameters);
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(codeBlockText, methodBuilder));
 
     PsiMethod constructor = psiMethod;
     if (null == constructor) {
@@ -471,8 +465,8 @@ public class BuilderHandler {
   }
 
   @NotNull
-  private PsiCodeBlock createBuildMethodCodeBlock(@Nullable PsiMethod psiMethod, @NotNull PsiClass psiClass, @NotNull PsiType buildMethodReturnType,
-                                                  @NotNull String buildMethodPrepare, @NotNull String buildMethodParameters) {
+  private String createBuildMethodCodeBlockText(@Nullable PsiMethod psiMethod, @NotNull PsiClass psiClass, @NotNull PsiType buildMethodReturnType,
+                                                @NotNull String buildMethodPrepare, @NotNull String buildMethodParameters) {
     final String blockText;
 
     final String codeBlockFormat, callExpressionText;
@@ -489,7 +483,7 @@ public class BuilderHandler {
       callExpressionText = calculateCallExpressionForMethod(psiMethod, psiClass);
     }
     blockText = String.format(codeBlockFormat, buildMethodPrepare, callExpressionText, buildMethodParameters);
-    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
+    return blockText;
   }
 
   @NotNull

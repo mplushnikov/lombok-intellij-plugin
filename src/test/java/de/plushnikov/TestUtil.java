@@ -9,6 +9,9 @@ import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 
 public class TestUtil {
   public static String getTestDataPath(String relativePath) {
