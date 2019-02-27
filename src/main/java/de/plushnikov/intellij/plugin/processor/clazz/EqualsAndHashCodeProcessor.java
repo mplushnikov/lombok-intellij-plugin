@@ -45,9 +45,9 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
 
   private final EqualsAndHashCodeToStringHandler handler;
 
-  public EqualsAndHashCodeProcessor() {
-    super(PsiMethod.class, EqualsAndHashCode.class);
-    handler = new EqualsAndHashCodeToStringHandler();
+  public EqualsAndHashCodeProcessor(@NotNull ConfigDiscovery configDiscovery, @NotNull EqualsAndHashCodeToStringHandler equalsAndHashCodeToStringHandler) {
+    super(configDiscovery, PsiMethod.class, EqualsAndHashCode.class);
+    handler = equalsAndHashCodeToStringHandler;
   }
 
   @Override
@@ -87,7 +87,7 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
   private void validateCallSuperParam(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder, LocalQuickFix... quickFixes) {
     final Boolean declaredBooleanAnnotationValue = PsiAnnotationUtil.getDeclaredBooleanAnnotationValue(psiAnnotation, "callSuper");
     if (null == declaredBooleanAnnotationValue) {
-      final String configProperty = ConfigDiscovery.getInstance().getStringLombokConfigProperty(ConfigKey.EQUALSANDHASHCODE_CALL_SUPER, psiClass);
+      final String configProperty = configDiscovery.getStringLombokConfigProperty(ConfigKey.EQUALSANDHASHCODE_CALL_SUPER, psiClass);
       if (!"CALL".equalsIgnoreCase(configProperty) && !"SKIP".equalsIgnoreCase(configProperty) && PsiClassUtil.hasSuperClass(psiClass) && !hasOneOfMethodsDefined(psiClass)) {
         builder.addWarning("Generating equals/hashCode implementation but without a call to superclass, " +
             "even though this class does not extend java.lang.Object. If this is intentional, add '(callSuper=false)' to your type.",
@@ -167,56 +167,44 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
   private PsiMethod createEqualsMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod, Collection<MemberInfo> memberInfos) {
     final PsiManager psiManager = psiClass.getManager();
 
-    return new LombokLightMethodBuilder(psiManager, EQUALS_METHOD_NAME)
+    final String blockText = createEqualsBlockString(psiClass, psiAnnotation, hasCanEqualMethod, memberInfos);
+    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, EQUALS_METHOD_NAME)
       .withModifier(PsiModifier.PUBLIC)
       .withMethodReturnType(PsiType.BOOLEAN)
       .withContainingClass(psiClass)
       .withNavigationElement(psiAnnotation)
-      .withFinalParameter("o", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
-      .withBody(createEqualsCodeBlock(psiClass, psiAnnotation, hasCanEqualMethod, memberInfos));
-  }
-
-  @NotNull
-  private PsiCodeBlock createEqualsCodeBlock(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod, Collection<MemberInfo> memberInfos) {
-    final String blockText = createEqualsBlockString(psiClass, psiAnnotation, hasCanEqualMethod, memberInfos);
-    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
+      .withFinalParameter("o", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())));
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
+    return methodBuilder;
   }
 
   @NotNull
   private PsiMethod createHashCodeMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, Collection<MemberInfo> memberInfos) {
     final PsiManager psiManager = psiClass.getManager();
 
-    return new LombokLightMethodBuilder(psiManager, HASH_CODE_METHOD_NAME)
+    final String blockText = createHashcodeBlockString(psiClass, psiAnnotation, memberInfos);
+    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, HASH_CODE_METHOD_NAME)
       .withModifier(PsiModifier.PUBLIC)
       .withMethodReturnType(PsiType.INT)
       .withContainingClass(psiClass)
-      .withNavigationElement(psiAnnotation)
-      .withBody(createHashCodeBlock(psiClass, psiAnnotation, memberInfos));
-  }
-
-  @NotNull
-  private PsiCodeBlock createHashCodeBlock(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, Collection<MemberInfo> memberInfos) {
-    final String blockText = createHashcodeBlockString(psiClass, psiAnnotation, memberInfos);
-    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
+      .withNavigationElement(psiAnnotation);
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
+    return methodBuilder;
   }
 
   @NotNull
   private PsiMethod createCanEqualMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final PsiManager psiManager = psiClass.getManager();
 
-    return new LombokLightMethodBuilder(psiManager, CAN_EQUAL_METHOD_NAME)
+    final String blockText = String.format("return other instanceof %s;", PsiTypesUtil.getClassType(psiClass).getCanonicalText());
+    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, CAN_EQUAL_METHOD_NAME)
       .withModifier(PsiModifier.PROTECTED)
       .withMethodReturnType(PsiType.BOOLEAN)
       .withContainingClass(psiClass)
       .withNavigationElement(psiAnnotation)
-      .withFinalParameter("other", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
-      .withBody(createCanEqualCodeBlock(psiClass));
-  }
-
-  @NotNull
-  private PsiCodeBlock createCanEqualCodeBlock(@NotNull PsiClass psiClass) {
-    final String blockText = String.format("return other instanceof %s;", PsiTypesUtil.getClassType(psiClass).getCanonicalText());
-    return PsiMethodUtil.createCodeBlockFromText(blockText, psiClass);
+      .withFinalParameter("other", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())));
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
+    return methodBuilder;
   }
 
   private String createEqualsBlockString(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, boolean hasCanEqualMethod, Collection<MemberInfo> memberInfos) {
@@ -331,7 +319,7 @@ public class EqualsAndHashCodeProcessor extends AbstractClassProcessor {
     final boolean result;
     final Boolean declaredAnnotationValue = PsiAnnotationUtil.getDeclaredBooleanAnnotationValue(psiAnnotation, "callSuper");
     if (null == declaredAnnotationValue) {
-      final String configProperty = ConfigDiscovery.getInstance().getStringLombokConfigProperty(ConfigKey.EQUALSANDHASHCODE_CALL_SUPER, psiClass);
+      final String configProperty = configDiscovery.getStringLombokConfigProperty(ConfigKey.EQUALSANDHASHCODE_CALL_SUPER, psiClass);
       result = PsiClassUtil.hasSuperClass(psiClass) && "CALL".equalsIgnoreCase(configProperty);
     } else {
       result = declaredAnnotationValue;
