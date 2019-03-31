@@ -11,5 +11,10 @@ public class ValInspection {
 
     val d = System.getProperty("sss");
 
+    // 'val' is not allowed in old-style for loops
+    for (<error descr = "'val' is not allowed in old-style for loops"> val i = 0;</error> i < 10; i++){
+      val j = 2;
+    }
+
   }
 }
