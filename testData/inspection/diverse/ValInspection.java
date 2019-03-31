@@ -11,11 +11,6 @@ public class ValInspection {
 
     val d = System.getProperty("sss");
 
-    // 'val' is not allowed in old-style for loops
-    for (<error descr="'val' is not allowed in old-style for loops">val i = 0;</error> i < 10; i++) {
-      val j = 2;
-    }
-
     // 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })
     <error descr="'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })">val e = <error descr="Array initializer is not allowed here">{"xyz"}</error>;</error>
 
