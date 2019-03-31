@@ -11,15 +11,5 @@ public class ValInspection {
 
     val d = System.getProperty("sss");
 
-    // 'val' is not allowed in old-style for loops
-    for (<error descr="'val' is not allowed in old-style for loops">val i = 0;</error> i < 10; i++) {
-      val j = 2;
-    }
-
-  }
-
-  public void test(<error descr="'val' works only on local variables and on foreach loops">val x</error>) {
-    String val = "val";
-    System.out.println(val);
   }
 }
