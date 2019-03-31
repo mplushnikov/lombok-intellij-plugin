@@ -5,7 +5,7 @@ import com.intellij.codeInspection.InspectionProfileEntry;
 /**
  * @author Plushnikov Michail
  */
-public class DiverseInspectionTest extends LombokInspectionTest {
+public class ValInspectionTest extends LombokInspectionTest {
 
   @Override
   protected String getTestDataPath() {
@@ -17,19 +17,8 @@ public class DiverseInspectionTest extends LombokInspectionTest {
     return new LombokInspection();
   }
 
-  public void testIssue37() {
+  public void testValInspection() {
     doTest();
   }
 
-  public void testDataEqualsAndHashCodeOverride() {
-    doTest();
-  }
-
-  public void testEqualsAndHashCodeCallSuper() {
-    doTest();
-  }
-
-  public void testSetterOnFinalField() {
-    doTest();
-  }
 }

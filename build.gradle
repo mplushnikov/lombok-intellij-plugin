@@ -160,6 +160,12 @@ clean.doFirst {
 compileJava.dependsOn generateLombokConfigLexer
 check.dependsOn jacocoTestReport
 
+test {
+  testLogging {
+    // Make sure output from standard out or error is shown in Gradle output.
+    showStandardStreams = true
+  }
+}
 //plugins.withType(JavaPlugin) {
 //  test {
 //    systemProperty "NO_FS_ROOTS_ACCESS_CHECK", "true"
