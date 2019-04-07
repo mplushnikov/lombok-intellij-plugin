@@ -41,7 +41,7 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
 
     final Collection<String> flagUsageOptions = new HashSet<>(Arrays.asList(
       "lombok.accessors.flagUsage", "lombok.allArgsConstructor.flagUsage", "lombok.anyConstructor.flagUsage",
-      "lombok.builder.flagUsage", "lombok.cleanup.flagUsage", "lombok.data.flagUsage", "lombok.delegate.flagUsage",
+      "lombok.builder.flagUsage", "lombok.cleanup.flagUsage", "lombok.copyableAnnotations", "lombok.data.flagUsage", "lombok.delegate.flagUsage",
       "lombok.equalsAndHashCode.flagUsage", "lombok.experimental.flagUsage", "lombok.extensionMethod.flagUsage",
       "lombok.fieldDefaults.flagUsage", "lombok.getter.flagUsage", "lombok.getter.lazy.flagUsage",
       "lombok.log.apacheCommons.flagUsage", "lombok.log.flagUsage", "lombok.log.javaUtilLogging.flagUsage",
