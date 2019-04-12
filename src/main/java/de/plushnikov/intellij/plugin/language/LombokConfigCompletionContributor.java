@@ -41,7 +41,7 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
 
     final Collection<String> flagUsageOptions = new HashSet<>(Arrays.asList(
       "lombok.accessors.flagUsage", "lombok.allArgsConstructor.flagUsage", "lombok.anyConstructor.flagUsage",
-      "lombok.builder.flagUsage", "lombok.cleanup.flagUsage", "lombok.copyableAnnotations", "lombok.data.flagUsage", "lombok.delegate.flagUsage",
+      "lombok.builder.flagUsage", "lombok.cleanup.flagUsage", "lombok.data.flagUsage", "lombok.delegate.flagUsage",
       "lombok.equalsAndHashCode.flagUsage", "lombok.experimental.flagUsage", "lombok.extensionMethod.flagUsage",
       "lombok.fieldDefaults.flagUsage", "lombok.getter.flagUsage", "lombok.getter.lazy.flagUsage",
       "lombok.log.apacheCommons.flagUsage", "lombok.log.flagUsage", "lombok.log.javaUtilLogging.flagUsage",
@@ -57,9 +57,10 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
     ));
 
     final Collection<String> otherOptions = new HashSet<>(Arrays.asList(
-      ConfigKey.ACCESSORS_PREFIX.getConfigKey(), ConfigKey.LOG_FIELDNAME.getConfigKey(),
-      ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(), ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey(),
-      ConfigKey.FIELD_NAME_CONSTANTS_TYPENAME.getConfigKey(), ConfigKey.TOSTRING_CALL_SUPER.getConfigKey()));
+      ConfigKey.ACCESSORS_PREFIX.getConfigKey(), ConfigKey.COPYABLE_ANNOTATIONS.getConfigKey(),
+      ConfigKey.LOG_FIELDNAME.getConfigKey(), ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(),
+      ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey(), ConfigKey.FIELD_NAME_CONSTANTS_TYPENAME.getConfigKey(),
+      ConfigKey.TOSTRING_CALL_SUPER.getConfigKey()));
 
     final Collection<String> allOptions = new HashSet<>(booleanOptions);
     allOptions.addAll(flagUsageOptions);
@@ -82,7 +83,7 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
             } else if (flagUsageAllowable.contains(configPropertyKey)) {
               resultSet.addElement(LookupElementBuilder.create("ALLOW"));
               resultSet.addElement(LookupElementBuilder.create("WARNING"));
-            } else if (LOMBOK_EQUALS_AND_HASH_CODE_CALL_SUPER.equals(configPropertyKey) || LOMBOK_TOSTRING_CALL_SUPER.equals(configPropertyKey) ) {
+            } else if (LOMBOK_EQUALS_AND_HASH_CODE_CALL_SUPER.equals(configPropertyKey) || LOMBOK_TOSTRING_CALL_SUPER.equals(configPropertyKey)) {
               resultSet.addElement(LookupElementBuilder.create("CALL"));
               resultSet.addElement(LookupElementBuilder.create("SKIP"));
               resultSet.addElement(LookupElementBuilder.create("WARN"));
