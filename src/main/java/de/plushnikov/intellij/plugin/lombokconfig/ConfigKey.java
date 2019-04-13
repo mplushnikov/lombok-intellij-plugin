@@ -4,12 +4,15 @@ public enum ConfigKey {
 
   CONFIG_STOP_BUBBLING("config.stopBubbling", "false"),
 
+  COPYABLE_ANNOTATIONS("lombok.copyableAnnotations", ""),
+
   LOG_FIELDNAME("lombok.log.fieldName", "log"),
   LOG_FIELD_IS_STATIC("lombok.log.fieldIsStatic", "true"),
 
   EQUALSANDHASHCODE_CALL_SUPER("lombok.equalsAndHashCode.callSuper", "warn"),
   EQUALSANDHASHCODE_DO_NOT_USE_GETTERS("lombok.equalsAndHashCode.doNotUseGetters", "false"),
-  ANYCONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES("lombok.anyConstructor.suppressConstructorProperties", "false"),
+  ANYCONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES("lombok.anyConstructor.suppressConstructorProperties", "true"),
+  ANYCONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES("lombok.anyConstructor.addConstructorProperties", "false"),
 
   TOSTRING_CALL_SUPER("lombok.toString.callSuper", "skip"),
   TOSTRING_DO_NOT_USE_GETTERS("lombok.toString.doNotUseGetters", "false"),
@@ -31,6 +34,11 @@ public enum ConfigKey {
   ADD_GENERATED_ANNOTATION("lombok.addGeneratedAnnotation", "true"),
   ADD_SUPPRESS_FB_WARNINGS("lombok.extern.findbugs.addSuppressFBWarnings", "false"),
 
+  // Used for lombok v1.16.22 to lombok v1.18.2 only!
+  FIELD_NAME_CONSTANTS_PREFIX("lombok.fieldNameConstants.prefix", "FIELD_"),
+  // Used for lombok v1.16.22 to lombok v1.18.2 only!
+  FIELD_NAME_CONSTANTS_SUFFIX("lombok.fieldNameConstants.suffix", ""),
+  // Used for lombok from v1.18.4
   FIELD_NAME_CONSTANTS_TYPENAME("lombok.fieldNameConstants.innerTypeName","Fields"),
 
   NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE("lombok.noArgsConstructor.extraPrivate", "false");

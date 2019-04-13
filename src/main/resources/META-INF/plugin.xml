@@ -103,6 +103,11 @@
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor"/>
 
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.UtilityClassProcessor"/>
+
+    <processor
+      implementation="de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsOldProcessor"/>
+    <processor implementation="de.plushnikov.intellij.plugin.processor.field.FieldNameConstantsFieldProcessor"/>
+
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsProcessor"/>
     <processor implementation="de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsPredefinedInnerClassFieldProcessor"/>
 
@@ -204,6 +209,10 @@
       </action>
       <action id="delombokFieldNameCostants" class="de.plushnikov.intellij.plugin.action.delombok.DelombokFieldNameConstantsAction"
               text="@FieldNameConstants" description="Action to replace lombok @FieldNameConstants annotation with vanilla java fields">
+      </action>
+      <action id="delombokUtilityClass" class="de.plushnikov.intellij.plugin.action.delombok.DelombokUtilityClassAction"
+              text="@UtilityClass"
+              description="Action to replace lombok @UtilityClass annotation with vanilla java fields">
       </action>
 
       <add-to-group group-id="RefactoringMenu" anchor="last"/>

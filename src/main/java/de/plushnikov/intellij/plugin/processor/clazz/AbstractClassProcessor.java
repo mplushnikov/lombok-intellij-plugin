@@ -54,7 +54,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
 
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation) {
-      if (validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
+      if (supportAnnotationVariant(psiAnnotation) && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
         result = new ArrayList<>();
         generatePsiElements(psiClass, psiAnnotation, result);
       }
@@ -70,6 +70,13 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
       result.add(psiAnnotation);
     }
     return result;
+  }
+
+  protected void addClassAnnotation(Collection<PsiAnnotation> result, @NotNull PsiClass psiClass, String... annotationFQNs) {
+    PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, annotationFQNs);
+    if (null != psiAnnotation) {
+      result.add(psiAnnotation);
+    }
   }
 
   protected void addFieldsAnnotation(Collection<PsiAnnotation> result, @NotNull PsiClass psiClass, String... annotationFQNs) {
