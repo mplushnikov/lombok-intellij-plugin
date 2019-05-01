@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.provider;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.RecursionGuard;
 import com.intellij.openapi.util.RecursionManager;
@@ -18,7 +17,6 @@ import com.intellij.psi.impl.source.PsiExtensibleClass;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
-import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.extension.LombokProcessorExtensionPoint;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
@@ -31,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   @Override
   protected Set<String> transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
     // make copy of original modifiers
-    Set<String> result = ContainerUtil.newHashSet(modifiers);
+    Set<String> result = new HashSet<>(modifiers);
 
     // Loop through all available processors and give all of them a chance to respond
     for (ModifierProcessor processor : modifierProcessors) {
@@ -71,7 +70,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   @Nullable
   @Override
   protected PsiType inferType(@NotNull PsiTypeElement typeElement) {
-    if (DumbService.isDumb(typeElement.getProject()) || !valProcessor.isEnabled(typeElement.getProject())) {
+    if (!valProcessor.isEnabled(typeElement.getProject())) {
       return null;
     }
     return valProcessor.inferType(typeElement);
