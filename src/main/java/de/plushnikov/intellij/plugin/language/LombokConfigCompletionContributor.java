@@ -24,12 +24,20 @@ import java.util.HashSet;
 public class LombokConfigCompletionContributor extends CompletionContributor {
 
   private static final String LOMBOK_EQUALS_AND_HASH_CODE_CALL_SUPER = ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey();
+  private static final String LOMBOK_TOSTRING_CALL_SUPER = ConfigKey.TOSTRING_CALL_SUPER.getConfigKey();
 
   public LombokConfigCompletionContributor() {
     final Collection<String> booleanOptions = new HashSet<>(Arrays.asList(
-      "config.stopBubbling", "lombok.accessors.chain", "lombok.accessors.fluent",
-      "lombok.anyConstructor.suppressConstructorProperties", "lombok.equalsAndHashCode.doNotUseGetters", "lombok.getter.noIsPrefix",
-      "lombok.log.fieldIsStatic", "lombok.toString.doNotUseGetters", "lombok.toString.includeFieldNames",
+      ConfigKey.CONFIG_STOP_BUBBLING.getConfigKey(),
+      ConfigKey.ACCESSORS_CHAIN.getConfigKey(), ConfigKey.ACCESSORS_FLUENT.getConfigKey(),
+      ConfigKey.ANYCONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES.getConfigKey(),
+      ConfigKey.ANYCONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES.getConfigKey(),
+      ConfigKey.EQUALSANDHASHCODE_DO_NOT_USE_GETTERS.getConfigKey(),
+      ConfigKey.GETTER_NO_IS_PREFIX.getConfigKey(),
+      ConfigKey.LOG_FIELD_IS_STATIC.getConfigKey(),
+      ConfigKey.TOSTRING_DO_NOT_USE_GETTERS.getConfigKey(),
+      ConfigKey.TOSTRING_INCLUDE_FIELD_NAMES.getConfigKey(),
+      ConfigKey.FIELDDEFAULTS_FINAL.getConfigKey(), ConfigKey.FIELDDEFAULTS_PRIVATE.getConfigKey(),
       ConfigKey.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE.getConfigKey()));
 
     final Collection<String> flagUsageOptions = new HashSet<>(Arrays.asList(
@@ -50,9 +58,11 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
     ));
 
     final Collection<String> otherOptions = new HashSet<>(Arrays.asList(
-      ConfigKey.ACCESSORS_PREFIX.getConfigKey(), ConfigKey.LOG_FIELDNAME.getConfigKey(),
-      ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(), ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey(),
-      ConfigKey.FIELD_NAME_CONSTANTS_TYPENAME.getConfigKey()));
+      ConfigKey.ACCESSORS_PREFIX.getConfigKey(), ConfigKey.COPYABLE_ANNOTATIONS.getConfigKey(),
+      ConfigKey.LOG_FIELDNAME.getConfigKey(), ConfigKey.NONNULL_EXCEPTIONTYPE.getConfigKey(),
+      ConfigKey.EQUALSANDHASHCODE_CALL_SUPER.getConfigKey(), ConfigKey.FIELD_NAME_CONSTANTS_PREFIX.getConfigKey(),
+      ConfigKey.FIELD_NAME_CONSTANTS_SUFFIX.getConfigKey(), ConfigKey.FIELD_NAME_CONSTANTS_TYPENAME.getConfigKey(),
+      ConfigKey.TOSTRING_CALL_SUPER.getConfigKey()));
 
     final Collection<String> allOptions = new HashSet<>(booleanOptions);
     allOptions.addAll(flagUsageOptions);
@@ -75,7 +85,7 @@ public class LombokConfigCompletionContributor extends CompletionContributor {
             } else if (flagUsageAllowable.contains(configPropertyKey)) {
               resultSet.addElement(LookupElementBuilder.create("ALLOW"));
               resultSet.addElement(LookupElementBuilder.create("WARNING"));
-            } else if (LOMBOK_EQUALS_AND_HASH_CODE_CALL_SUPER.equals(configPropertyKey)) {
+            } else if (LOMBOK_EQUALS_AND_HASH_CODE_CALL_SUPER.equals(configPropertyKey) || LOMBOK_TOSTRING_CALL_SUPER.equals(configPropertyKey)) {
               resultSet.addElement(LookupElementBuilder.create("CALL"));
               resultSet.addElement(LookupElementBuilder.create("SKIP"));
               resultSet.addElement(LookupElementBuilder.create("WARN"));

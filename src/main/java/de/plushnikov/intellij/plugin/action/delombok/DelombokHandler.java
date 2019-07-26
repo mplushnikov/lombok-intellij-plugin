@@ -6,9 +6,13 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import de.plushnikov.intellij.plugin.extension.LombokProcessorExtensionPoint;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsPredefinedInnerClassFieldProcessor;
+import de.plushnikov.intellij.plugin.processor.modifier.ModifierProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +22,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public class DelombokHandler {
   private final boolean processInnerClasses;
@@ -49,6 +55,8 @@ public class DelombokHandler {
   private void invoke(Project project, PsiClass psiClass, boolean processInnerClasses) {
     Collection<PsiAnnotation> processedAnnotations = new HashSet<>();
 
+    processModifierList(psiClass);
+
     // get all inner classes before first lombok processing
     final PsiClass[] allInnerClasses = psiClass.getAllInnerClasses();
 
@@ -79,17 +87,66 @@ public class DelombokHandler {
 
     ProjectSettings.setLombokEnabledInProject(project, false);
     try {
-      for (Object psiElement : psiElements) {
-        final PsiElement element = rebuildPsiElement(project, (PsiElement) psiElement);
-        if (null != element) {
-          psiClass.add(element);
-        }
+      if (lombokProcessor instanceof FieldNameConstantsPredefinedInnerClassFieldProcessor) {
+        rebuildElementsBeforeExistingFields(project, psiClass, psiElements);
+      } else {
+        rebuildElements(project, psiClass, psiElements);
       }
     } finally {
       ProjectSettings.setLombokEnabledInProject(project, true);
     }
 
     return psiAnnotations;
+  }
+
+  private void processModifierList(@NotNull PsiClass psiClass) {
+    rebuildModifierList(psiClass);
+    PsiClassUtil.collectClassFieldsIntern(psiClass).forEach(this::rebuildModifierList);
+    PsiClassUtil.collectClassMethodsIntern(psiClass).forEach(this::rebuildModifierList);
+    PsiClassUtil.collectClassStaticMethodsIntern(psiClass).forEach(this::rebuildModifierList);
+  }
+
+  private void rebuildModifierList(@NotNull PsiModifierListOwner modifierListOwner) {
+    final PsiModifierList modifierList = modifierListOwner.getModifierList();
+    if (null != modifierList) {
+      final Set<String> lombokModifiers = new HashSet<>();
+      getLombokModifierProcessors().forEach(modifierProcessor -> {
+        if (modifierProcessor.isSupported(modifierList)) {
+          modifierProcessor.transformModifiers(modifierList, lombokModifiers);
+          lombokModifiers.forEach(modifier -> modifierList.setModifierProperty(modifier, true));
+          lombokModifiers.clear();
+        }
+      });
+    }
+  }
+
+  @NotNull
+  private Stream<ModifierProcessor> getLombokModifierProcessors() {
+    return Stream.of(LombokProcessorExtensionPoint.EP_NAME_MODIFIER_PROCESSOR.getExtensions());
+  }
+
+  private void rebuildElementsBeforeExistingFields(Project project, PsiClass psiClass, List<? super PsiElement> psiElements) {
+    //add generated elements in generated/declaration order, but before existing Fields
+    if (!psiElements.isEmpty()) {
+      final PsiField existingField = PsiClassUtil.collectClassFieldsIntern(psiClass).stream().findFirst().orElse(null);
+      Iterator<? super PsiElement> iterator = psiElements.iterator();
+      PsiElement prev = psiClass.addBefore(rebuildPsiElement(project, (PsiElement) iterator.next()), existingField);
+      while (iterator.hasNext()) {
+        PsiElement curr = rebuildPsiElement(project, (PsiElement) iterator.next());
+        if (curr != null) {
+          prev = psiClass.addAfter(curr, prev);
+        }
+      }
+    }
+  }
+
+  private void rebuildElements(Project project, PsiClass psiClass, List<? super PsiElement> psiElements) {
+    for (Object psiElement : psiElements) {
+      final PsiElement element = rebuildPsiElement(project, (PsiElement) psiElement);
+      if (null != element) {
+        psiClass.add(element);
+      }
+    }
   }
 
   public Collection<PsiAnnotation> collectProcessableAnnotations(@NotNull PsiClass psiClass) {
@@ -128,13 +185,11 @@ public class DelombokHandler {
 
     if (!fields.isEmpty()) {
       final Iterator<PsiField> iterator = fields.iterator();
-      PsiField prev = iterator.next();
-      resultClass.add(rebuildField(project, prev));
+      PsiElement prev = resultClass.add(rebuildField(project, iterator.next()));
       while (iterator.hasNext()) {
         PsiField curr = iterator.next();
         //guarantees order of enum constants, should match declaration order
-        resultClass.addBefore(rebuildField(project, curr), prev);
-        prev = curr;
+        prev = resultClass.addAfter(rebuildField(project, curr), prev);
       }
     }
 

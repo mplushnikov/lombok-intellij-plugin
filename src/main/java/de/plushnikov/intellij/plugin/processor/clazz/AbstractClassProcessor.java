@@ -19,6 +19,7 @@ import de.plushnikov.intellij.plugin.processor.clazz.constructor.AbstractConstru
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -53,7 +54,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
 
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation) {
-      if (validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
+      if (supportAnnotationVariant(psiAnnotation) && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
         result = new ArrayList<>();
         generatePsiElements(psiClass, psiAnnotation, result);
       }
@@ -69,6 +70,13 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
       result.add(psiAnnotation);
     }
     return result;
+  }
+
+  protected void addClassAnnotation(Collection<PsiAnnotation> result, @NotNull PsiClass psiClass, String... annotationFQNs) {
+    PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, annotationFQNs);
+    if (null != psiAnnotation) {
+      result.add(psiAnnotation);
+    }
   }
 
   protected void addFieldsAnnotation(Collection<PsiAnnotation> result, @NotNull PsiClass psiClass, String... annotationFQNs) {
@@ -158,4 +166,15 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     return result;
   }
 
+  boolean readCallSuperAnnotationOrConfigProperty(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ConfigKey configKey) {
+    final boolean result;
+    final Boolean declaredAnnotationValue = PsiAnnotationUtil.getDeclaredBooleanAnnotationValue(psiAnnotation, "callSuper");
+    if (null == declaredAnnotationValue) {
+      final String configProperty = configDiscovery.getStringLombokConfigProperty(configKey, psiClass);
+      result = PsiClassUtil.hasSuperClass(psiClass) && "CALL".equalsIgnoreCase(configProperty);
+    } else {
+      result = declaredAnnotationValue;
+    }
+    return result;
+  }
 }
