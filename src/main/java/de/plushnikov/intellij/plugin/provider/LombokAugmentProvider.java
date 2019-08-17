@@ -154,17 +154,16 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     @Nullable
     @Override
     public Result<List<Psi>> compute() {
-      return (Result<List<Psi>>) recursionGuard.doPreventingRecursion(psiClass, true, this::compute2);
-    }
+      return recursionGuard.doPreventingRecursion(psiClass, true, () -> {
+//        log.info(String.format("Process call for type: %s class: %s", type, psiClass.getQualifiedName()));
 
-    private Result<List> compute2() {
-      //        log.info(String.format("Process call for type: %s class: %s", type, psiClass.getQualifiedName()));
-      final List<Psi> result = new ArrayList<>();
-      final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
-      for (Processor processor : lombokProcessors) {
-        result.addAll((Collection<Psi>) processor.process(psiClass));
-      }
-      return Result.create(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
+        final List<Psi> result = new ArrayList<>();
+        final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
+        for (Processor processor : lombokProcessors) {
+          result.addAll((Collection<Psi>) processor.process(psiClass));
+        }
+        return Result.create(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
+      });
     }
   }
 }

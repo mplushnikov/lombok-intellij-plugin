@@ -54,18 +54,10 @@ intellij {
   updateSinceUntilBuild true
   sameSinceUntilBuild false
   sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${ideaVersion}"
-
-  if(version.matches("2019\\.2.*")) {
-    plugins 'java'
-  }
 }
 
 patchPluginXml {
   version artifactVersion
-  // use open until build for last release and EAP-Build
-  if (isEAP || (ideaVersion == lastReleaseVersion)) {
-    untilBuild ""
-  }
 
   pluginDescription(file(descriptionFile).text)
   changeNotes(file(changesFile).text)
@@ -130,13 +122,6 @@ copy {
   into("generated/resources")
 }
 
-//grammarKit {
-//  //tag or short commit hash of IntelliJ patched JFlex
-//  jflexRelease = '1.7.0-1'
-//  //tag or short commit hash of Grammar-Kit to use
-//  grammarKitRelease = '34fd65b92a'
-//}
-
 task generateLombokConfigParser(type: org.jetbrains.grammarkit.tasks.GenerateParser) {
   println "Generating Parser for GrammerKit: ${grammarKit.grammarKitRelease}"
 
@@ -171,8 +156,3 @@ test {
     logger.lifecycle("Running test: " + descriptor)
   }
 }
-//plugins.withType(JavaPlugin) {
-//  test {
-//    systemProperty "NO_FS_ROOTS_ACCESS_CHECK", "true"
-//  }
-//}
