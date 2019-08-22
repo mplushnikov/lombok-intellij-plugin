@@ -7,7 +7,7 @@ import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.testFramework.LightJavaCodeInsightTestCase;
+import com.intellij.testFramework.LightCodeInsightTestCase;
 import org.jetbrains.annotations.NonNls;
 
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Based on logic from com.intellij.codeInsight.ExceptionCheckingTest
  */
-public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
+public class SneakyThrowsTest extends LightCodeInsightTestCase {
 
   public void testCatchAllException() {
     PsiMethodCallExpression methodCall = createCall("@lombok.SneakyThrows void foo() {  throwsMyException(); }");

@@ -114,7 +114,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class FieldLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.field");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.field");
 
     FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass, ourGuard);
@@ -122,7 +122,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class MethodLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.method");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.method");
 
     MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass, ourGuard);
@@ -130,7 +130,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class ClassLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.class");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.class");
 
     ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
       super(type, psiClass, ourGuard);
@@ -140,9 +140,9 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   private abstract static class LombokCachedValueProvider<Psi extends PsiElement> implements CachedValueProvider<List<Psi>> {
     private final Class<Psi> type;
     private final PsiClass psiClass;
-    private final RecursionGuard<PsiClass> recursionGuard;
+    private final RecursionGuard recursionGuard;
 
-    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard) {
+    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard recursionGuard) {
       this.type = type;
       this.psiClass = psiClass;
       this.recursionGuard = recursionGuard;
