@@ -7,20 +7,19 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.LanguageLevelModuleExtension;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.util.PathUtil;
-import com.siyeh.ig.LightInspectionTestCase;
+import com.siyeh.ig.LightJavaInspectionTestCase;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-import static com.intellij.testFramework.LightPlatformTestCase.getModule;
-
-public abstract class LombokInspectionTest extends LightInspectionTestCase {
+public abstract class LombokInspectionTest extends LightJavaInspectionTestCase {
   static final String TEST_DATA_INSPECTION_DIRECTORY = "testData/inspection";
 
   @Override
@@ -31,6 +30,8 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
     final Disposable projectDisposable = myFixture.getProjectDisposable();
     VfsRootAccess.allowRootAccess(projectDisposable, lombokLibPath);
     PsiTestUtil.addLibrary(projectDisposable, getModule(), "Lombok Library", lombokLibPath, "lombok.jar");
+
+    Registry.get("platform.random.idempotence.check.rate").setValue(1, getTestRootDisposable());
   }
 
   @NotNull
