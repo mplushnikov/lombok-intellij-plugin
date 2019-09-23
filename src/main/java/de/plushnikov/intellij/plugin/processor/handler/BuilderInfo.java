@@ -30,6 +30,9 @@ public class BuilderInfo {
   private PsiVariable variableInClass;
   private PsiType fieldInBuilderType;
   private boolean deprecated;
+  private String visibilityModifier;
+
+  private String builderChainResult = "this";
 
   private PsiClass builderClass;
   private PsiType builderClassType;
@@ -41,13 +44,11 @@ public class BuilderInfo {
   private PsiAnnotation singularAnnotation;
   private BuilderElementHandler builderElementHandler;
 
-  private boolean fluentBuilder = true;
-  private boolean chainBuilder = true;
-
   private PsiAnnotation obtainViaAnnotation;
   private String viaFieldName;
   private String viaMethodName;
   private boolean viaStaticCall;
+  private String instanceVariableName = "this";
 
   public static BuilderInfo fromPsiParameter(@NotNull PsiParameter psiParameter) {
     final BuilderInfo result = new BuilderInfo();
@@ -77,7 +78,7 @@ public class BuilderInfo {
     result.deprecated = isDeprecated(psiField);
     result.fieldInBuilderType = psiField.getType();
     result.fieldInitializer = psiField.getInitializer();
-    result.hasBuilderDefaultAnnotation = null == PsiAnnotationSearchUtil.findAnnotation(psiField, BUILDER_DEFAULT_ANNOTATION);
+    result.hasBuilderDefaultAnnotation = PsiAnnotationSearchUtil.isAnnotatedWith(psiField, BUILDER_DEFAULT_ANNOTATION);
 
     final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
     result.fieldInBuilderName = accessorsInfo.removePrefix(psiField.getName());
@@ -97,19 +98,24 @@ public class BuilderInfo {
     return this;
   }
 
-  public BuilderInfo withFluent(boolean fluentBuilder) {
-    this.fluentBuilder = fluentBuilder;
-    return this;
-  }
-
-  public BuilderInfo withChain(boolean chainBuilder) {
-    this.chainBuilder = chainBuilder;
+  public BuilderInfo withVisibilityModifier(String visibilityModifier) {
+    this.visibilityModifier = visibilityModifier;
     return this;
   }
 
   public BuilderInfo withBuilderClass(@NotNull PsiClass builderClass) {
     this.builderClass = builderClass;
     this.builderClassType = PsiClassUtil.getTypeWithGenerics(builderClass);
+    return this;
+  }
+
+  public BuilderInfo withBuilderClassType(@NotNull PsiClassType builderClassType) {
+    this.builderClassType = builderClassType;
+    return this;
+  }
+
+  public BuilderInfo withBuilderChainResult(@NotNull String builderChainResult) {
+    this.builderChainResult = builderChainResult;
     return this;
   }
 
@@ -133,7 +139,7 @@ public class BuilderInfo {
 
       // skip initialized final fields unless annotated with @Builder.Default
       final boolean isInitializedFinalField = null != fieldInitializer && modifierList.hasModifierProperty(PsiModifier.FINAL);
-      if (isInitializedFinalField && hasBuilderDefaultAnnotation) {
+      if (isInitializedFinalField && !hasBuilderDefaultAnnotation) {
         result = false;
       }
     }
@@ -176,12 +182,9 @@ public class BuilderInfo {
     return deprecated;
   }
 
-  public boolean isFluentBuilder() {
-    return fluentBuilder;
-  }
-
-  public boolean isChainBuilder() {
-    return chainBuilder;
+  @PsiModifier.ModifierConstant
+  public String getVisibilityModifier() {
+    return visibilityModifier;
   }
 
   public PsiClass getBuilderClass() {
@@ -192,12 +195,20 @@ public class BuilderInfo {
     return builderClassType;
   }
 
+  public String getBuilderChainResult() {
+    return builderChainResult;
+  }
+
   public PsiAnnotation getSingularAnnotation() {
     return singularAnnotation;
   }
 
   public boolean hasSingularAnnotation() {
     return null != singularAnnotation;
+  }
+
+  public boolean hasBuilderDefaultAnnotation() {
+    return hasBuilderDefaultAnnotation;
   }
 
   public boolean hasObtainViaAnnotation() {
@@ -214,6 +225,10 @@ public class BuilderInfo {
 
   public boolean isViaStaticCall() {
     return viaStaticCall;
+  }
+
+  public String getInstanceVariableName() {
+    return instanceVariableName;
   }
 
   public Collection<String> getAnnotations() {
@@ -235,36 +250,35 @@ public class BuilderInfo {
     return builderElementHandler.renderBuildPrepare(variableInClass, fieldInBuilderName);
   }
 
+  public String renderSuperBuilderConstruction() {
+    return builderElementHandler.renderSuperBuilderConstruction(variableInClass, fieldInBuilderName);
+  }
+
   public String renderBuildCall() {
     return fieldInBuilderName;
   }
 
   public CharSequence renderToBuilderCall() {
-    final StringBuilder result = new StringBuilder();
-
-    result.append(fieldInBuilderName);
-    result.append('(');
     if (hasObtainViaAnnotation()) {
+      final StringBuilder result = new StringBuilder();
+      result.append(fieldInBuilderName);
+      result.append('(');
       if (StringUtil.isNotEmpty(viaFieldName)) {
-        result.append("this.");
-        result.append(viaFieldName);
+        result.append(instanceVariableName).append(".").append(viaFieldName);
       } else if (StringUtil.isNotEmpty(viaMethodName)) {
 
-        result.append(viaStaticCall ? getPsiClass().getName() : "this");
+        result.append(viaStaticCall ? getPsiClass().getName() : instanceVariableName);
         result.append('.');
         result.append(viaMethodName);
-        result.append(viaStaticCall ? "(this)" : "()");
+        result.append(viaStaticCall ? "(" + instanceVariableName + ")" : "()");
       } else {
-        result.append("this.");
-        result.append(variableInClass.getName());
+        result.append(instanceVariableName).append(".").append(variableInClass.getName());
       }
+      result.append(')');
+      return result;
     } else {
-      result.append("this.");
-      result.append(variableInClass.getName());
+      return builderElementHandler.renderToBuilderCall(this);
     }
-    result.append(')');
-
-    return result;
   }
 
   private PsiClass getPsiClass() {
@@ -292,4 +306,7 @@ public class BuilderInfo {
     return Optional.empty();
   }
 
+  public void withInstanceVariableName(String instanceVariableName) {
+    this.instanceVariableName = instanceVariableName;
+  }
 }

@@ -7,7 +7,6 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
@@ -17,6 +16,7 @@ import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.Builder;
+import lombok.With;
 import lombok.experimental.Wither;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,9 +29,9 @@ public class WitherProcessor extends AbstractClassProcessor {
 
   private final WitherFieldProcessor fieldProcessor;
 
-  public WitherProcessor(@NotNull ConfigDiscovery configDiscovery, @NotNull WitherFieldProcessor fieldProcessor) {
-    super(configDiscovery, PsiMethod.class, Wither.class);
-    this.fieldProcessor = fieldProcessor;
+  public WitherProcessor(@NotNull WitherFieldProcessor witherFieldProcessor) {
+    super(PsiMethod.class, Wither.class, With.class);
+    this.fieldProcessor = witherFieldProcessor;
   }
 
   @Override
@@ -93,7 +93,7 @@ public class WitherProcessor extends AbstractClassProcessor {
         // Skip fields that start with $
         createWither &= !psiField.getName().startsWith(LombokUtils.LOMBOK_INTERN_FIELD_MARKER);
         // Skip fields having Wither annotation already
-        createWither &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, Wither.class);
+        createWither &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, Wither.class, With.class);
       }
       if (createWither) {
         witherFields.add(psiField);
