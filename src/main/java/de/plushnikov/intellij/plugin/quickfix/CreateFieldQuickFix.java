@@ -68,7 +68,7 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
     final PsiClass myClass = (PsiClass) startElement;
     final Editor editor = CodeInsightUtil.positionCursor(project, psiFile, myClass.getLBrace());
     if (editor != null) {
-      WriteCommandAction.writeCommandAction(project, psiFile).run(() ->
+      WriteCommandAction.writeCommandAction(psiFile).run(() ->
         {
           final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);
           final PsiField psiField = psiElementFactory.createField(myName, myType);
@@ -84,7 +84,8 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
             psiField.setInitializer(psiInitializer);
           }
 
-          final List<PsiGenerationInfo<PsiField>> generationInfos = GenerateMembersUtil.insertMembersAtOffset(myClass.getContainingFile(), editor.getCaretModel().getOffset(),
+          final List<PsiGenerationInfo<PsiField>> generationInfos = GenerateMembersUtil.insertMembersAtOffset(
+            myClass.getContainingFile(), editor.getCaretModel().getOffset(),
             Collections.singletonList(new PsiGenerationInfo<>(psiField)));
           if (!generationInfos.isEmpty()) {
             PsiField psiMember = generationInfos.iterator().next().getPsiMember();

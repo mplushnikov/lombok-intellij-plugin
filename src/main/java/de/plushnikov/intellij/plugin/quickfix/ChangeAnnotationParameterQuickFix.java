@@ -61,7 +61,7 @@ public class ChangeAnnotationParameterQuickFix extends LocalQuickFixOnPsiElement
     final PsiAnnotation myAnnotation = (PsiAnnotation) startElement;
     final Editor editor = CodeInsightUtil.positionCursor(project, psiFile, myAnnotation);
     if (editor != null) {
-      WriteCommandAction.writeCommandAction(project, psiFile).run(() ->
+      WriteCommandAction.writeCommandAction(psiFile).run(() ->
         {
           final PsiNameValuePair valuePair = selectAnnotationAttribute(myAnnotation);
 

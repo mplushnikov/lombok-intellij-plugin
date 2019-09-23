@@ -31,7 +31,7 @@ public class ExceptionTest extends AbstractLombokLightCodeInsightTestCase {
     assertEquals(8, psiClassMethods.length);
 
     // change something to trigger cache drop
-    WriteCommandAction.writeCommandAction(getProject(), psiFile).compute(() ->
+    WriteCommandAction.writeCommandAction(psiFile).compute(() ->
       {
         psiClass.getModifierList().addAnnotation("java.lang.SuppressWarnings");
         return true;
