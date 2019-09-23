@@ -5,6 +5,7 @@ import com.intellij.codeInsight.generation.GenerateMembersUtil;
 import com.intellij.codeInsight.generation.PsiGenerationInfo;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement;
+import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.command.undo.UndoUtil;
 import com.intellij.openapi.editor.Editor;
@@ -68,8 +69,8 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
     final PsiClass myClass = (PsiClass) startElement;
     final Editor editor = CodeInsightUtil.positionCursor(project, psiFile, myClass.getLBrace());
     if (editor != null) {
-      WriteCommandAction.writeCommandAction(psiFile).run(() ->
-        {
+      new WriteCommandAction(project, psiFile) {
+        protected void run(@NotNull Result result) {
           final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);
           final PsiField psiField = psiElementFactory.createField(myName, myType);
 
@@ -94,7 +95,12 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
 
           UndoUtil.markPsiFileForUndo(psiFile);
         }
-      );
+
+        @Override
+        protected boolean isGlobalUndoAction() {
+          return true;
+        }
+      }.execute();
     }
   }
 

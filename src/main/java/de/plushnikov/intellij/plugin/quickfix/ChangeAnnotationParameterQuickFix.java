@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.quickfix;
 import com.intellij.codeInsight.CodeInsightUtil;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement;
+import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.command.undo.UndoUtil;
 import com.intellij.openapi.editor.Editor;
@@ -61,8 +62,8 @@ public class ChangeAnnotationParameterQuickFix extends LocalQuickFixOnPsiElement
     final PsiAnnotation myAnnotation = (PsiAnnotation) startElement;
     final Editor editor = CodeInsightUtil.positionCursor(project, psiFile, myAnnotation);
     if (editor != null) {
-      WriteCommandAction.writeCommandAction(psiFile).run(() ->
-        {
+      new WriteCommandAction(project, psiFile) {
+        protected void run(@NotNull Result result) {
           final PsiNameValuePair valuePair = selectAnnotationAttribute(myAnnotation);
 
           if (null != valuePair) {
@@ -81,7 +82,12 @@ public class ChangeAnnotationParameterQuickFix extends LocalQuickFixOnPsiElement
 
           UndoUtil.markPsiFileForUndo(psiFile);
         }
-      );
+
+        @Override
+        protected boolean isGlobalUndoAction() {
+          return true;
+        }
+      }.execute();
     }
   }
 
