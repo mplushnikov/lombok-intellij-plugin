@@ -10,7 +10,7 @@ import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
  *
  * @author Alexej Kubarev
  */
-public abstract class ApiVersionAwareLightCodeInsightFixureTestCase extends LightCodeInsightFixtureTestCase {
+public abstract class ApiVersionAwareLightJavaCodeInsightFixtureTestCase extends LightCodeInsightFixtureTestCase {
 
   private String getMinVersion() {
     RequiredApiVersion requiredVersionAnnotation = getClass().getAnnotation(RequiredApiVersion.class);

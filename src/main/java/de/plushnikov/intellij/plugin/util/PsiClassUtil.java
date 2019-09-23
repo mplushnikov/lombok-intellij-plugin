@@ -7,10 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Plushnikov Michail
@@ -54,7 +53,7 @@ public class PsiClassUtil {
    * @return all inner classes of the class
    */
   @NotNull
-  private static Collection<PsiClass> collectInnerClassesIntern(@NotNull PsiClass psiClass) {
+  public static Collection<PsiClass> collectInnerClassesIntern(@NotNull PsiClass psiClass) {
     if (psiClass instanceof PsiExtensibleClass) {
       return ((PsiExtensibleClass) psiClass).getOwnInnerClasses();
     } else {
@@ -92,35 +91,31 @@ public class PsiClassUtil {
   private static boolean superTypesIsEmptyOrObjectOnly(@NotNull final PsiClass psiClass) {
     // It returns abstract classes, but also Object.
     final PsiClassType[] superTypes = psiClass.getSuperTypes();
-    return superTypes.length == 0 || superTypes.length > 1 || CommonClassNames.JAVA_LANG_OBJECT.equals(superTypes[0].getCanonicalText());
+    return superTypes.length != 1 || CommonClassNames.JAVA_LANG_OBJECT.equals(superTypes[0].getCanonicalText());
   }
 
   @NotNull
-  public static PsiType getWildcardClassType(@NotNull PsiClass psiClass) {
+  public static PsiClassType getWildcardClassType(@NotNull PsiClass psiClass) {
+    final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiClass.getProject());
     if (psiClass.hasTypeParameters()) {
       PsiType[] wildcardTypes = new PsiType[psiClass.getTypeParameters().length];
       Arrays.fill(wildcardTypes, PsiWildcardType.createUnbounded(psiClass.getManager()));
-      return JavaPsiFacade.getElementFactory(psiClass.getProject()).createType(psiClass, wildcardTypes);
+      return elementFactory.createType(psiClass, wildcardTypes);
     }
-    return JavaPsiFacade.getElementFactory(psiClass.getProject()).createType(psiClass);
+    return elementFactory.createType(psiClass);
   }
 
   /**
    * Creates a PsiType for a PsiClass enriched with generic substitution information if available
    */
   @NotNull
-  public static PsiType getTypeWithGenerics(@NotNull PsiClass psiClass) {
-    PsiTypeParameter[] classTypeParameters = psiClass.getTypeParameters();
+  public static PsiClassType getTypeWithGenerics(@NotNull PsiClass psiClass) {
     final PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
-    if (classTypeParameters.length > 0) {
-      Map<PsiTypeParameter, PsiType> substitutionMap = new HashMap<>();
-      for (PsiTypeParameter typeParameter : classTypeParameters) {
-        substitutionMap.put(typeParameter, factory.createType(typeParameter));
-      }
-      return factory.createType(psiClass, factory.createSubstitutor(substitutionMap));
-    } else {
+    final PsiType[] psiTypes = Stream.of(psiClass.getTypeParameters()).map(factory::createType).toArray(PsiType[]::new);
+    if (psiTypes.length > 0)
+      return factory.createType(psiClass, psiTypes);
+    else
       return factory.createType(psiClass);
-    }
   }
 
   /**

@@ -16,8 +16,7 @@ import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
-import de.plushnikov.intellij.plugin.extension.LombokProcessorExtensionPoint;
+import de.plushnikov.intellij.plugin.processor.LombokProcessorManager;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.processor.modifier.ModifierProcessor;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +45,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   public LombokAugmentProvider() {
     log.debug("LombokAugmentProvider created");
 
-    modifierProcessors = getModifierProcessors();
+    modifierProcessors = LombokProcessorManager.getLombokModifierProcessors();
     valProcessor = ServiceManager.getService(ValProcessor.class);
   }
 
@@ -104,16 +102,10 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       cachedValue = CachedValuesManager.getCachedValue(element, new FieldLombokCachedValueProvider<>(type, psiClass));
     } else if (type == PsiMethod.class) {
       cachedValue = CachedValuesManager.getCachedValue(element, new MethodLombokCachedValueProvider<>(type, psiClass));
-    } else if (type == PsiClass.class) {
-      cachedValue = CachedValuesManager.getCachedValue(element, new ClassLombokCachedValueProvider<>(type, psiClass));
     } else {
-      return emptyResult;
+      cachedValue = CachedValuesManager.getCachedValue(element, new ClassLombokCachedValueProvider<>(type, psiClass));
     }
     return null != cachedValue ? cachedValue : emptyResult;
-  }
-
-  private List<ModifierProcessor> getModifierProcessors() {
-    return Arrays.asList(LombokProcessorExtensionPoint.EP_NAME_MODIFIER_PROCESSOR.getExtensions());
   }
 
   private static class FieldLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
@@ -154,16 +146,29 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     @Nullable
     @Override
     public Result<List<Psi>> compute() {
-      return recursionGuard.doPreventingRecursion(psiClass, true, () -> {
-//        log.info(String.format("Process call for type: %s class: %s", type, psiClass.getQualifiedName()));
-
-        final List<Psi> result = new ArrayList<>();
-        final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
-        for (Processor processor : lombokProcessors) {
-          result.addAll((Collection<Psi>) processor.process(psiClass));
-        }
-        return Result.create(result, PsiModificationTracker.JAVA_STRUCTURE_MODIFICATION_COUNT);
-      });
+//      return compute2();
+      return recursionGuard.doPreventingRecursion(psiClass, true, this::computeIntern);
     }
+
+    private Result<List<Psi>> computeIntern() {
+//      final String message = String.format("Process call for type: %s class: %s", type.getSimpleName(), psiClass.getQualifiedName());
+//      log.info(">>>" + message);
+      final List<Psi> result = getPsis(psiClass, type);
+//      log.info("<<<" + message);
+      return Result.create(result, psiClass);
+    }
+  }
+
+  @NotNull
+  private static <Psi extends PsiElement> List<Psi> getPsis(PsiClass psiClass, Class<Psi> type) {
+    final List<Psi> result = new ArrayList<>();
+    final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
+    for (Processor processor : lombokProcessors) {
+      final List<? super PsiElement> generatedElements = processor.process(psiClass);
+      for (Object psiElement : generatedElements) {
+        result.add((Psi) psiElement);
+      }
+    }
+    return result;
   }
 }

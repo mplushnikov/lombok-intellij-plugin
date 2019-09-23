@@ -30,7 +30,7 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
       new File(TEST_DATA_INSPECTION_DIRECTORY, "lib").getAbsolutePath());
     VfsRootAccess.allowRootAccess(lombokLibPath);
 
-    TestUtil.addLibrary(myFixture, getModule(), "Lombok", lombokLibPath, "lombok.jar");
+    TestUtil.addLibrary(myFixture, getModule(), "Lombok Library", lombokLibPath, "lombok-1.18.8.jar");
   }
 
   @NotNull

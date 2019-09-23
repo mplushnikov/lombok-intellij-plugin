@@ -6,7 +6,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
@@ -24,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,11 +42,13 @@ public class DataProcessor extends AbstractClassProcessor {
   private final RequiredArgsConstructorProcessor requiredArgsConstructorProcessor;
   private final NoArgsConstructorProcessor noArgsConstructorProcessor;
 
-  public DataProcessor(@NotNull ConfigDiscovery configDiscovery,
-                       @NotNull GetterProcessor getterProcessor, @NotNull SetterProcessor setterProcessor,
-                       @NotNull EqualsAndHashCodeProcessor equalsAndHashCodeProcessor, @NotNull ToStringProcessor toStringProcessor,
-                       @NotNull RequiredArgsConstructorProcessor requiredArgsConstructorProcessor, @NotNull NoArgsConstructorProcessor noArgsConstructorProcessor) {
-    super(configDiscovery, PsiMethod.class, Data.class);
+  public DataProcessor(@NotNull GetterProcessor getterProcessor,
+                       @NotNull SetterProcessor setterProcessor,
+                       @NotNull EqualsAndHashCodeProcessor equalsAndHashCodeProcessor,
+                       @NotNull ToStringProcessor toStringProcessor,
+                       @NotNull RequiredArgsConstructorProcessor requiredArgsConstructorProcessor,
+                       @NotNull NoArgsConstructorProcessor noArgsConstructorProcessor) {
+    super(PsiMethod.class, Data.class);
     this.getterProcessor = getterProcessor;
     this.setterProcessor = setterProcessor;
     this.equalsAndHashCodeProcessor = equalsAndHashCodeProcessor;
@@ -97,7 +99,7 @@ public class DataProcessor extends AbstractClassProcessor {
     final String staticName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticConstructor");
     if (shouldGenerateRequiredArgsConstructor(psiClass, staticName)) {
       target.addAll(requiredArgsConstructorProcessor.createRequiredArgsConstructor(psiClass, PsiModifier.PUBLIC, psiAnnotation, staticName));
-      // if there are no required field, it will alredy have a default constructor without parameters
+      // if there are no required field, it will already have a default constructor without parameters
       hasConstructorWithoutParamaters = requiredArgsConstructorProcessor.getRequiredFields(psiClass).isEmpty();
     } else {
       hasConstructorWithoutParamaters = false;
@@ -112,7 +114,7 @@ public class DataProcessor extends AbstractClassProcessor {
     boolean result = false;
     // create required constructor only if there are no other constructor annotations
     @SuppressWarnings("unchecked") final boolean notAnnotatedWith = PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, NoArgsConstructor.class,
-      RequiredArgsConstructor.class, AllArgsConstructor.class, Builder.class);
+      RequiredArgsConstructor.class, AllArgsConstructor.class, Builder.class, SuperBuilder.class);
     if (notAnnotatedWith) {
       final Collection<PsiMethod> definedConstructors = PsiClassUtil.collectClassConstructorIntern(psiClass);
       filterToleratedElements(definedConstructors);

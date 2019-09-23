@@ -8,7 +8,6 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiType;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.processor.field.SetterFieldProcessor;
@@ -34,9 +33,9 @@ public class SetterProcessor extends AbstractClassProcessor {
 
   private final SetterFieldProcessor fieldProcessor;
 
-  public SetterProcessor(@NotNull ConfigDiscovery configDiscovery, @NotNull SetterFieldProcessor fieldProcessor) {
-    super(configDiscovery, PsiMethod.class, Setter.class);
-    this.fieldProcessor = fieldProcessor;
+  public SetterProcessor(@NotNull SetterFieldProcessor setterFieldProcessor) {
+    super(PsiMethod.class, Setter.class);
+    this.fieldProcessor = setterFieldProcessor;
   }
 
   @Override
