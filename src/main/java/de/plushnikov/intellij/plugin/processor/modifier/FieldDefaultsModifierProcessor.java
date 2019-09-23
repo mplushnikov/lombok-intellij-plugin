@@ -37,7 +37,6 @@ public class FieldDefaultsModifierProcessor implements ModifierProcessor {
 
   @Override
   public boolean isSupported(@NotNull PsiModifierList modifierList) {
-
     // FieldDefaults only change modifiers of class fields
     // but not for enum constants or lombok generated fields
     final PsiElement psiElement = modifierList.getParent();

@@ -5,7 +5,6 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
@@ -25,8 +24,8 @@ public class BuilderClassMethodProcessor extends AbstractMethodProcessor {
 
   private final BuilderHandler builderHandler;
 
-  public BuilderClassMethodProcessor(@NotNull ConfigDiscovery configDiscovery, @NotNull BuilderHandler builderHandler) {
-    super(configDiscovery, PsiClass.class, Builder.class);
+  public BuilderClassMethodProcessor(@NotNull BuilderHandler builderHandler) {
+    super(PsiClass.class, Builder.class);
     this.builderHandler = builderHandler;
   }
 
@@ -43,9 +42,7 @@ public class BuilderClassMethodProcessor extends AbstractMethodProcessor {
   protected void processIntern(@NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final PsiClass psiClass = psiMethod.getContainingClass();
     if (null != psiClass) {
-      if (builderHandler.notExistInnerClass(psiClass, psiMethod, psiAnnotation)) {
-        target.add(builderHandler.createBuilderClass(psiClass, psiMethod, psiAnnotation));
-      }
+      builderHandler.createBuilderClassIfNotExist(psiClass, psiMethod, psiAnnotation).ifPresent(target::add);
     }
   }
 }

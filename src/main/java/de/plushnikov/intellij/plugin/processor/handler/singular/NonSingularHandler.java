@@ -1,11 +1,9 @@
 package de.plushnikov.intellij.plugin.processor.handler.singular;
 
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiType;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
@@ -19,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 
 class NonSingularHandler implements BuilderElementHandler {
-  private static final String SETTER_PREFIX = "set";
-
   NonSingularHandler() {
   }
 
@@ -34,25 +30,20 @@ class NonSingularHandler implements BuilderElementHandler {
 
   @Override
   public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
-    final String blockText = getAllMethodBody(info.getFieldName(), info.isFluentBuilder());
-    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(info.getManager(), createSetterName(info.getFieldName(), info.isFluentBuilder()))
+    final String blockText = getAllMethodBody(info.getFieldName(), info.getBuilderChainResult());
+    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(info.getManager(), info.getFieldName())
       .withContainingClass(info.getBuilderClass())
-      .withMethodReturnType(info.isChainBuilder() ? info.getBuilderType() : PsiType.VOID)
+      .withMethodReturnType(info.getBuilderType())
       .withParameter(info.getFieldName(), info.getFieldType())
       .withNavigationElement(info.getVariable())
-      .withModifier(PsiModifier.PUBLIC)
+      .withModifier(info.getVisibilityModifier())
       .withAnnotations(info.getAnnotations());
     methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
     return Collections.singleton(methodBuilder);
   }
 
   public List<String> getBuilderMethodNames(@NotNull String newName, @Nullable PsiAnnotation singularAnnotation) {
-    return Collections.singletonList(createSetterName(newName, true));
-  }
-
-  @NotNull
-  private String createSetterName(@NotNull String fieldName, boolean isFluent) {
-    return isFluent ? fieldName : SETTER_PREFIX + StringUtil.capitalize(fieldName);
+    return Collections.singletonList(newName);
   }
 
   @Override
@@ -60,8 +51,8 @@ class NonSingularHandler implements BuilderElementHandler {
     return psiFieldName;
   }
 
-  private String getAllMethodBody(@NotNull String psiFieldName, boolean fluentBuilder) {
-    final String codeBlockTemplate = "this.{0} = {0};{1}";
-    return MessageFormat.format(codeBlockTemplate, psiFieldName, fluentBuilder ? "\nreturn this;" : "");
+  private String getAllMethodBody(@NotNull String psiFieldName, @NotNull String builderChainResult) {
+    final String codeBlockTemplate = "this.{0} = {0};\nreturn {1};";
+    return MessageFormat.format(codeBlockTemplate, psiFieldName, builderChainResult);
   }
 }

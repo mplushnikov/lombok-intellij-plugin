@@ -16,11 +16,12 @@ public abstract class LombokLightActionTestCase extends AbstractLombokLightCodeI
     checkResultByFile(getBasePath() + "/after" + getTestName(false) + ".java");
   }
 
-  protected void performActionTest() {
+  private void performActionTest() {
     AnAction anAction = getAction();
 
     AsyncResult<DataContext> contextResult = DataManager.getInstance().getDataContextFromFocus();
-    AnActionEvent anActionEvent = new AnActionEvent(null, contextResult.getResult(), "", anAction.getTemplatePresentation(), ActionManager.getInstance(), 0);
+    AnActionEvent anActionEvent = new AnActionEvent(null, contextResult.getResult(),
+      "", anAction.getTemplatePresentation(), ActionManager.getInstance(), 0);
 
     anAction.actionPerformed(anActionEvent);
     FileDocumentManager.getInstance().saveAllDocuments();

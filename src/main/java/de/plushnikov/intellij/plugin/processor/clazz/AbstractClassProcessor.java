@@ -8,7 +8,6 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.util.PsiTreeUtil;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
@@ -16,6 +15,7 @@ import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemNewBuilder;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.AbstractConstructorClassProcessor;
+import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.quickfix.PsiQuickFixFactory;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
@@ -25,12 +25,14 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,10 +43,15 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractClassProcessor extends AbstractProcessor implements ClassProcessor {
 
-  protected AbstractClassProcessor(@NotNull ConfigDiscovery configDiscovery,
-                                   @NotNull Class<? extends PsiElement> supportedClass,
+  protected AbstractClassProcessor(@NotNull Class<? extends PsiElement> supportedClass,
                                    @NotNull Class<? extends Annotation> supportedAnnotationClass) {
-    super(configDiscovery, supportedClass, supportedAnnotationClass);
+    super(supportedClass, supportedAnnotationClass);
+  }
+
+  protected AbstractClassProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                                   @NotNull Class<? extends Annotation> supportedAnnotationClass,
+                                   @NotNull Class<? extends Annotation> equivalentAnnotationClass) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClass);
   }
 
   @NotNull
@@ -102,6 +109,19 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     }
 
     return result;
+  }
+
+  protected Optional<PsiClass> getSupportedParentClass(@NotNull PsiClass psiClass) {
+    final PsiElement parentElement = psiClass.getParent();
+    if (parentElement instanceof PsiClass && !(parentElement instanceof LombokLightClassBuilder)) {
+      return Optional.of((PsiClass) parentElement);
+    }
+    return Optional.empty();
+  }
+
+  @Nullable
+  protected PsiAnnotation getSupportedAnnotation(@NotNull PsiClass psiParentClass) {
+    return PsiAnnotationSearchUtil.findAnnotation(psiParentClass, getSupportedAnnotationClasses());
   }
 
   protected abstract boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder);

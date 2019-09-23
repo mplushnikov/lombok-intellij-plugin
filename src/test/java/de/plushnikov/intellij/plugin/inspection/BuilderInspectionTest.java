@@ -1,6 +1,8 @@
 package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInspection.InspectionProfileEntry;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.util.BuildNumber;
 
 public class BuilderInspectionTest extends LombokInspectionTest {
 
@@ -14,6 +16,15 @@ public class BuilderInspectionTest extends LombokInspectionTest {
     return new LombokInspection();
   }
 
+  public void testBuilderDefaultValue() {
+    final BuildNumber buildNumber = ApplicationInfo.getInstance().getBuild();
+    if (193 <= buildNumber.getBaselineVersion()) {
+      doNamedTest(getTestName(false) + "193");
+    } else {
+      doTest();
+    }
+  }
+
   public void testBuilderInvalidIdentifier() {
     doTest();
   }
@@ -22,19 +33,15 @@ public class BuilderInspectionTest extends LombokInspectionTest {
     doTest();
   }
 
+  public void testBuilderDefaultsWarnings() {
+    doTest();
+  }
+
   public void testBuilderInvalidUse() {
     doTest();
   }
 
   public void testBuilderObtainVia() {
-    doTest();
-  }
-
-  public void testBuilderDefaultsWarnings() {
-    doTest();
-  }
-
-  public void testBuilderDefaultValue() {
     doTest();
   }
 }
