@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
@@ -33,16 +32,14 @@ import java.util.List;
  */
 public class BuilderProcessor extends AbstractClassProcessor {
 
-  private static final String SINGULAR_CLASS = Singular.class.getName();
-  private static final String BUILDER_DEFAULT_CLASS = Builder.Default.class.getName().replace("$", ".");
+  static final String SINGULAR_CLASS = Singular.class.getName();
+  static final String BUILDER_DEFAULT_CLASS = Builder.Default.class.getName().replace("$", ".");
 
   private final BuilderHandler builderHandler;
   private final AllArgsConstructorProcessor allArgsConstructorProcessor;
 
-  public BuilderProcessor(@NotNull ConfigDiscovery configDiscovery,
-                          @NotNull AllArgsConstructorProcessor allArgsConstructorProcessor,
-                          @NotNull BuilderHandler builderHandler) {
-    super(configDiscovery, PsiMethod.class, Builder.class);
+  public BuilderProcessor(@NotNull BuilderHandler builderHandler, @NotNull AllArgsConstructorProcessor allArgsConstructorProcessor) {
+    super(PsiMethod.class, Builder.class);
     this.builderHandler = builderHandler;
     this.allArgsConstructorProcessor = allArgsConstructorProcessor;
   }

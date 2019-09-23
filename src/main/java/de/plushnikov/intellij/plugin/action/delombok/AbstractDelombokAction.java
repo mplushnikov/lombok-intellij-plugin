@@ -24,19 +24,28 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.SyntheticElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilBase;
+import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public abstract class AbstractDelombokAction extends AnAction {
-  private final DelombokHandler myHandler;
+  private DelombokHandler myHandler;
 
   protected AbstractDelombokAction() {
-    myHandler = createHandler();
+    //default constructor
   }
 
   protected abstract DelombokHandler createHandler();
+
+  private DelombokHandler getHandler() {
+    if (null == myHandler) {
+      myHandler = createHandler();
+    }
+    return myHandler;
+  }
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
@@ -106,16 +115,8 @@ public abstract class AbstractDelombokAction extends AnAction {
   }
 
   private void executeCommand(final Project project, final Runnable action) {
-    CommandProcessor.getInstance().executeCommand(project, new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().runWriteAction(action);
-      }
-    }, getCommandName(), null);
-  }
-
-  private DelombokHandler getHandler() {
-    return myHandler;
+    CommandProcessor.getInstance().executeCommand(project,
+      () -> ApplicationManager.getApplication().runWriteAction(action), getCommandName(), null);
   }
 
   @Override
@@ -149,19 +150,7 @@ public abstract class AbstractDelombokAction extends AnAction {
         if (StdFileTypes.JAVA.equals(file.getFileType())) {
           PsiJavaFile psiFile = (PsiJavaFile) psiManager.findFile(file);
           if (psiFile != null) {
-            for (PsiClass psiClass : psiFile.getClasses()) {
-              if (isValidForClass(psiClass)) {
-                isValid = true;
-                break;
-              }
-
-              for (PsiClass innerClass : psiClass.getAllInnerClasses()) {
-                if (isValidForClass(innerClass)) {
-                  isValid = true;
-                  break;
-                }
-              }
-            }
+            isValid = Stream.of(psiFile.getClasses()).anyMatch(this::isValidForClass);
           }
         }
         if (isValid) {
@@ -172,12 +161,16 @@ public abstract class AbstractDelombokAction extends AnAction {
     presentation.setEnabled(isValid);
   }
 
-  private boolean isValidForClass(@NotNull PsiClass targetClass) {
-    if (!targetClass.isInterface()) {
-      Collection<PsiAnnotation> psiAnnotations = myHandler.collectProcessableAnnotations(targetClass);
-      return !psiAnnotations.isEmpty();
+  private boolean isValidForClass(@NotNull PsiClass psiClass) {
+    if (psiClass.isInterface()) {
+      return false;
     }
-    return false;
+    Collection<PsiAnnotation> psiAnnotations = getHandler().collectProcessableAnnotations(psiClass);
+    if (!psiAnnotations.isEmpty()) {
+      return true;
+    }
+    final Collection<PsiClass> classesIntern = PsiClassUtil.collectInnerClassesIntern(psiClass);
+    return classesIntern.stream().anyMatch(this::isValidForClass);
   }
 
   @Nullable

@@ -5,9 +5,15 @@ plugins {
 }
 
 repositories {
+  jcenter()
   mavenCentral()
-  mavenLocal()
+  maven { url "https://www.jitpack.io" }
 }
+// Fix Bug https://github.com/jitpack/jitpack.io/issues/3973
+project.repositories.removeAll {
+  it instanceof MavenArtifactRepository && it.url.toString() == 'https://jitpack.io'
+}
+
 
 apply plugin: 'java'
 apply plugin: 'idea'
@@ -16,7 +22,7 @@ apply plugin: 'org.jetbrains.grammarkit'
 apply plugin: 'jacoco'
 apply plugin: "com.github.ManifestClasspath"
 
-
+def isCI = System.getenv("CI")
 def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
 ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
 def isEAP = ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")
@@ -64,8 +70,7 @@ patchPluginXml {
 }
 
 publishPlugin {
-  username System.getenv('IJ_REPO_USERNAME')
-  password System.getenv('IJ_REPO_PASSWORD')
+  token System.getenv('IJ_PLUGIN_TOKEN')
 }
 
 jacocoTestReport {
@@ -80,7 +85,7 @@ configurations {
 }
 
 dependencies {
-  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.8', classifier: 'sources', ext: 'jar'
+  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.10', classifier: 'sources', ext: 'jar'
 
   testCompile group: 'junit', name: 'junit', version: '4.12'
   testCompile group: 'org.mockito', name: 'mockito-core', version: '3.0.0'
@@ -106,6 +111,7 @@ copy {
     include 'lombok/ToString.java'
     include 'lombok/SneakyThrows.java'
     include 'lombok/Value.java'
+    include 'lombok/With.java'
     include 'lombok/val.java'
     include 'lombok/var.java'
     include 'lombok/Singular.java'
@@ -149,7 +155,16 @@ check.dependsOn jacocoTestReport
 
 test {
   // show standard out and standard error of the test JVM(s) on the console
-  testLogging.showStandardStreams = true
+  testLogging {
+    exceptionFormat = 'full'
+    showStandardStreams = true
+  }
+  if( isCI ){
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+      exceptionFormat "full"
+    }
+  }
 
   // listen to events in the test execution lifecycle
   beforeTest { descriptor ->

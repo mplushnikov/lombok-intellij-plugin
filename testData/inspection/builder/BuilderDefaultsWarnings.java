@@ -1,4 +1,4 @@
-@lombok.Builder
+<error descr="@Builder.Default and @Singular cannot be mixed.">@lombok.Builder</error>
 public class BuilderDefaultsWarnings {
 	long x = System.currentTimeMillis();
 	final int y = 5;
