@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.extension;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFinder;
@@ -13,7 +14,7 @@ public class LombokElementFinder extends PsiElementFinder {
   private final JavaFileManager myFileManager;
 
   public LombokElementFinder(Project project) {
-    myFileManager = JavaFileManager.getInstance(project);
+    myFileManager = ServiceManager.getService(project, JavaFileManager.class);
   }
 
   @Nullable

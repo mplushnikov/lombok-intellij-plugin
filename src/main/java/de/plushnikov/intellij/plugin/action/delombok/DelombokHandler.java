@@ -306,7 +306,7 @@ public class DelombokHandler {
     if (psiClassType instanceof PsiClassReferenceType) {
       return ((PsiClassReferenceType) psiClassType).getReference().getText();
     }
-    return psiClassType.getName();
+    return psiClassType.getClassName();
   }
 
   private void copyModifiers(PsiModifierList fromModifierList, PsiModifierList resultModifierList) {
