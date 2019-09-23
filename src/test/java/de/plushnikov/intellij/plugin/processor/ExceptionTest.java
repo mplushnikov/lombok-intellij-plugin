@@ -1,6 +1,7 @@
 package de.plushnikov.intellij.plugin.processor;
 
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
@@ -31,7 +32,7 @@ public class ExceptionTest extends AbstractLombokLightCodeInsightTestCase {
     assertEquals(8, psiClassMethods.length);
 
     // change something to trigger cache drop
-    WriteCommandAction.writeCommandAction(psiFile).compute(() ->
+    WriteCommandAction.runWriteCommandAction(getProject(), (Computable<Boolean>) () ->
       {
         psiClass.getModifierList().addAnnotation("java.lang.SuppressWarnings");
         return true;
