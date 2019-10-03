@@ -58,6 +58,7 @@ public class LombokConfigParserDefinition implements ParserDefinition {
     return new LombokConfigFile(viewProvider);
   }
 
+  @Override
   public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
     return SpaceRequirements.MAY;
   }
