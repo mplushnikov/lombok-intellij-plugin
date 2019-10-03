@@ -6,12 +6,12 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 
 /**
  * @author Alexej Kubarev
  */
-public class ValueModifierTest extends LightJavaCodeInsightFixtureTestCase {
+public class ValueModifierTest extends LightCodeInsightFixtureTestCase {
 
   @Override
   protected String getTestDataPath() {

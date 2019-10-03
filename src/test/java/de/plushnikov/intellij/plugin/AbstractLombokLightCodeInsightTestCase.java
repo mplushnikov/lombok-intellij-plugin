@@ -5,15 +5,14 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import com.intellij.util.PathUtil;
 import junit.framework.ComparisonFailure;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+
+import static com.intellij.testFramework.LightPlatformTestCase.getModule;
 
 public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeInsightFixtureTestCase {
 

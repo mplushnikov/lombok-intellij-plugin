@@ -26,7 +26,7 @@ public class LombokGenerateConstructorHandler extends GenerateConstructorHandler
   protected ClassMember[] getAllOriginalMembers(PsiClass aClass) {
     PsiField[] fields = aClass.getFields();
     ArrayList<ClassMember> array = new ArrayList<>();
-    List<ImplicitUsageProvider> implicitUsageProviders = ImplicitUsageProvider.EP_NAME.getExtensionList();
+    ImplicitUsageProvider[] implicitUsageProviders = ImplicitUsageProvider.EP_NAME.getExtensions();
     fieldLoop:
     for (PsiField field : fields) {
       if (field.hasModifierProperty(PsiModifier.STATIC)) {
