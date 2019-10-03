@@ -1,6 +1,10 @@
 package de.plushnikov.intellij.plugin.processor.modifier;
 
-import com.intellij.psi.*;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiLocalVariable;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 
@@ -27,7 +31,7 @@ public class VarModifierTest extends LightCodeInsightFixtureTestCase {
     assertNotNull(var);
     assertNotNull(var.getModifierList());
     boolean isFinal = var.getModifierList().hasModifierProperty(PsiModifier.FINAL);
-    assertTrue("var doesn't make variable final", !isFinal);
+    assertFalse("var doesn't make variable final", isFinal);
   }
 
   public void testVarModifiersEditing() {
@@ -43,6 +47,6 @@ public class VarModifierTest extends LightCodeInsightFixtureTestCase {
 
     assertNotNull(var.getModifierList());
     boolean isFinal = var.getModifierList().hasModifierProperty(PsiModifier.FINAL);
-    assertTrue("var doesn't make variable final", !isFinal);
+    assertFalse("var doesn't make variable final", isFinal);
   }
 }
