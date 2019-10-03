@@ -40,7 +40,7 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeIn
   }
 
   protected void loadLombokLibrary() {
-    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
+    LombokTestUtil.loadLombokLibrary(myFixture, getModule());
   }
 
   protected PsiFile loadToPsiFile(String fileName) {

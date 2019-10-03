@@ -3,7 +3,6 @@ package de.plushnikov.intellij.plugin.inspection;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.siyeh.ig.LightInspectionTestCase;
 import de.plushnikov.intellij.plugin.LombokTestUtil;
-import de.plushnikov.TestUtil;
 import org.jetbrains.annotations.NotNull;
 
 import static com.intellij.testFramework.LightPlatformTestCase.getModule;
@@ -15,7 +14,7 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
   public void setUp() throws Exception {
     super.setUp();
 
-    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
+    LombokTestUtil.loadLombokLibrary(myFixture, getModule());
   }
 
   @NotNull
