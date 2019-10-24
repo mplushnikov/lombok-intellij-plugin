@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
+
 
 /**
  * It should find calls to getters/setters of some field changed by lombok accessors
@@ -52,6 +54,14 @@ public class LombokFieldFindUsagesHandlerFactory extends FindUsagesHandlerFactor
 
           Arrays.stream(containingClass.getInnerClasses())
             .forEach(psiClass -> processClass(psiClass, psiField, elements));
+
+          // process referencing onto pseudo-builder field
+          if (psiField instanceof LombokLightFieldBuilder) {
+            PsiElement originalField = psiField.getNavigationElement();
+            if (originalField instanceof PsiField && Objects.equals(psiField.getName(), ((PsiField) originalField).getName())) {
+              processClassMethods(containingClass, (PsiField) originalField, elements);
+            }
+          }
 
           return PsiUtilCore.toPsiElementArray(elements);
         }
