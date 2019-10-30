@@ -59,7 +59,7 @@ public class LombokFieldFindUsagesHandlerFactory extends FindUsagesHandlerFactor
           if (psiField instanceof LombokLightFieldBuilder) {
             PsiElement originalField = psiField.getNavigationElement();
             if (originalField instanceof PsiField && Objects.equals(psiField.getName(), ((PsiField) originalField).getName())) {
-              processClassMethods(containingClass, (PsiField) originalField, elements);
+              elements.add(originalField);
             }
           }
 
