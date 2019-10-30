@@ -9,6 +9,6 @@ public class Issue633 {
   @Builder.Default
   private String deleted = "N";
 
-  private String deleted2;
+  private String deleted2 = "N";
 
 }

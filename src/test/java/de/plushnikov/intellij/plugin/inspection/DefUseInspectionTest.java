@@ -2,6 +2,8 @@ package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInspection.InspectionProfileEntry;
 import com.intellij.codeInspection.defUse.DefUseInspection;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.util.BuildNumber;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -18,6 +20,9 @@ public class DefUseInspectionTest extends LombokInspectionTest {
   }
 
   public void testIssue633() {
-    doTest();
+    final BuildNumber buildNumber = ApplicationInfo.getInstance().getBuild();
+    if (173 <= buildNumber.getBaselineVersion()) {
+      doTest();
+    }
   }
 }
