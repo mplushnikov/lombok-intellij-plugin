@@ -92,7 +92,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
      * field should have lazy getter and should be initialized in constructors
      */
     METHOD_INVOCATION_WILL_PRODUCE_NPE(HighlightSeverity.WARNING, CodeInsightColors.WARNINGS_ATTRIBUTES) {
-      private final Pattern pattern = Pattern.compile("Method invocation '.*' will produce 'NullPointerException'");
+      private final Pattern pattern = Pattern.compile("Method invocation '.*' (will|may) produce '(java\\.lang\\.)?NullPointerException'");
 
       @Override
       public boolean descriptionCheck(@Nullable String description) {

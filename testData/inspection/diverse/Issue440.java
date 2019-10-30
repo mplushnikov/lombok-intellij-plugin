@@ -6,7 +6,7 @@ public class Issue440 {
 
   private Car car;
 
-  private final String carString = car.<warning descr="Method invocation 'toString' will produce 'NullPointerException'">toString</warning>();
+  private final String carString = car.<warning descr="Method invocation 'toString' may produce 'java.lang.NullPointerException'">toString</warning>();
 
   public Issue440(Bar bar) {
     this.bar = bar;
