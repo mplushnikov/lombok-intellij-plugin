@@ -14,10 +14,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.util.PsiTreeUtil;
-import de.plushnikov.intellij.plugin.handler.BuilderHandler;
-import de.plushnikov.intellij.plugin.handler.EqualsAndHashCodeCallSuperHandler;
-import de.plushnikov.intellij.plugin.handler.LazyGetterHandler;
-import de.plushnikov.intellij.plugin.handler.OnXAnnotationHandler;
+import de.plushnikov.intellij.plugin.handler.*;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,6 +78,11 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
     String description = highlightInfo.getDescription();
     if (HighlightSeverity.ERROR.equals(highlightInfo.getSeverity())) {
       //Handling onX parameters
+      if (OnXJresAnnotationHandler.isOnXParameterAnnotation(highlightInfo, file)
+        || OnXJresAnnotationHandler.isOnXParameterValue(highlightInfo, file)
+        || (description != null && LOMBOK_ANY_ANNOTATION_REQUIRED.matcher(description).matches())) {
+        return false;
+      }
       if (OnXAnnotationHandler.isOnXParameterAnnotation(highlightInfo, file)
         || OnXAnnotationHandler.isOnXParameterValue(highlightInfo, file)
         || (description != null && LOMBOK_ANY_ANNOTATION_REQUIRED.matcher(description).matches())) {
@@ -149,7 +151,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
       @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
-        return !LazyGetterHandler.isLazyGetterHandled(highlightedElement);
+        return !LazyGetterHandler.isLazyGetterHandled(highlightedElement) || !LazyJresGetterHandler.isLazyGetterHandled(highlightedElement);
       }
     },
 
@@ -182,7 +184,10 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
       @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
         return !LazyGetterHandler.isLazyGetterHandled(highlightedElement)
-          || !LazyGetterHandler.isInitializedInConstructors(highlightedElement);
+          || !LazyGetterHandler.isInitializedInConstructors(highlightedElement)
+          || !LazyJresGetterHandler.isLazyGetterHandled(highlightedElement)
+          || !LazyJresGetterHandler.isInitializedInConstructors(highlightedElement)
+          ;
       }
     },
 
