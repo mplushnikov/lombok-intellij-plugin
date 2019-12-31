@@ -2,8 +2,24 @@ package de.plushnikov.intellij.plugin.psi;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCodeBlock;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiReferenceList;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
@@ -15,6 +31,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -23,6 +40,9 @@ import java.util.Objects;
  * @author Plushnikov Michail
  */
 public class LombokLightMethodBuilder extends LightMethodBuilder {
+
+  private static Key<WeakReference<LombokLightMethodBuilder>> METHOD_BUILDER_KEY = new Key<>("lombok.method.builder");
+
   private PsiMethod myMethod;
   private ASTNode myASTNode;
   private PsiCodeBlock myBodyCodeBlock;
@@ -212,6 +232,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
       if (null != getBody()) {
         result.getBody().replace(getBody());
       }
+      setLightMethodBuilder(result, this);
     } catch (Exception ex) {
       result = null;
     }
@@ -304,5 +325,17 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   @Override
   public void checkDelete() throws IncorrectOperationException {
     // simple do nothing
+  }
+
+  public static LombokLightMethodBuilder getLightMethodBuilder(PsiMethod method) {
+    WeakReference<LombokLightMethodBuilder> ref = method.getUserData(METHOD_BUILDER_KEY);
+    if (ref != null) {
+      return ref.get();
+    }
+    return null;
+  }
+
+  public static void setLightMethodBuilder(PsiMethod method, LombokLightMethodBuilder builder) {
+    method.putUserData(METHOD_BUILDER_KEY, new WeakReference<>(builder));
   }
 }
