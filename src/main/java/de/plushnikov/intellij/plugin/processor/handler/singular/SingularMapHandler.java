@@ -48,12 +48,10 @@ class SingularMapHandler extends AbstractSingularHandler {
     return Arrays.asList(
       new LombokLightFieldBuilder(info.getManager(), info.getFieldName() + LOMBOK_KEY, builderFieldKeyType)
         .withContainingClass(info.getBuilderClass())
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(info.getVariable()),
+        .withModifier(PsiModifier.PRIVATE),
       new LombokLightFieldBuilder(info.getManager(), info.getFieldName() + LOMBOK_VALUE, builderFieldValueType)
         .withContainingClass(info.getBuilderClass())
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(info.getVariable()));
+        .withModifier(PsiModifier.PRIVATE));
   }
 
   @NotNull

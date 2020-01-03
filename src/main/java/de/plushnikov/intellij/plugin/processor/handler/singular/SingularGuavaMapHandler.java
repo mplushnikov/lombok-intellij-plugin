@@ -33,8 +33,7 @@ class SingularGuavaMapHandler extends SingularMapHandler {
     return Collections.singleton(
       new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), builderFieldKeyType)
         .withContainingClass(info.getBuilderClass())
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(info.getVariable()));
+        .withModifier(PsiModifier.PRIVATE));
   }
 
   @NotNull

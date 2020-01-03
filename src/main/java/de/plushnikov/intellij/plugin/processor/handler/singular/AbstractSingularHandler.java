@@ -39,8 +39,7 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
     return Collections.singleton(
       new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), builderFieldType)
         .withContainingClass(info.getBuilderClass())
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(info.getVariable()));
+        .withModifier(PsiModifier.PRIVATE));
   }
 
   @NotNull
