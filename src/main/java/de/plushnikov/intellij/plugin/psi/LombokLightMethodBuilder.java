@@ -56,6 +56,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
       new LombokLightReferenceListBuilder(manager, JavaLanguage.INSTANCE, PsiReferenceList.Role.THROWS_LIST),
       new LightTypeParameterListBuilder(manager, JavaLanguage.INSTANCE));
     setBaseIcon(LombokIcons.METHOD_ICON);
+    putUserData(METHOD_BUILDER_KEY, new WeakReference<>(this));
   }
 
   public LombokLightMethodBuilder withNavigationElement(PsiElement navigationElement) {
