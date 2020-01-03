@@ -2,9 +2,9 @@ package de.plushnikov.intellij.plugin.util;
 
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiCodeBlock;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.impl.source.DummyHolder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -16,9 +16,12 @@ import java.util.List;
  */
 public class PsiMethodUtil {
   @NotNull
-  public static PsiCodeBlock createCodeBlockFromText(@NotNull String blockText, @NotNull PsiElement psiElement) {
-    final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiElement.getProject());
-    return elementFactory.createCodeBlockFromText("{" + blockText + "}", psiElement);
+  public static PsiCodeBlock createCodeBlockFromText(@NotNull String blockText, @NotNull PsiMethod parentMethod) {
+    final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(parentMethod.getProject());
+    PsiCodeBlock block = elementFactory.createCodeBlockFromText("{" + blockText + "}", parentMethod);
+    DummyHolder dummyFile = (DummyHolder) block.getContainingFile();
+    dummyFile.setOriginalFile(parentMethod.getContainingFile());
+    return block;
   }
 
   public static boolean hasMethodByName(@NotNull Collection<PsiMethod> classMethods, @NotNull String methodName) {

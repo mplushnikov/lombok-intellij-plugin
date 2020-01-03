@@ -24,6 +24,7 @@ import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.psi.impl.light.LightTypeParameterListBuilder;
+import com.intellij.psi.impl.source.DummyHolder;
 import com.intellij.util.IncorrectOperationException;
 import de.plushnikov.intellij.plugin.icon.LombokIcons;
 import de.plushnikov.intellij.plugin.util.ReflectionUtil;
@@ -234,6 +235,9 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
         result.getBody().replace(getBody());
       }
       setLightMethodBuilder(result, this);
+
+      DummyHolder dummyFile = (DummyHolder) result.getContainingFile();
+      dummyFile.setOriginalFile(getContainingFile());
     } catch (Exception ex) {
       result = null;
     }
