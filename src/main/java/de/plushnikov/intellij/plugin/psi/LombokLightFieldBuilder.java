@@ -4,6 +4,7 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiModifier;
@@ -75,6 +76,14 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
   public LombokLightFieldBuilder withNavigationElement(PsiElement navigationElement) {
     setNavigationElement(navigationElement);
     return this;
+  }
+
+  @Override
+  public PsiFile getContainingFile() {
+    if (getContainingClass() != null) {
+      return getContainingClass().getContainingFile();
+    }
+    return super.getContainingFile();
   }
 
   @NotNull

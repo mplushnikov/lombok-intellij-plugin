@@ -41,7 +41,7 @@ public class LombokReferenceSearcher extends QueryExecutorBase<PsiReference, Ref
 
   public static boolean searchInClassMethods(PsiClass containingClass, PsiElement element, Processor<? super PsiReference> consumer) {
     for(PsiMethod method : containingClass.getMethods()){
-      if(method instanceof LombokLightMethodBuilder && (method.getNavigationElement() == element || method.isConstructor())){
+      if(method instanceof LombokLightMethodBuilder){
         // only look in the methods we have generated ourselves. Other methods are already indexed and the references they contain can
         // already be found by the native ReferenceSearch
         if(!reportReferencesInElement(method, element, consumer)){
