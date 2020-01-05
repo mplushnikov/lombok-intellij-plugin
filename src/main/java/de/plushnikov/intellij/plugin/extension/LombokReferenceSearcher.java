@@ -39,7 +39,7 @@ public class LombokReferenceSearcher extends QueryExecutorBase<PsiReference, Ref
     }
   }
 
-  public static boolean searchInClassMethods(PsiClass containingClass, PsiElement element, Processor<? super PsiReference> consumer) {
+  private boolean searchInClassMethods(PsiClass containingClass, PsiElement element, Processor<? super PsiReference> consumer) {
     for(PsiMethod method : containingClass.getMethods()){
       if(method instanceof LombokLightMethodBuilder){
         // only look in the methods we have generated ourselves. Other methods are already indexed and the references they contain can
@@ -52,7 +52,7 @@ public class LombokReferenceSearcher extends QueryExecutorBase<PsiReference, Ref
     return true;
   }
 
-  public static boolean reportReferencesInElement(PsiElement haystack, PsiElement needle, Processor<? super PsiReference> consumer) {
+  private boolean reportReferencesInElement(PsiElement haystack, PsiElement needle, Processor<? super PsiReference> consumer) {
     PsiReference ref = haystack.getReference();
     if (ref != null && ref.isReferenceTo(needle)) {
       return consumer.process(ref);
