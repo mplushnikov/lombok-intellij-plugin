@@ -12,6 +12,8 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightFieldBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
+import com.intellij.psi.impl.source.DummyHolder;
+import com.intellij.psi.impl.source.DummyHolderFactory;
 import com.intellij.util.IncorrectOperationException;
 import de.plushnikov.intellij.plugin.icon.LombokIcons;
 import org.jetbrains.annotations.NonNls;
@@ -27,12 +29,14 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
   private String myName;
   private final LombokLightIdentifier myNameIdentifier;
   private final LombokLightModifierList myModifierList;
+  private final DummyHolder myHolder;
 
   public LombokLightFieldBuilder(@NotNull PsiManager manager, @NotNull String name, @NotNull PsiType type) {
     super(manager, name, type);
     myName = name;
     myNameIdentifier = new LombokLightIdentifier(manager, name);
     myModifierList = new LombokLightModifierList(manager, JavaLanguage.INSTANCE, Collections.emptyList());
+    myHolder = DummyHolderFactory.createHolder(manager, getContext());
     setBaseIcon(LombokIcons.FIELD_ICON);
   }
 
@@ -80,10 +84,7 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
 
   @Override
   public PsiFile getContainingFile() {
-    if (getContainingClass() != null) {
-      return getContainingClass().getContainingFile();
-    }
-    return super.getContainingFile();
+    return myHolder;
   }
 
   @NotNull
