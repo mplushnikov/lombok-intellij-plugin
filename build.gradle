@@ -1,5 +1,5 @@
 plugins {
-  id "org.jetbrains.intellij" version "0.4.14"
+  id "org.jetbrains.intellij" version "0.4.16"
   id "org.jetbrains.grammarkit" version "2019.2.1"
   id "com.github.ManifestClasspath" version "0.1.0-RELEASE"
 }
@@ -57,8 +57,6 @@ intellij {
   println "Building for IntelliJ version: ${version}"
 
   pluginName pluginName
-  updateSinceUntilBuild true
-  sameSinceUntilBuild false
   sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${ideaVersion}"
 
   plugins 'java'
@@ -66,10 +64,6 @@ intellij {
 
 patchPluginXml {
   version artifactVersion
-  // use open until build for last release and EAP-Build
-  if (isEAP || (ideaVersion == lastReleaseVersion)) {
-    untilBuild ""
-  }
 
   pluginDescription(file(descriptionFile).text)
   changeNotes(file(changesFile).text)
@@ -91,10 +85,11 @@ configurations {
 }
 
 dependencies {
-  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.10', classifier: 'sources', ext: 'jar'
+  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.12', classifier: 'sources', ext: 'jar'
 
-  testCompile group: 'junit', name: 'junit', version: '4.12'
-  testCompile group: 'org.mockito', name: 'mockito-core', version: '3.1.0'
+  testImplementation("junit:junit:4.13")
+  testImplementation("org.mockito:mockito-core:3.2.4")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.6.0")
 }
 
 // Tasks
