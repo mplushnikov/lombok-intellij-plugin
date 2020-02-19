@@ -255,7 +255,7 @@ public class BuilderInfo {
   }
 
   public String renderBuildCall() {
-    return fieldInBuilderName;
+    return builderClass.getName() + ".this." + fieldInBuilderName;
   }
 
   public CharSequence renderToBuilderCall() {

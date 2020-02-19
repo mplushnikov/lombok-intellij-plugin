@@ -8,6 +8,7 @@ import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
 import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,13 +25,12 @@ class NonSingularHandler implements BuilderElementHandler {
     return Collections.singleton(
       new LombokLightFieldBuilder(info.getManager(), info.getFieldName(), info.getFieldType())
         .withContainingClass(info.getBuilderClass())
-        .withModifier(PsiModifier.PRIVATE)
-        .withNavigationElement(info.getVariable()));
+        .withModifier(PsiModifier.PRIVATE));
   }
 
   @Override
   public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
-    final String blockText = getAllMethodBody(info.getFieldName(), info.getBuilderChainResult());
+    final String blockText = getAllMethodBody(info);
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(info.getManager(), info.getFieldName())
       .withContainingClass(info.getBuilderClass())
       .withMethodReturnType(info.getBuilderType())
@@ -51,8 +51,8 @@ class NonSingularHandler implements BuilderElementHandler {
     return psiFieldName;
   }
 
-  private String getAllMethodBody(@NotNull String psiFieldName, @NotNull String builderChainResult) {
-    final String codeBlockTemplate = "this.{0} = {0};\nreturn {1};";
-    return MessageFormat.format(codeBlockTemplate, psiFieldName, builderChainResult);
+  private String getAllMethodBody(@NonNull BuilderInfo info) {
+    final String codeBlockTemplate = "{2}.this.{0} = {0};\nreturn {1};";
+    return MessageFormat.format(codeBlockTemplate, info.getFieldName(), info.getBuilderChainResult(), info.getBuilderClass().getName());
   }
 }

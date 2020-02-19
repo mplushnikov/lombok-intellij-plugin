@@ -141,7 +141,8 @@
     <implicit.resource.closer
       implementation="de.plushnikov.intellij.plugin.extension.LombokCleanUpImplicitResourceCloser"/>
 
-    <!--    <referencesSearch implementation="de.plushnikov.intellij.plugin.extension.LombokReferenceSearcher"/>-->
+    <referencesSearch implementation="de.plushnikov.intellij.plugin.extension.LombokReferenceSearcher"/>
+    <methodReferencesSearch implementation="de.plushnikov.intellij.plugin.extension.LombokMethodReferenceSearcher"/>
     <findUsagesHandlerFactory
       implementation="de.plushnikov.intellij.plugin.extension.LombokFieldFindUsagesHandlerFactory"/>
 
