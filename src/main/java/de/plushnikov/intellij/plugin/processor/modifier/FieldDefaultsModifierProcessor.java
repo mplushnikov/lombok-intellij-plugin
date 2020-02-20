@@ -51,7 +51,7 @@ public class FieldDefaultsModifierProcessor implements ModifierProcessor {
 
   @Override
   public void transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
-    if (modifiers.contains(PsiModifier.STATIC)) {
+    if (UtilityClassModifierProcessor.isModifierListSupported(modifierList) || modifiers.contains(PsiModifier.STATIC)) {
       return; // skip static fields
     }
 
