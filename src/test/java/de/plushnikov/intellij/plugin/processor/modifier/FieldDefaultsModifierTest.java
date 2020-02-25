@@ -129,6 +129,13 @@ public class FieldDefaultsModifierTest extends AbstractLombokLightCodeInsightTes
     assertTrue("@FieldDefaults should keep explicit modifier intact", modifierList.hasModifierProperty(PsiModifier.PROTECTED));
   }
 
+  public void testFieldDefaultsWithUtilityClass() {
+
+    PsiModifierList modifierList = getFieldModifierListAtCaret();
+
+    assertFalse("@FieldDefaults(makeFinal = true) should not make @UtilityClass fields final", modifierList.hasModifierProperty(PsiModifier.FINAL));
+  }
+
   //</editor-fold>
 
   //<editor-fold desc="Internal support methods">
