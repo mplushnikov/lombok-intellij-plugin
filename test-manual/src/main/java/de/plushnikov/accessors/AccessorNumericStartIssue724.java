@@ -1,7 +1,7 @@
 package de.plushnikov.accessors;
 
-  import lombok.Getter;
-  import lombok.experimental.Accessors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 @Accessors(prefix = "m")
 public class AccessorNumericStartIssue724 {
