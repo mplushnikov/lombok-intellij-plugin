@@ -1,22 +1,9 @@
 package de.plushnikov.intellij.plugin.processor;
 
-import com.intellij.openapi.util.RecursionManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiLocalVariable;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 public class ValTest extends AbstractLombokLightCodeInsightTestCase {
-
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
-  }
 
   public void testSimpleInt() {
     configureClass("100");
