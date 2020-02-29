@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.action.lombok;
 
+import com.intellij.CommonBundle;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -7,16 +8,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiModifier;
 import com.intellij.refactoring.rename.RenameProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.AbstractLogProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.CommonsLogProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.CustomLogProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.FloggerProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.JBossLogProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.Log4j2Processor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.Log4jProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.LogProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.log.XSlf4jProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.log.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -58,10 +50,10 @@ public class LombokLoggerHandler extends BaseLombokHandler {
 
   private boolean checkLoggerField(@NotNull PsiField psiField, @NotNull String lombokLoggerName, boolean lombokLoggerIsStatic) {
     if (!isValidLoggerField(psiField, lombokLoggerName, lombokLoggerIsStatic)) {
-      int result = Messages.showOkCancelDialog(
-        String.format("Logger field: \"%s\" Is not private %sfinal field named \"%s\". Refactor anyway?",
-          psiField.getName(), lombokLoggerIsStatic ? "static " : "", lombokLoggerName),
-        "Attention!", Messages.getQuestionIcon());
+      final String messageText = String.format("Logger field: \"%s\" Is not private %sfinal field named \"%s\". Refactor anyway?",
+        psiField.getName(), lombokLoggerIsStatic ? "static " : "", lombokLoggerName);
+      int result = Messages.showOkCancelDialog(messageText, "Attention!",
+        CommonBundle.getOkButtonText(), CommonBundle.getCancelButtonText(), Messages.getQuestionIcon());
       return DialogWrapper.OK_EXIT_CODE == result;
     }
     return true;
