@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.*;
 import com.siyeh.ig.fixes.RemoveModifierFix;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -59,7 +60,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends Abstrac
     public void visitClass(PsiClass clazz) {
       super.visitClass(clazz);
 
-      if (clazz.hasAnnotation(lombok.Value.class.getName())) {
+      if (PsiAnnotationSearchUtil.isAnnotatedWith(clazz, lombok.Value.class)) {
         final PsiModifierList modifierList = clazz.getModifierList();
         if (modifierList != null && modifierList.hasExplicitModifier(FINAL)) {
           final Optional<PsiElement> psiFinal = Arrays.stream(modifierList.getChildren())
@@ -68,7 +69,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends Abstrac
 
           psiFinal.ifPresent(psiElement -> holder.registerProblem(psiElement,
             "Redundant final class modifier",
-            ProblemHighlightType.WARNING,
+            ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
             new RemoveModifierFix(FINAL))
           );
         }
@@ -83,7 +84,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends Abstrac
         final PsiElement parent = field.getParent();
         if (parent instanceof PsiClass) {
           final PsiClass clazz = (PsiClass) parent;
-          if (clazz.hasAnnotation(lombok.Value.class.getName())) {
+          if (PsiAnnotationSearchUtil.isAnnotatedWith(clazz, lombok.Value.class)) {
             if (modifierList.hasExplicitModifier(PRIVATE)) {
               final Optional<PsiElement> psiPrivate = Arrays.stream(modifierList.getChildren())
                 .filter(psiElement -> PRIVATE.equals(psiElement.getText()))
@@ -91,7 +92,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends Abstrac
 
               psiPrivate.ifPresent(psiElement -> holder.registerProblem(psiElement,
                 "Redundant private field modifier",
-                ProblemHighlightType.WARNING,
+                ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                 new RemoveModifierFix(PRIVATE))
               );
             }
@@ -102,7 +103,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends Abstrac
 
               psiFinal.ifPresent(psiElement -> holder.registerProblem(psiElement,
                 "Redundant final field modifier",
-                ProblemHighlightType.WARNING,
+                ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                 new RemoveModifierFix(FINAL))
               );
             }
