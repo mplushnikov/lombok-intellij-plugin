@@ -15,7 +15,6 @@ before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 env:
-  - IDEA_VERSION=2019.3.3
   - IDEA_VERSION=2019.3
 
 before_install:
