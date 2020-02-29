@@ -25,8 +25,7 @@ apply plugin: "com.github.ManifestClasspath"
 def isCI = System.getenv("CI")
 def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
 ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
-def isEAP = ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")
-def artifactVersion = pluginVersion + "-" + (isEAP ? "EAP" : ideaVersion)
+def artifactVersion = pluginVersion + "-" + ideaVersion
 println "IdeaVersion is : ${ideaVersion}"
 println "ArtifactVersion is : ${artifactVersion}"
 
