@@ -25,8 +25,7 @@ apply plugin: "com.github.ManifestClasspath"
 def isCI = System.getenv("CI")
 def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
 ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
-def isEAP = ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")
-def artifactVersion = pluginVersion + "-" + (isEAP ? "EAP" : ideaVersion)
+def artifactVersion = pluginVersion + "-" + ideaVersion
 println "IdeaVersion is : ${ideaVersion}"
 println "ArtifactVersion is : ${artifactVersion}"
 
@@ -88,7 +87,7 @@ dependencies {
   lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.12', classifier: 'sources', ext: 'jar'
 
   testImplementation("junit:junit:4.13")
-  testImplementation("org.mockito:mockito-core:3.2.4")
+  testImplementation("org.mockito:mockito-core:3.3.1")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.6.0")
 }
 
