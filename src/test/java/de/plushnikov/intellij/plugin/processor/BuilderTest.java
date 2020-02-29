@@ -41,6 +41,10 @@ public class BuilderTest extends AbstractLombokParsingTestCase {
     doTest(true);
   }
 
+  public void testBuilder$BuilderWithAccessorsWithSetterPrefix() {
+    doTest(true);
+  }
+
   public void testBuilder$BuilderWithFieldAccessors() {
     doTest(true);
   }
@@ -55,6 +59,10 @@ public class BuilderTest extends AbstractLombokParsingTestCase {
   }
 
   public void testBuilder$BuilderConstructorException() {
+    doTest(true);
+  }
+
+  public void testBuilder$BuilderMultipleConstructorException() {
     doTest(true);
   }
 
@@ -79,6 +87,10 @@ public class BuilderTest extends AbstractLombokParsingTestCase {
   }
 
   public void testBuilder$BuilderSingularSets() {
+    doTest(true);
+  }
+
+  public void testBuilder$BuilderSingularSetsWithSetterPrefix() {
     doTest(true);
   }
 

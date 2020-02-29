@@ -60,7 +60,9 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeIn
       final String path = getTestDataPath() + "/" + expectedFile;
       String expectedFileText = StringUtil.convertLineSeparators(FileUtil.loadFile(new File(path)));
 
-      assertEquals(expectedFileText.replaceAll("\\s+", ""), actualFileText.replaceAll("\\s+", ""));
+      if (!expectedFileText.replaceAll("\\s+", "").equals(actualFileText.replaceAll("\\s+", ""))) {
+        assertEquals(expectedFileText, actualFileText);
+      }
     }
   }
 }
