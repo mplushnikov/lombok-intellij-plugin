@@ -45,10 +45,16 @@ public class FieldDefaultsModifierTest extends AbstractLombokLightCodeInsightTes
   }
 
   public void testFieldDefaultsWithNonFinal() {
-
     PsiModifierList modifierList = getFieldModifierListAtCaret();
 
     assertFalse("@FieldDefaults(makeFinal = true) should not make @NonFinal fields final", modifierList.hasModifierProperty(PsiModifier.FINAL));
+  }
+
+  public void testFieldDefaultsWithUtilityClass() {
+
+    PsiModifierList modifierList = getFieldModifierListAtCaret();
+
+    assertFalse("@FieldDefaults(makeFinal = true) should not make @UtilityClass fields final", modifierList.hasModifierProperty(PsiModifier.FINAL));
   }
 
   //</editor-fold>
@@ -105,7 +111,6 @@ public class FieldDefaultsModifierTest extends AbstractLombokLightCodeInsightTes
   }
 
   public void testFieldDefaultsPublicWithPackagePrivate() {
-
     PsiModifierList modifierList = getFieldModifierListAtCaret();
 
     assertFalse("@FieldDefaults(level = AccessLevel.PUBLIC) should not make @PackagePrivate fields public", modifierList.hasModifierProperty(PsiModifier.PUBLIC));
