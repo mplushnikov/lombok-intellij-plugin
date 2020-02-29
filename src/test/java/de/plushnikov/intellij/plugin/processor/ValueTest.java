@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.processor;
 
-import com.intellij.openapi.util.RecursionManager;
 import de.plushnikov.intellij.plugin.AbstractLombokParsingTestCase;
 
 public class ValueTest extends AbstractLombokParsingTestCase {

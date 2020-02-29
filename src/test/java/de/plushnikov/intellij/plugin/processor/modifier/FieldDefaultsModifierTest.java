@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.processor.modifier;
 
-import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiModifier;
