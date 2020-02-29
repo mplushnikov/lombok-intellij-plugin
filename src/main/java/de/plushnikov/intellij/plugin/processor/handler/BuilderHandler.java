@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.processor.handler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
+import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
@@ -10,27 +11,21 @@ import de.plushnikov.intellij.plugin.processor.handler.singular.AbstractSingular
 import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerFactory;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
-import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
-import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
-import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
-import de.plushnikov.intellij.plugin.util.PsiClassUtil;
-import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
-import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
+import de.plushnikov.intellij.plugin.util.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.intellij.openapi.util.text.StringUtil.capitalize;
+import static com.intellij.openapi.util.text.StringUtil.replace;
+import static de.plushnikov.intellij.plugin.lombokconfig.ConfigKey.BUILDER_CLASS_NAME;
 
 /**
  * Handler methods for Builder-processing
@@ -42,8 +37,8 @@ public class BuilderHandler {
   private final static String ANNOTATION_BUILDER_CLASS_NAME = "builderClassName";
   private static final String ANNOTATION_BUILD_METHOD_NAME = "buildMethodName";
   private static final String ANNOTATION_BUILDER_METHOD_NAME = "builderMethodName";
+  private static final String ANNOTATION_SETTER_PREFIX = "setterPrefix";
 
-  final static String BUILDER_CLASS_NAME = "Builder";
   private final static String BUILD_METHOD_NAME = "build";
   private final static String BUILDER_METHOD_NAME = "builder";
   private static final String TO_BUILDER_METHOD_NAME = "toBuilder";
@@ -228,6 +223,12 @@ public class BuilderHandler {
   }
 
   @NotNull
+  private String getSetterPrefix(@NotNull PsiAnnotation psiAnnotation) {
+    final String setterPrefix = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_SETTER_PREFIX);
+    return null == setterPrefix ? "" : setterPrefix;
+  }
+
+  @NotNull
   @PsiModifier.ModifierConstant
   private String getBuilderOuterAccessVisibility(@NotNull PsiAnnotation psiAnnotation) {
     final String accessVisibility = LombokProcessorUtil.getAccessVisibility(psiAnnotation);
@@ -253,14 +254,23 @@ public class BuilderHandler {
       return builderClassName;
     }
 
-    String rootBuilderClassName = psiClass.getName();
+    String relevantReturnType = psiClass.getName();
+
     if (null != psiMethod && !psiMethod.isConstructor()) {
       final PsiType psiMethodReturnType = psiMethod.getReturnType();
       if (null != psiMethodReturnType) {
-        rootBuilderClassName = PsiNameHelper.getQualifiedClassName(psiMethodReturnType.getPresentableText(), false);
+        relevantReturnType = PsiNameHelper.getQualifiedClassName(psiMethodReturnType.getPresentableText(), false);
       }
     }
-    return StringUtil.capitalize(rootBuilderClassName + BUILDER_CLASS_NAME);
+
+    return getBuilderClassName(psiClass, relevantReturnType);
+  }
+
+  @NotNull
+  String getBuilderClassName(@NotNull PsiClass psiClass, String returnTypeName) {
+    final ConfigDiscovery configDiscovery = ConfigDiscovery.getInstance();
+    final String builderClassNamePattern = configDiscovery.getStringLombokConfigProperty(BUILDER_CLASS_NAME, psiClass);
+    return replace(builderClassNamePattern, "*", capitalize(returnTypeName));
   }
 
   boolean hasMethod(@NotNull PsiClass psiClass, @NotNull String builderMethodName) {
@@ -348,11 +358,13 @@ public class BuilderHandler {
                                               @Nullable PsiMethod psiClassMethod, @NotNull PsiClass builderClass) {
     final PsiSubstitutor builderSubstitutor = getBuilderSubstitutor(psiClass, builderClass);
     final String accessVisibility = getBuilderInnerAccessVisibility(psiAnnotation);
+    final String setterPrefix = getSetterPrefix(psiAnnotation);
 
     return createBuilderInfos(psiClass, psiClassMethod)
       .map(info -> info.withSubstitutor(builderSubstitutor))
       .map(info -> info.withBuilderClass(builderClass))
       .map(info -> info.withVisibilityModifier(accessVisibility))
+      .map(info -> info.withSetterPrefix(setterPrefix))
       .collect(Collectors.toList());
   }
 
@@ -476,18 +488,32 @@ public class BuilderHandler {
     final String codeBlockText = createBuildMethodCodeBlockText(psiMethod, builderClass, returnType, buildMethodPrepare, buildMethodParameters);
     methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(codeBlockText, methodBuilder));
 
-    PsiMethod constructor = psiMethod;
-    if (null == constructor) {
+    Optional<PsiMethod> definedConstructor = Optional.ofNullable(psiMethod);
+    if (!definedConstructor.isPresent()) {
       final Collection<PsiMethod> classConstructors = PsiClassUtil.collectClassConstructorIntern(parentClass);
-      if (!classConstructors.isEmpty()) {
-        constructor = classConstructors.iterator().next();
-      }
+      definedConstructor = classConstructors.stream()
+        .filter(m -> sameParameters(m.getParameterList().getParameters(), builderInfos))
+        .findFirst();
     }
-    if (null != constructor) {
-      Arrays.stream(constructor.getThrowsList().getReferencedTypes()).forEach(methodBuilder::withException);
-    }
+    definedConstructor.map(PsiMethod::getThrowsList).map(PsiReferenceList::getReferencedTypes).map(Arrays::stream)
+      .ifPresent(stream -> stream.forEach(methodBuilder::withException));
 
     return methodBuilder;
+  }
+
+  private boolean sameParameters(PsiParameter[] parameters, List<BuilderInfo> builderInfos) {
+    if (parameters.length != builderInfos.size()) {
+      return false;
+    }
+
+    final Iterator<BuilderInfo> builderInfoIterator = builderInfos.iterator();
+    for (PsiParameter psiParameter : parameters) {
+      final BuilderInfo builderInfo = builderInfoIterator.next();
+      if (!psiParameter.getType().isAssignableFrom(builderInfo.getFieldType())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @NotNull
