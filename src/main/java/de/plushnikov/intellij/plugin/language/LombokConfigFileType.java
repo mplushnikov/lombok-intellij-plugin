@@ -17,7 +17,7 @@ public class LombokConfigFileType extends LanguageFileType {
   @NotNull
   @Override
   public String getName() {
-    return "LOMBOK_CONFIG";
+    return "Lombok config file";
   }
 
   @NotNull

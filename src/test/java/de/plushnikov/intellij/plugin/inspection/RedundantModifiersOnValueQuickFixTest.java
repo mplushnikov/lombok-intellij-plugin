@@ -1,12 +1,10 @@
 package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInsight.intention.IntentionAction;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.psi.PsiFile;
-import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 import java.util.List;
+import java.util.Optional;
 
 import static de.plushnikov.intellij.plugin.inspection.LombokInspectionTest.TEST_DATA_INSPECTION_DIRECTORY;
 
@@ -17,27 +15,25 @@ public class RedundantModifiersOnValueQuickFixTest extends AbstractLombokLightCo
     return TEST_DATA_INSPECTION_DIRECTORY + "/redundantModifierInspection";
   }
 
-  public void testValueClassWithPrivateField() {
-    myFixture.configureByFile(getBasePath() + '/' + getTestName(false) + ".java");
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    myFixture.enableInspections(new RedundantModifiersOnValueLombokAnnotationInspection());
+  }
 
-    final List<IntentionAction> availableActions = getAvailableActions();
-    assertTrue("Redundant private field modifier",
-      availableActions.stream().anyMatch(action -> action.getText().contains("Change access modifier")));
+  public void testValueClassWithPrivateField() {
+    final List<IntentionAction> allQuickFixes = myFixture.getAllQuickFixes(getBasePath() + '/' + getTestName(false) + ".java");
+    final Optional<String> removeModifierFix = allQuickFixes.stream().map(IntentionAction::getText)
+      .filter("Remove 'private' modifier"::equals).findFirst();
+
+    assertTrue("Redundant private field modifier QuickFix not found", removeModifierFix.isPresent());
   }
 
   public void testValueClassWithFinalField() {
-    myFixture.configureByFile(getBasePath() + '/' + getTestName(false) + ".java");
+    final List<IntentionAction> allQuickFixes = myFixture.getAllQuickFixes(getBasePath() + '/' + getTestName(false) + ".java");
+    final Optional<String> removeModifierFix = allQuickFixes.stream().map(IntentionAction::getText)
+      .filter("Remove 'final' modifier"::equals).findFirst();
 
-    final List<IntentionAction> availableActions = getAvailableActions();
-    assertTrue("Redundant final field modifier",
-      availableActions.stream().anyMatch(action -> action.getText().contains("Change access modifier")));
+    assertTrue("Redundant final field modifier QuickFix not found", removeModifierFix.isPresent());
   }
-
-  protected List<IntentionAction> getAvailableActions() {
-    final Editor editor = getEditor();
-    final PsiFile file = getFile();
-    CodeInsightTestFixtureImpl.instantiateAndRun(file, editor, new int[0], false);
-    return CodeInsightTestFixtureImpl.getAvailableIntentions(editor, file);
-  }
-
 }
