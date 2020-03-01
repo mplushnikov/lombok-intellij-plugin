@@ -124,9 +124,7 @@
 
     <daemon.highlightInfoFilter implementation="de.plushnikov.intellij.plugin.extension.LombokHighlightErrorFilter"/>
 
-    <fileType implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigFileType" name="LOMBOK_CONFIG"
-              language="Lombok.Config"
-              fieldName="INSTANCE" extensions="config" fileNames="lombok.config"/>
+    <fileTypeFactory implementation="de.plushnikov.intellij.plugin.language.LombokConfigFileTypeFactory"/>
     <lang.parserDefinition language="Lombok.Config"
                            implementationClass="de.plushnikov.intellij.plugin.language.LombokConfigParserDefinition"/>
     <lang.syntaxHighlighterFactory language="Lombok.Config"
