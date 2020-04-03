@@ -1,6 +1,6 @@
 lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
 ======================
-[![Build Status][badge-travis-img]][badge-travis] [![Code Coverage](https://img.shields.io/codecov/c/github/mplushnikov/lombok-intellij-plugin/master.svg)](https://codecov.io/github/mplushnikov/lombok-intellij-plugin?branch=master)
+[![Financial Contributors on Open Collective](https://opencollective.com/lombok-intellij-plugin/all/badge.svg?label=financial+contributors)](https://opencollective.com/lombok-intellij-plugin) [![Build Status][badge-travis-img]][badge-travis] [![Code Coverage](https://img.shields.io/codecov/c/github/mplushnikov/lombok-intellij-plugin/master.svg)](https://codecov.io/github/mplushnikov/lombok-intellij-plugin?branch=master)
 
 [![JetBrains Plugins](https://img.shields.io/jetbrains/plugin/v/6317-lombok-plugin.svg)](https://plugins.jetbrains.com/plugin/6317-lombok-plugin)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/6317-lombok-plugin.svg)](https://plugins.jetbrains.com/plugin/6317-lombok-plugin)
@@ -178,3 +178,33 @@ Copyright (c) 2011-2020 Michail Plushnikov. See the [LICENSE](./LICENSE) file fo
 [badge-coveralls]:        https://coveralls.io/github/mplushnikov/lombok-intellij-plugin?branch=master
 [badge-paypal-img]:       https://img.shields.io/badge/donate-paypal-yellow.svg
 [badge-paypal]:           https://www.paypal.me/mplushnikov
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/mplushnikov/lombok-intellij-plugin/graphs/contributors"><img src="https://opencollective.com/lombok-intellij-plugin/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/lombok-intellij-plugin/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/lombok-intellij-plugin"><img src="https://opencollective.com/lombok-intellij-plugin/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/lombok-intellij-plugin/contribute)]
+
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/0/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/1/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/2/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/3/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/4/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/5/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/6/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/7/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/8/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/lombok-intellij-plugin/organization/9/website"><img src="https://opencollective.com/lombok-intellij-plugin/organization/9/avatar.svg"></a>
