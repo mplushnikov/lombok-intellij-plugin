@@ -22,6 +22,8 @@ import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiElementUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +45,8 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractConstructorClassProcessor extends AbstractClassProcessor {
   private static final String BUILDER_DEFAULT_ANNOTATION = Builder.Default.class.getCanonicalName();
+  private static final String NO_ARGS_CONSTRUCTOR_ANNOTATION = NoArgsConstructor.class.getCanonicalName();
+  private static final String DATA_DEFAULT_ANNOTATION = Data.class.getCanonicalName();
 
   AbstractConstructorClassProcessor(@NotNull Class<? extends Annotation> supportedAnnotationClass,
                                     @NotNull Class<? extends PsiElement> supportedClass) {
@@ -88,18 +92,24 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
     if (psiClass instanceof PsiAnonymousClass || psiClass.isEnum()) {
       return true;
     }
+
     PsiClass baseClass = psiClass.getSuperClass();
     if (baseClass == null) {
       return true;
     }
+
     PsiMethod[] constructors = baseClass.getConstructors();
-    if (constructors.length == 0) {
+
+    if (constructors.length == 0 || baseClass.hasAnnotation(NO_ARGS_CONSTRUCTOR_ANNOTATION)) {
       return true;
     }
 
     for (PsiMethod constructor : constructors) {
+      PsiModifierList cml = constructor.getModifierList();
+      if(cml.hasModifierProperty(PsiModifier.PRIVATE) || cml.hasModifierProperty(PsiModifier.DEFAULT)) continue;
+
       final int parametersCount = constructor.getParameterList().getParametersCount();
-      if (parametersCount == 0 || parametersCount == 1 && constructor.isVarArgs()) {
+      if (parametersCount == 0 && (constructor.isPhysical() || (constructors.length == 1 && baseClass.hasAnnotation(DATA_DEFAULT_ANNOTATION))) ||  parametersCount == 1 && constructor.isVarArgs()) {
         return true;
       }
     }
