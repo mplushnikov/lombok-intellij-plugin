@@ -1,5 +1,7 @@
 package de.plushnikov.intellij.plugin.processor;
 
+import com.intellij.codeInsight.daemon.impl.quickfix.VariableTypeFix;
+import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
@@ -55,6 +57,31 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     final PsiType type = ((PsiParameter) localParameter).getType();
     assertNotNull(localParameter.toString(), type);
     assertTrue(type.getCanonicalText(), type.equalsToText("int"));
+  }
+
+  public void testGenericTypeParamShouldNotBecomeObjectAfterMappingOuterCollection() {
+    myFixture.configureByText("a.java",
+      "import lombok.val;\n" +
+        "import java.util.Optional;\n" +
+        "abstract class Test {\n" +
+        "    private void test() {\n" +
+        "        val strOpt = Optional.of(\"1\");\n" +
+        "        val intOptInferredLambda = strOpt.map(str -> Integer.valueOf(str));\n" +
+        "        val intOptInferredMethodRef = strOpt.map(Integer::valueOf);\n" +
+        "        Optional<Integer> intOptExplicit = int<caret>OptInferredLambda;\n" +
+        "    }\n" +
+        "}\n");
+
+    for (IntentionAction quickFix : myFixture.getAllQuickFixes("a.java")) {
+      assertTrue(
+        "There should be no IDEA quickfixes for changing a variable's type, particularly " +
+          "not for transferring intOptExplicit from Optional<Integer> -> Optional<Object>. Nonetheless, " +
+          "one was found with this description: \"" + quickFix.getText() + "\". You will note that if you " +
+          "change the assignment of 'intOptExplicit' to 'intOptInferredMethodRef' no QuickFix appears, which " +
+          "is the correct behavior.",
+        !(quickFix instanceof VariableTypeFix)
+      );
+    }
   }
 
   public void testBooleanExpression() {
