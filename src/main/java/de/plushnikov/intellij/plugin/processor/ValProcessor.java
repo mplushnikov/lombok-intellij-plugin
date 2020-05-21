@@ -208,6 +208,11 @@ public class ValProcessor extends AbstractProcessor {
             return psiExpression.getType();
           }
         });
+        if ("PsiMethodCallExpression:strOpt.map(str -> Integer.valueOf(str))".equals(psiExpression.toString())) {
+          PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
+          PsiLambdaExpression lexpr = (PsiLambdaExpression) methodCall.getArgumentList().getExpressions()[0];
+          lexpr.getFunctionalInterfaceType(); // SOMEHOW THIS ALONE IS ENOUGH TO MAKE IT RETURN THE RIGHT TYPE??
+        }
       }
     }
 
