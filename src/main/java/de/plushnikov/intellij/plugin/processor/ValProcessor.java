@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.JavaVarTypeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
@@ -15,6 +16,7 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -171,6 +173,37 @@ public class ValProcessor extends AbstractProcessor {
     return psiType;
   }
 
+  private PsiType inferVarType(PsiTypeElement elem) {
+    PsiElement parent = elem.getParent();
+    if (parent instanceof PsiParameter) {
+      PsiElement declarationScope = ((PsiParameter)parent).getDeclarationScope();
+      if (declarationScope instanceof PsiForeachStatement) {
+        PsiExpression iteratedValue = ((PsiForeachStatement)declarationScope).getIteratedValue();
+        if (iteratedValue != null) {
+          return JavaGenericsUtil.getCollectionItemType(iteratedValue);
+        }
+        return null;
+      }
+
+      if (declarationScope instanceof PsiLambdaExpression) {
+        return ((PsiParameter)parent).getType();
+      }
+    }
+    else {
+      for (PsiElement e = elem; e != null; e = e.getNextSibling()) {
+        if (e instanceof PsiExpression) {
+          if (!(e instanceof PsiArrayInitializerExpression)) {
+            PsiExpression expression = (PsiExpression)e;
+            PsiType type = RecursionManager.doPreventingRecursion(expression, true, () -> expression.getType());
+            return type == null ? null : JavaVarTypeUtil.getUpwardProjection(type);
+          }
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
   private PsiType processLocalVariableInitializer(final PsiExpression psiExpression) {
     PsiType result = null;
     if (null != psiExpression && !(psiExpression instanceof PsiArrayInitializerExpression)) {
@@ -202,17 +235,35 @@ public class ValProcessor extends AbstractProcessor {
           }
         });
       } else {
+        if (psiExpression instanceof PsiMethodCallExpression) {
+          PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
+          PsiExpressionList methodArgs = methodCall.getArgumentList();
+          for (PsiExpression methodArg : methodArgs.getExpressions()) {
+            if (methodArg instanceof PsiLambdaExpression) {
+              PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg;
+              LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true);
+            }
+          }
+        }
+
+        // if ("PsiMethodCallExpression:strOpt.map(str -> Integer.valueOf(str))".equals(psiExpression.toString())) {
+        //   PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
+        //   PsiLambdaExpression lexpr = (PsiLambdaExpression) methodCall.getArgumentList().getExpressions()[0];
+        //   lexprs.add(lexpr);
+        //   LambdaUtil.getFunctionalInterfaceType(lexpr, true);
+        //   // lexprType = lexpr.getFunctionalInterfaceType(); // SOMEHOW THIS ALONE IS ENOUGH TO MAKE IT RETURN THE RIGHT TYPE??
+        //   if (lexprType != null) {
+        //     System.out.println("bang");
+        //   }
+        //   System.out.println("\t\tlexprType=" + lexprType);
+        //   lastLexpr = lexpr;
+        // }
         result = RecursionManager.doPreventingRecursion(psiExpression, true, new Computable<PsiType>() {
           @Override
           public PsiType compute() {
             return psiExpression.getType();
           }
         });
-        if ("PsiMethodCallExpression:strOpt.map(str -> Integer.valueOf(str))".equals(psiExpression.toString())) {
-          PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
-          PsiLambdaExpression lexpr = (PsiLambdaExpression) methodCall.getArgumentList().getExpressions()[0];
-          lexpr.getFunctionalInterfaceType(); // SOMEHOW THIS ALONE IS ENOUGH TO MAKE IT RETURN THE RIGHT TYPE??
-        }
       }
     }
 
