@@ -229,14 +229,15 @@ public class ValProcessor extends AbstractProcessor {
    * or use of com.intellij.psi.ThreadLocalTypes.myMap with the appropriate
    * type due to substitution in com.intellij.psi.LambdaUtil, which makes followup
    * calls to getType succeed.
+   *
+   * @param methodCallExpr e.g. "stringOpt.map(str -> Integer.valueOf(str))"
    */
-  private void forceGenericLambdaArgTypePreComputation(PsiMethodCallExpression psiExpression) {
-    PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
-    PsiExpressionList methodArgs = methodCall.getArgumentList();
+  private void forceGenericLambdaArgTypePreComputation(PsiMethodCallExpression methodCallExpr) {
+    PsiExpressionList methodArgs = methodCallExpr.getArgumentList(); // e.g. (str -> Integer.valueOf(str))
     for (PsiExpression methodArg : methodArgs.getExpressions()) {
       if (methodArg instanceof PsiLambdaExpression) {
-        PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg;
-        LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true);
+        PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg; // e.g. str -> Integer.valueOf(str)
+        LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true); // e.g. Function1<String, Integer>
       }
     }
   }
