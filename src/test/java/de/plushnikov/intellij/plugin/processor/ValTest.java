@@ -10,6 +10,8 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiType;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
+import java.util.List;
+
 public class ValTest extends AbstractLombokLightCodeInsightTestCase {
 
   @Override
@@ -59,29 +61,33 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     assertTrue(type.getCanonicalText(), type.equalsToText("int"));
   }
 
-  public void testGenericTypeParamShouldNotBecomeObjectAfterMappingOuterCollection() {
+  public void testIssue802GenericTypeParamShouldNotBecomeObjectAfterMappingOuterCollection() {
     myFixture.configureByText("a.java",
-      "import lombok.val;\n" +
+        "import lombok.val;\n" +
         "import java.util.Optional;\n" +
         "abstract class Test {\n" +
         "    private void test() {\n" +
         "        val strOpt = Optional.of(\"1\");\n" +
         "        val intOptInferredLambda = strOpt.map(str -> Integer.valueOf(str));\n" +
+        "        val intOptInferredLambdaFlatMap = strOpt.flatMap(str -> Optional.of(Integer.valueOf(str)))\n" +
         "        val intOptInferredMethodRef = strOpt.map(Integer::valueOf);\n" +
         "        Optional<Integer> intOptExplicit = int<caret>OptInferredLambda;\n" +
+        "        intOptExplicit = intOptInferredLambdaFlatMap;\n" +
         "    }\n" +
         "}\n");
 
-    for (IntentionAction quickFix : myFixture.getAllQuickFixes("a.java")) {
+    List<IntentionAction> quickFixes = myFixture.getAllQuickFixes("a.java");
+    for (IntentionAction quickFix : quickFixes) {
       assertTrue(
-        "There should be no IDEA quickfixes for changing a variable's type, particularly " +
-          "not for transferring intOptExplicit from Optional<Integer> -> Optional<Object>. Nonetheless, " +
+          "There should be no IDEA quickfixes that recommend changing a variable's type, particularly " +
+          "not for intOptExplicit to be changed from Optional<Integer> -> Optional<Object>. Nonetheless, " +
           "one was found with this description: \"" + quickFix.getText() + "\". You will note that if you " +
           "change the assignment of 'intOptExplicit' to 'intOptInferredMethodRef' no QuickFix appears, which " +
           "is the correct behavior.",
-        !(quickFix instanceof VariableTypeFix)
+          !(quickFix instanceof VariableTypeFix)
       );
     }
+    assertTrue("There should be no quick fixes at all for this valid code sample.", quickFixes.isEmpty());
   }
 
   public void testBooleanExpression() {

@@ -71,14 +71,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     if (!valProcessor.isEnabled(typeElement.getProject())) {
       return null;
     }
-    // System.out.println("\n---START " + _stackSize + " " + typeElement.getParent() + "---");
-    // if (_stackSize == 5) {
-    //   System.out.println("bang");
-    // }
-    PsiType inferredType = valProcessor.inferType(typeElement);
-    // System.out.println("**** FOUND INFERRED TYPE: " + inferredType + " for element parent " + typeElement.getParent());
-    // System.out.println("\n---END " + _stackSize + " " + typeElement.getParent() + "---\n");
-    return inferredType;
+    return valProcessor.inferType(typeElement);
   }
 
   @NotNull

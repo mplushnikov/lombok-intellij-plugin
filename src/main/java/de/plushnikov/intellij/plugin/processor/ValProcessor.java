@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.JavaVarTypeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
@@ -16,7 +15,6 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -173,37 +171,6 @@ public class ValProcessor extends AbstractProcessor {
     return psiType;
   }
 
-  private PsiType inferVarType(PsiTypeElement elem) {
-    PsiElement parent = elem.getParent();
-    if (parent instanceof PsiParameter) {
-      PsiElement declarationScope = ((PsiParameter)parent).getDeclarationScope();
-      if (declarationScope instanceof PsiForeachStatement) {
-        PsiExpression iteratedValue = ((PsiForeachStatement)declarationScope).getIteratedValue();
-        if (iteratedValue != null) {
-          return JavaGenericsUtil.getCollectionItemType(iteratedValue);
-        }
-        return null;
-      }
-
-      if (declarationScope instanceof PsiLambdaExpression) {
-        return ((PsiParameter)parent).getType();
-      }
-    }
-    else {
-      for (PsiElement e = elem; e != null; e = e.getNextSibling()) {
-        if (e instanceof PsiExpression) {
-          if (!(e instanceof PsiArrayInitializerExpression)) {
-            PsiExpression expression = (PsiExpression)e;
-            PsiType type = RecursionManager.doPreventingRecursion(expression, true, () -> expression.getType());
-            return type == null ? null : JavaVarTypeUtil.getUpwardProjection(type);
-          }
-          return null;
-        }
-      }
-    }
-    return null;
-  }
-
   private PsiType processLocalVariableInitializer(final PsiExpression psiExpression) {
     PsiType result = null;
     if (null != psiExpression && !(psiExpression instanceof PsiArrayInitializerExpression)) {
@@ -236,28 +203,9 @@ public class ValProcessor extends AbstractProcessor {
         });
       } else {
         if (psiExpression instanceof PsiMethodCallExpression) {
-          PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
-          PsiExpressionList methodArgs = methodCall.getArgumentList();
-          for (PsiExpression methodArg : methodArgs.getExpressions()) {
-            if (methodArg instanceof PsiLambdaExpression) {
-              PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg;
-              LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true);
-            }
-          }
+          forceGenericLambdaArgTypePreComputation((PsiMethodCallExpression) psiExpression);
         }
 
-        // if ("PsiMethodCallExpression:strOpt.map(str -> Integer.valueOf(str))".equals(psiExpression.toString())) {
-        //   PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
-        //   PsiLambdaExpression lexpr = (PsiLambdaExpression) methodCall.getArgumentList().getExpressions()[0];
-        //   lexprs.add(lexpr);
-        //   LambdaUtil.getFunctionalInterfaceType(lexpr, true);
-        //   // lexprType = lexpr.getFunctionalInterfaceType(); // SOMEHOW THIS ALONE IS ENOUGH TO MAKE IT RETURN THE RIGHT TYPE??
-        //   if (lexprType != null) {
-        //     System.out.println("bang");
-        //   }
-        //   System.out.println("\t\tlexprType=" + lexprType);
-        //   lastLexpr = lexpr;
-        // }
         result = RecursionManager.doPreventingRecursion(psiExpression, true, new Computable<PsiType>() {
           @Override
           public PsiType compute() {
@@ -268,6 +216,29 @@ public class ValProcessor extends AbstractProcessor {
     }
 
     return result;
+  }
+
+  /**
+   * When the val/var is assigned to the result of a method call
+   * parameterized in the return type of a lambda (e.g. Optional.map),
+   * we must first force pre-computation of the lambda return type, or
+   * it will always return e.g. Optional<Object> instead of the target
+   * type. See issue https://github.com/mplushnikov/lombok-intellij-plugin/issues/802
+   *
+   * Current theory for why this works is that it forces either population
+   * or use of com.intellij.psi.ThreadLocalTypes.myMap with the appropriate
+   * type due to substitution in com.intellij.psi.LambdaUtil, which makes followup
+   * calls to getType succeed.
+   */
+  private void forceGenericLambdaArgTypePreComputation(PsiMethodCallExpression psiExpression) {
+    PsiMethodCallExpression methodCall = (PsiMethodCallExpression) psiExpression;
+    PsiExpressionList methodArgs = methodCall.getArgumentList();
+    for (PsiExpression methodArg : methodArgs.getExpressions()) {
+      if (methodArg instanceof PsiLambdaExpression) {
+        PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg;
+        LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true);
+      }
+    }
   }
 
   private PsiType processParameterDeclaration(PsiElement parentDeclarationScope) {
