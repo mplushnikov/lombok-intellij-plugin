@@ -56,6 +56,8 @@ intellij {
   sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${ideaVersion}"
 
   plugins 'java'
+
+  updateSinceUntilBuild false
 }
 
 patchPluginXml {
