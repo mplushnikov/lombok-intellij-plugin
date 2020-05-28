@@ -22,6 +22,8 @@ before_install:
   - chmod +x gradlew
   - pip install --user codecov
 
+install: travis_wait ./gradlew buildPlugin
+
 after_success:
   - codecov
 
@@ -43,4 +45,4 @@ deploy:
     tags: true
     condition: $TRAVIS_TAG =~ ^releasebuild_[0-9]+.*$
 after_deploy:
-  - ./gradlew publishPlugin
+  - travis_wait ./gradlew publishPlugin
