@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.quickfix;
 
 import com.intellij.codeInsight.intention.AddAnnotationFix;
 import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
@@ -29,18 +30,20 @@ public class UseSlf4jAnnotationQuickFix extends AddAnnotationFix implements Inte
                      @NotNull PsiElement endElement) {
     super.invoke(project, file, startElement, endElement);
 
-    final PsiNamedElement psiNamedElement = elementToRemove.getElement();
-    if (null != psiNamedElement) {
-      final Collection<PsiReference> all = ReferencesSearch.search(psiNamedElement).findAll();
+    WriteCommandAction.runWriteCommandAction(project, () -> {
+      final PsiNamedElement psiNamedElement = elementToRemove.getElement();
+      if (null != psiNamedElement) {
+        final Collection<PsiReference> all = ReferencesSearch.search(psiNamedElement).findAll();
 
-      final String loggerName = getLoggerName(PsiTreeUtil.getParentOfType(psiNamedElement, PsiClass.class));
-      for (PsiReference psiReference : all) {
-        psiReference.handleElementRename(loggerName);
+        final String loggerName = getLoggerName(PsiTreeUtil.getParentOfType(psiNamedElement, PsiClass.class));
+        for (PsiReference psiReference : all) {
+          psiReference.handleElementRename(loggerName);
+        }
+
+        psiNamedElement.delete();
+
+        JavaCodeStyleManager.getInstance(project).removeRedundantImports((PsiJavaFile) file);
       }
-
-      psiNamedElement.delete();
-
-      JavaCodeStyleManager.getInstance(project).removeRedundantImports((PsiJavaFile) file);
-    }
+    });
   }
 }
