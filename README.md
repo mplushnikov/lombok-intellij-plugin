@@ -9,13 +9,25 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 [![Gitter][badge-gitter-img]][badge-gitter] [![Donate][badge-paypal-img]][badge-paypal]
 
 
-## Plugin for [IntelliJ IDEA](http://plugins.jetbrains.com/plugin/6317-lombok-plugin) to support [Lombok](https://projectlombok.org) annotations. ##
+## Plugin for [IntelliJ IDEA](http://plugins.jetbrains.com/plugin/6317-lombok-plugin) to support [Lombok](https://projectlombok.org) annotations.
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.28) released on 01.12.2019**
+**Last version (0.29) released on 01.03.2020**
 
-33nd version of plugin released. Contains support for @CustomLog and other improvements
+---
+
+:collision: **The latest IntelliJ IDEA version (2020.1) contains a BUG :beetle: for several plugins (including plugin for Lombok) were shown as incompatible with the updated version of the IDE.** :collision:
+
+You can find the issue with a detailed explanation here: https://youtrack.jetbrains.com/issue/IDEA-237113.
+
+It has already been resolved and the fix will be in the nearest IDE patch (presumably 2020.1.1).
+
+:hammer_and_wrench: **FIX:** As of now, the workaround is to re-install the plugin in the IDE settings.
+
+---
+
+34th version of plugin released.
 
 Install it automatically from IntelliJ Idea plugin repository.
 
@@ -45,7 +57,7 @@ Features / Supports
 - [@Delegate](https://projectlombok.org/features/Delegate.html)
 - [@Value](https://projectlombok.org/features/Value.html)
 - [@Accessors](https://projectlombok.org/features/experimental/Accessors.html)
-- [@Wither](https://projectlombok.org/features/experimental/Wither.html)
+- [@With](https://projectlombok.org/features/With.html)
 - [@SneakyThrows](https://projectlombok.org/features/SneakyThrows.html)
 - [@val](https://projectlombok.org/features/val.html) available from IntelliJ 14.1 (improved in 2016.2)
 - [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass.html) available from IntelliJ 2016.2
@@ -157,6 +169,7 @@ Developed By
 - [**@tagae** Sebastián González](https://github.com/tagae)
 - [**@wyhasany** Michał Rowicki](https://github.com/wyhasany)
 - [**@ocadaruma** Haruki Okada](https://github.com/ocadaruma)
+- [**@mackatozis** Alexandros Efthymiadis](https://github.com/mackatozis)
 
 Supporters
 --------
