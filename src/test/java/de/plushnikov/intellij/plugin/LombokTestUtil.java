@@ -22,12 +22,28 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 public class LombokTestUtil {
-  private static final String LOMBOK_LIBRARY_DIRECTORY = "lib";
+  private static final String THIRD_PARTY_LIB_DIRECTORY = "lib";
   private static final String LOMBOK_JAR_NAME = "lombok-1.18.12.jar";
+  private static final String SLF4J_JAR_NAME = "slf4j-api-1.7.30.jar";
 
   public static void loadLombokLibrary(@NotNull JavaCodeInsightTestFixture projectDisposable, @NotNull Module module) {
     final String lombokLibPath = PathUtil.toSystemIndependentName(new File(LOMBOK_LIBRARY_DIRECTORY).getAbsolutePath());
     addLibrary(projectDisposable, module, "Lombok Library", lombokLibPath, LOMBOK_JAR_NAME);
+  }
+
+  public static void loadLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
+    loadLibrary(projectDisposable, module, "Lombok Library", LOMBOK_JAR_NAME);
+  }
+
+  public static void loadSlf4jLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
+    loadLibrary(projectDisposable, module, "Slf4j Library", SLF4J_JAR_NAME);
+  }
+
+  private static void loadLibrary(@NotNull Disposable projectDisposable, @NotNull Module module, String libraryName,
+                                  String libraryJarName) {
+    final String lombokLibPath = PathUtil.toSystemIndependentName(new File(THIRD_PARTY_LIB_DIRECTORY).getAbsolutePath());
+    VfsRootAccess.allowRootAccess(projectDisposable, lombokLibPath);
+    PsiTestUtil.addLibrary(projectDisposable, module, libraryName, lombokLibPath, libraryJarName);
   }
 
   public static LightProjectDescriptor getProjectDescriptor() {

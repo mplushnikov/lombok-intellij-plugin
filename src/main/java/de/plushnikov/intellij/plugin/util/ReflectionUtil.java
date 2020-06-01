@@ -10,6 +10,22 @@ import java.lang.reflect.Field;
 public class ReflectionUtil {
   private static final Logger LOG = Logger.getInstance(ReflectionUtil.class.getName());
 
+  public static <T, R> R getFinalFieldPerReflection(Class<T> clazz, T instance, Class<R> fieldClass) {
+    try {
+      for (Field field : clazz.getDeclaredFields()) {
+        if (field.getType().equals(fieldClass)) {
+          field.setAccessible(true);
+          return (R) field.get(instance);
+        }
+      }
+    } catch (IllegalArgumentException x) {
+      LOG.error(x);
+    } catch (IllegalAccessException x) {
+      LOG.error(x);
+    }
+    return null;
+  }
+
   public static <T, R> void setFinalFieldPerReflection(Class<T> clazz, T instance, Class<R> fieldClass, R newValue) {
     try {
       for (Field field : clazz.getDeclaredFields()) {
