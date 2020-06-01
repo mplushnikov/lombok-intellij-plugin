@@ -6,7 +6,7 @@ import java.io.File;
 
 public class Issue394 {
 
-//  @SneakyThrows
+  @SneakyThrows
   public String calcString() {
     new File("somePath").createNewFile();
     return "";
