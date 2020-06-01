@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor;
 import de.plushnikov.intellij.plugin.quickfix.UseSlf4jAnnotationQuickFix;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import static java.lang.String.format;
@@ -42,11 +43,18 @@ public class RedundantSlf4jDefinitionInspection extends AbstractBaseJavaLocalIns
           if (initializer.getText().contains(format(LOGGER_INITIALIZATION, containingClass.getQualifiedName()))) {
             holder.registerProblem(field,
               "Slf4j Logger is defined explicitly. Use Lombok @Slf4j annotation instead.",
-              ProblemHighlightType.WARNING,
+              ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
               new UseSlf4jAnnotationQuickFix(field, containingClass));
           }
         }
       }
     }
+  }
+
+  @Override
+  public @Nls(capitalization = Nls.Capitalization.Sentence)
+  @NotNull
+  String getDisplayName() {
+    return "@Slf4j";
   }
 }

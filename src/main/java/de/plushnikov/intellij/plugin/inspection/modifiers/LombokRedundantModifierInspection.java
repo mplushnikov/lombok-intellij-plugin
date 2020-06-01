@@ -6,12 +6,13 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.siyeh.ig.fixes.RemoveModifierFix;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-import static de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersInfoType.*;
+import static de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersInfoType.INNER_CLASS;
 
 public abstract class LombokRedundantModifierInspection extends AbstractBaseJavaLocalInspectionTool {
 
@@ -64,7 +65,7 @@ public abstract class LombokRedundantModifierInspection extends AbstractBaseJava
         if (containingClass == null) {
           continue;
         }
-        if (containingClass.hasAnnotation(supportedAnnotation.getName()) &&
+        if (PsiAnnotationSearchUtil.isAnnotatedWith(containingClass, supportedAnnotation.getName()) &&
           redundantModifiersInfo.getRedundantModifiersInfoType().getSupportedClass().isAssignableFrom(psiModifierListOwner.getClass())) {
           PsiModifierList psiModifierList = psiModifierListOwner.getModifierList();
           if (psiModifierList == null ||
@@ -79,7 +80,7 @@ public abstract class LombokRedundantModifierInspection extends AbstractBaseJava
 
               psiModifier.ifPresent(psiElement -> holder.registerProblem(psiElement,
                 redundantModifiersInfo.getDescription(),
-                ProblemHighlightType.WARNING,
+                ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
                 new RemoveModifierFix(modifier))
               );
             }

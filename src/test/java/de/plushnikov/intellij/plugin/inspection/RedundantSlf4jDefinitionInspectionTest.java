@@ -14,7 +14,7 @@ public class RedundantSlf4jDefinitionInspectionTest extends LombokInspectionTest
   public void setUp() throws Exception {
     super.setUp();
 
-    LombokTestUtil.loadSlf4jLibrary(myFixture.getProjectDisposable(), getModule());
+    LombokTestUtil.loadSlf4jLibrary(myFixture.getProjectDisposable(), myModule);
   }
 
   @Override
