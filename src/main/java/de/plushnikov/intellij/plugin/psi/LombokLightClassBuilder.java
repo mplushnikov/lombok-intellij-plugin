@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.psi;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class LombokLightClassBuilder extends LightPsiClassBuilder implements PsiExtensibleClass {
+  private static final Logger LOG = Logger.getInstance(LombokLightClassBuilder.class);
+
   private boolean myIsEnum;
   private final String myQualifiedName;
   private final Icon myBaseIcon;
@@ -198,6 +201,13 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
     }
 
     LombokLightClassBuilder that = (LombokLightClassBuilder) o;
+
+    if(getNavigationElement() != this && !getNavigationElement().equals(that.getNavigationElement())) {
+      if(myQualifiedName.equals(that.myQualifiedName)) {
+        LOG.warn("Usually I would have been equal!");
+      }
+      return false;
+    }
 
     return myQualifiedName.equals(that.myQualifiedName);
   }
