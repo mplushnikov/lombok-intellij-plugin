@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.psi;
 
 import com.intellij.lang.java.JavaLanguage;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -24,8 +23,6 @@ import java.util.stream.Stream;
  * @author Plushnikov Michail
  */
 public class LombokLightFieldBuilder extends LightFieldBuilder {
-  private static final Logger LOG = Logger.getInstance(LombokLightFieldBuilder.class);
-
   private String myName;
   private final LombokLightIdentifier myNameIdentifier;
   private final LombokLightModifierList myModifierList;
@@ -147,9 +144,6 @@ public class LombokLightFieldBuilder extends LightFieldBuilder {
       }
 
       if(getNavigationElement() != this && !getNavigationElement().equals(anotherLightField.getNavigationElement())) {
-        if(stillEquivalent) {
-          LOG.warn("Usually I would have been equal!");
-        }
         stillEquivalent = false;
       }
 

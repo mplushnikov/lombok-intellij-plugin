@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.psi;
 
 import com.intellij.lang.Language;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
@@ -24,7 +23,6 @@ import java.util.Set;
  * @author Plushnikov Michail
  */
 public class LombokLightModifierList extends LightModifierList {
-  private static final Logger LOG = Logger.getInstance(LombokLightModifierList.class);
   private static final Set<String> ALL_MODIFIERS = new HashSet<>(Arrays.asList(PsiModifier.MODIFIERS));
 
   private final Map<String, PsiAnnotation> myAnnotations;
@@ -127,9 +125,6 @@ public class LombokLightModifierList extends LightModifierList {
     LombokLightModifierList that = (LombokLightModifierList) o;
 
     if (getNavigationElement() != this && !getNavigationElement().equals(that.getNavigationElement())) {
-      if(myAnnotations.equals(that.myAnnotations)) {
-        LOG.warn("Usually I would have been equal!");
-      }
       return false;
     }
 

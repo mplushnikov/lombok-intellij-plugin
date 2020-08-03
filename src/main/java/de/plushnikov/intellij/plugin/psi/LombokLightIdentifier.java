@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.psi;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
@@ -12,8 +11,6 @@ import java.util.Objects;
  * Date: 12.10.13 Time: 23:27
  */
 public class LombokLightIdentifier extends LightIdentifier {
-  private static final Logger LOG = Logger.getInstance(LombokLightIdentifier.class);
-
   private String myText;
 
   public LombokLightIdentifier(PsiManager manager, String text) {
@@ -53,9 +50,6 @@ public class LombokLightIdentifier extends LightIdentifier {
     LombokLightIdentifier that = (LombokLightIdentifier) o;
 
     if(getNavigationElement() != this && !getNavigationElement().equals(that.getNavigationElement())) {
-      if(Objects.equals(myText, that.myText)) {
-        LOG.warn("Usually I would have been equal!");
-      }
       return false;
     }
 

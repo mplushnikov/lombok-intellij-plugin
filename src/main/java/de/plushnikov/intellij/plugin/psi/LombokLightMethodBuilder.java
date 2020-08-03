@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.psi;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.java.JavaLanguage;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.CheckUtil;
@@ -24,8 +23,6 @@ import java.util.Objects;
  * @author Plushnikov Michail
  */
 public class LombokLightMethodBuilder extends LightMethodBuilder {
-  private static final Logger LOG = Logger.getInstance(LombokLightMethodBuilder.class);
-
   private PsiMethod myMethod;
   private ASTNode myASTNode;
   private PsiCodeBlock myBodyCodeBlock;
@@ -292,9 +289,6 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     }
 
     if(getNavigationElement() != this && !getNavigationElement().equals(that.getNavigationElement())) {
-      if(Objects.equals(myReturnTypeAsText, that.myReturnTypeAsText)) {
-        LOG.warn("Usually I would have been equal!");
-      }
       return false;
     }
 
