@@ -225,6 +225,11 @@
       <action id="defaultLombokToString" class="de.plushnikov.intellij.plugin.action.lombok.LombokToStringAction"
               text="Default @ToString" description="Action to replace toString method with lombok @ToString annotation">
       </action>
+      <action id="customToJson"
+              class="de.plushnikov.intellij.plugin.action.lombok.LombokCustomToJsonAction"
+              text="Default @JsonSerializable"
+              description="Action to add toJson and formJson method with lombok @JsonSerializable annotation">
+      </action>
       <separator/>
       <action id="defaultLombokLogger" class="de.plushnikov.intellij.plugin.action.lombok.LombokLoggerAction"
               text="@Log (and friends)" description="Action to replace logger with lombok @Log annotation">
@@ -286,6 +291,10 @@
       </action>
       <action id="delombokToString" class="de.plushnikov.intellij.plugin.action.delombok.DelombokToStringAction"
               text="@ToString" description="Action to replace lombok @ToString annotation with vanilla java methods">
+      </action>
+      <action id="delombokCustomToJson" class="de.plushnikov.intellij.plugin.action.delombok.DelombokCustomToJsonAction"
+              text="@JsonSerializable"
+              description="Action to replace lombok @JsonSerializable annotation with vanilla java methods">
       </action>
       <separator/>
       <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"

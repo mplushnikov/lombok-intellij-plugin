@@ -26,14 +26,14 @@ import java.util.List;
  *
  * @author lihongbin
  */
-public class JsonSerializableProcessor extends AbstractClassProcessor {
+public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
 
   public static final String TO_JSON_METHOD_NAME = "toJson",
     FROM_JSON_METHOD_NAME = "fromJson";
 
   private static final String INCLUDE_ANNOTATION_METHOD = "name";
 
-  public JsonSerializableProcessor() {
+  public CustomJsonSerializableProcessor() {
     super(PsiMethod.class, JsonSerializable.class);
   }
 

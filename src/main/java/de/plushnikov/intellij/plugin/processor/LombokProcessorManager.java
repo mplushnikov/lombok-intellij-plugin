@@ -43,6 +43,7 @@ public class LombokProcessorManager {
       ServiceManager.getService(GetterProcessor.class),
       ServiceManager.getService(SetterProcessor.class),
       ServiceManager.getService(ToStringProcessor.class),
+      ServiceManager.getService(CustomJsonSerializableProcessor.class),
       ServiceManager.getService(WitherProcessor.class),
 
       ServiceManager.getService(BuilderPreDefinedInnerClassFieldProcessor.class),

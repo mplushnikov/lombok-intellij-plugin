@@ -30,6 +30,7 @@ public class DelombokEverythingAction extends AbstractDelombokAction {
       ServiceManager.getService(SetterProcessor.class),
       ServiceManager.getService(EqualsAndHashCodeProcessor.class),
       ServiceManager.getService(ToStringProcessor.class),
+      ServiceManager.getService(CustomJsonSerializableProcessor.class),
 
       ServiceManager.getService(CommonsLogProcessor.class), ServiceManager.getService(JBossLogProcessor.class), ServiceManager.getService(Log4jProcessor.class),
       ServiceManager.getService(Log4j2Processor.class), ServiceManager.getService(LogProcessor.class), ServiceManager.getService(Slf4jProcessor.class),
