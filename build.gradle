@@ -7,7 +7,7 @@ plugins {
 allprojects {
   repositories {
     jcenter()
-    maven { url "https://www.jitpack.io" }
+    maven { url "http://maven.51zhaoyou.com/content/repositories/releases/" }
   }
 }
 
@@ -81,6 +81,7 @@ configurations {
 
 dependencies {
   lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.12', classifier: 'sources', ext: 'jar'
+
 
   testImplementation("junit:junit:4.13")
   testImplementation("org.mockito:mockito-core:3.3.3")
