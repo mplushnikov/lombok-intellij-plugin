@@ -1,14 +1,7 @@
 package de.plushnikov.intellij.plugin.processor;
 
 import com.intellij.openapi.components.ServiceManager;
-import de.plushnikov.intellij.plugin.processor.clazz.DataProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.EqualsAndHashCodeProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.GetterProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.UtilityClassProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.*;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderClassProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassMethodProcessor;
@@ -104,7 +97,8 @@ public class LombokProcessorManager {
 
       ServiceManager.getService(DelegateMethodProcessor.class),
 
-      ServiceManager.getService(CleanupProcessor.class)
+      ServiceManager.getService(CleanupProcessor.class),
+      ServiceManager.getService(CustomJsonSerializableProcessor.class)
 //      ,ServiceManager.getService(SynchronizedProcessor.class)
     );
   }
