@@ -113,6 +113,8 @@ copy {
     include 'lombok/var.java'
     include 'lombok/Singular.java'
     include 'lombok/core/handlers/Singulars.java'
+    include 'lombok/JsonSerializable.java'
+
   }
   into("generated/src")
 }
