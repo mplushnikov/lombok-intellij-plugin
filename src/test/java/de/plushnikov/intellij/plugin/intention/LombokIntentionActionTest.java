@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.intention;
 
 import com.intellij.codeInsight.intention.IntentionAction;
-import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.PsiFile;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
@@ -17,9 +16,6 @@ public abstract class LombokIntentionActionTest extends AbstractLombokLightCodeI
   @Override
   public void setUp() throws Exception {
     super.setUp();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   public abstract IntentionAction getIntentionAction();
