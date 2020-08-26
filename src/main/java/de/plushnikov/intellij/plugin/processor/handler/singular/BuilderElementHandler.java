@@ -5,6 +5,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.processor.handler.BuilderInfo;
+import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,11 +16,7 @@ public interface BuilderElementHandler {
 
   String createSingularName(PsiAnnotation singularAnnotation, String psiFieldName);
 
-  default String renderBuildPrepare(@NotNull PsiVariable psiVariable, @NotNull String fieldName) {
-    return "";
-  }
-
-  default String renderBuildCode(@NotNull PsiVariable psiVariable, @NotNull String fieldName, @NotNull String builderVariable) {
+  default String renderBuildPrepare(@NotNull BuilderInfo info) {
     return "";
   }
 
@@ -28,10 +25,14 @@ public interface BuilderElementHandler {
   }
 
   default String renderToBuilderCall(@NotNull BuilderInfo info) {
-    return info.getFieldName() + '(' + info.getInstanceVariableName() + '.' + info.getVariable().getName() + ')';
+    return calcBuilderMethodName(info) + '(' + info.getInstanceVariableName() + '.' + info.getVariable().getName() + ')';
   }
 
   Collection<PsiField> renderBuilderFields(@NotNull BuilderInfo info);
+
+  default String calcBuilderMethodName(@NotNull BuilderInfo info) {
+    return LombokUtils.buildAccessorName(info.getSetterPrefix(), info.getFieldName());
+  }
 
   Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info);
 
