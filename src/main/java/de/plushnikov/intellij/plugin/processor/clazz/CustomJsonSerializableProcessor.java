@@ -53,6 +53,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
     return true;
   }
 
+  @Override
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     target.addAll(createToJsonStringMethod(psiClass, psiAnnotation));
     target.addAll(createFromJsonStringMethod(psiClass, psiAnnotation));

@@ -62,6 +62,8 @@
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomJsonSerializableProcessor"/>
+
 
     <applicationService
       serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassFieldProcessor"/>
