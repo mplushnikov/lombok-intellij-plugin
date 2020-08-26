@@ -24,6 +24,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
 
   public CustomJsonSerializableProcessor() {
     super(PsiMethod.class, JsonSerializable.class);
+    System.out.println("  customer json  init ");
   }
 
   @Override
