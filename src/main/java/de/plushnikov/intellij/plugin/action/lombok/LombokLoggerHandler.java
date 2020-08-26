@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.action.lombok;
 
+import com.intellij.CommonBundle;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -51,7 +52,8 @@ public class LombokLoggerHandler extends BaseLombokHandler {
     if (!isValidLoggerField(psiField, lombokLoggerName, lombokLoggerIsStatic)) {
       final String messageText = String.format("Logger field: \"%s\" Is not private %sfinal field named \"%s\". Refactor anyway?",
         psiField.getName(), lombokLoggerIsStatic ? "static " : "", lombokLoggerName);
-      int result = Messages.showOkCancelDialog(messageText, "Attention!", Messages.getOkButton(), Messages.getCancelButton(), Messages.getQuestionIcon());
+      int result = Messages.showOkCancelDialog(messageText, "Attention!",
+        CommonBundle.getOkButtonText(), CommonBundle.getCancelButtonText(), Messages.getQuestionIcon());
       return DialogWrapper.OK_EXIT_CODE == result;
     }
     return true;

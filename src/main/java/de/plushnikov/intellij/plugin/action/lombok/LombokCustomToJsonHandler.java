@@ -1,6 +1,7 @@
 package de.plushnikov.intellij.plugin.action.lombok;
 
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
 import lombok.JsonSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,12 +15,19 @@ public class LombokCustomToJsonHandler extends BaseLombokHandler {
 
   protected void processClass(@NotNull PsiClass psiClass) {
     delToJsonMethod(psiClass);
-    deLFormJsonMethod(psiClass);
+    delFormJsonMethod(psiClass);
     addAnnotation(psiClass, JsonSerializable.class);
   }
 
-  private void deLFormJsonMethod(@NotNull PsiClass psiClass) {
+  private void delFormJsonMethod(@NotNull PsiClass psiClass) {
     for (PsiMethod method : getFromJsonMethod(psiClass)) {
+      method.delete();
+    }
+  }
+
+
+  private void delToJsonMethod(@NotNull PsiClass psiClass) {
+    for (PsiMethod method : getToJsonJsonMethod(psiClass)) {
       method.delete();
     }
   }
@@ -30,13 +38,9 @@ public class LombokCustomToJsonHandler extends BaseLombokHandler {
       .filter(x -> x.getParameters().length == 0).toArray();
   }
 
-  private void delToJsonMethod(@NotNull PsiClass psiClass) {
-    PsiElementFactory factory = JavaPsiFacade.getElementFactory(psiClass.getProject());
-    PsiClassType stringClassType = factory.createTypeByFQClassName(CommonClassNames.JAVA_LANG_STRING, psiClass.getResolveScope());
-    PsiMethod toJsonMethod = findPublicNonStaticMethod(psiClass, "toJson", stringClassType, PsiType.NULL);
-    if (null != toJsonMethod) {
-      toJsonMethod.delete();
-    }
+  private PsiMethod[] getToJsonJsonMethod(PsiClass psiClass) {
+    PsiMethod[] methods = psiClass.findMethodsByName("toJson", false);
+    return (PsiMethod[]) Arrays.stream(methods)
+      .filter(x -> x.getParameters().length == 0).toArray();
   }
-
 }

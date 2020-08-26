@@ -59,7 +59,9 @@ public class DelombokEverythingAction extends AbstractDelombokAction {
       ServiceManager.getService(SuperBuilderPreDefinedInnerClassFieldProcessor.class),
       ServiceManager.getService(SuperBuilderPreDefinedInnerClassMethodProcessor.class),
       ServiceManager.getService(SuperBuilderClassProcessor.class),
-      ServiceManager.getService(SuperBuilderProcessor.class));
+      ServiceManager.getService(SuperBuilderProcessor.class),
+      ServiceManager.getService(CustomJsonSerializableProcessor.class));
+
   }
 
 }

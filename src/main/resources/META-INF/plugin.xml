@@ -62,6 +62,8 @@
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomJsonSerializableProcessor"/>
+
 
     <applicationService
       serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassFieldProcessor"/>
@@ -197,7 +199,7 @@
       shortName="RedundantSlf4jDefinition"
       enabledByDefault="true"
       implementationClass="de.plushnikov.intellij.plugin.inspection.RedundantSlf4jDefinitionInspection"/>
-    
+
     <localInspection
       displayName="Unnecessary final before 'val'"
       groupPath="Lombok"
@@ -250,7 +252,7 @@
       <action id="defaultLombokToString" class="de.plushnikov.intellij.plugin.action.lombok.LombokToStringAction"
               text="Default @ToString" description="Action to replace toString method with lombok @ToString annotation">
       </action>
-      <action id="customToJson"
+      <action id="defaultCustomToJson"
               class="de.plushnikov.intellij.plugin.action.lombok.LombokCustomToJsonAction"
               text="Default @JsonSerializable"
               description="Action to add toJson and formJson method with lombok @JsonSerializable annotation">
@@ -321,6 +323,7 @@
               text="@JsonSerializable"
               description="Action to replace lombok @JsonSerializable annotation with vanilla java methods">
       </action>
+
       <separator/>
       <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"
               text="@Log (and friends)"
