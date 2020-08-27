@@ -63,8 +63,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, FROM_JSON_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    final PsiMethod stringMethod = fromJsonStringMethod(psiClass);
-    return Collections.singletonList(stringMethod);
+    return Collections.singletonList(fromJsonStringMethod(psiClass));
   }
 
   @NotNull
@@ -73,8 +72,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, TO_JSON_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    final PsiMethod stringMethod = toJsonStringMethod(psiClass);
-    return Collections.singletonList(stringMethod);
+    return Collections.singletonList(toJsonStringMethod(psiClass));
   }
 
   private PsiMethod toJsonStringMethod(@NotNull PsiClass psiClass) {
@@ -92,7 +90,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, FROM_JSON_METHOD_NAME)
       .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
       .withContainingClass(psiClass)
-      .withParameter("jsonString", PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
+      .withParameter("jsonStr", PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
       .withModifier(PsiModifier.PUBLIC)
       .withModifier(PsiModifier.STATIC);
     String blockText = String.format("return com.alibaba.fastjson.JSON.parseObject(jsonString,%s)", psiClass.getQualifiedName());
