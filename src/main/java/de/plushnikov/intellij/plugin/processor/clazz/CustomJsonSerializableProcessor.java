@@ -81,7 +81,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
       .withMethodReturnType(PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
       .withContainingClass(psiClass)
       .withModifier(PsiModifier.PUBLIC);
-    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText("return com.alibaba.fastjson.JSON.toJSONString(this)", methodBuilder));
+    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText("return com.xyz.utils.JsonUtils.beanToJson(this)", methodBuilder));
     return methodBuilder;
   }
 
@@ -93,7 +93,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
       .withParameter("jsonStr", PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
       .withModifier(PsiModifier.PUBLIC)
       .withModifier(PsiModifier.STATIC);
-    String blockText = String.format("return com.alibaba.fastjson.JSON.parseObject(jsonString,%s)", psiClass.getQualifiedName());
+    String blockText = String.format("return com.xyz.utils.JsonUtils.jsonToBean(jsonStr,%s)", psiClass.getQualifiedName());
     methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
     return methodBuilder;
   }
