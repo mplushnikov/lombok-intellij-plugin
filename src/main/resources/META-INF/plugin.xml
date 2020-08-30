@@ -162,15 +162,17 @@
 
     <localInspection
       displayName="Lombok annotations"
+      groupPath="Lombok"
       groupName="Lombok"
-      shortName="Lombok"
+      shortName="LombokAnnotations"
       enabledByDefault="true"
       implementationClass="de.plushnikov.intellij.plugin.inspection.LombokInspection"/>
 
     <localInspection
       displayName="Deprecated Lombok annotations"
+      groupPath="Lombok"
       groupName="Lombok"
-      shortName="DeprecatedLombok"
+      shortName="DeprecatedLombokAnnotations"
       enabledByDefault="true"
       implementationClass="de.plushnikov.intellij.plugin.inspection.DeprecatedLombokAnnotationInspection"/>
 
@@ -197,7 +199,7 @@
       shortName="RedundantSlf4jDefinition"
       enabledByDefault="true"
       implementationClass="de.plushnikov.intellij.plugin.inspection.RedundantSlf4jDefinitionInspection"/>
-    
+
     <localInspection
       displayName="Unnecessary final before 'val'"
       groupPath="Lombok"

@@ -11,11 +11,6 @@ public class RedundantModifiersOnValLombokInspectionTest extends LombokInspectio
   }
 
   @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
-  @Override
   protected InspectionProfileEntry getInspection() {
     return new RedundantModifiersOnValLombokAnnotationInspection();
   }

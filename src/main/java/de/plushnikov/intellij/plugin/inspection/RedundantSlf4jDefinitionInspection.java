@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor;
 import de.plushnikov.intellij.plugin.quickfix.UseSlf4jAnnotationQuickFix;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import static java.lang.String.format;
@@ -19,6 +20,11 @@ public class RedundantSlf4jDefinitionInspection extends AbstractBaseJavaLocalIns
   @Override
   public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
     return new LombokDefinitionVisitor(holder);
+  }
+
+  @Override
+  public @Nls(capitalization = Nls.Capitalization.Sentence) @NotNull String getDisplayName() {
+    return "@Slf4j";
   }
 
   private static class LombokDefinitionVisitor extends JavaElementVisitor {
