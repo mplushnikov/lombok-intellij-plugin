@@ -10,6 +10,7 @@ import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -30,6 +31,11 @@ public class LombokInspection extends AbstractBaseJavaLocalInspectionTool {
   @Override
   public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, final boolean isOnTheFly) {
     return new LombokElementVisitor(holder);
+  }
+
+  @Override
+  public @Nls(capitalization = Nls.Capitalization.Sentence) @NotNull String getDisplayName() {
+    return "Lombok annotations";
   }
 
   private class LombokElementVisitor extends JavaElementVisitor {

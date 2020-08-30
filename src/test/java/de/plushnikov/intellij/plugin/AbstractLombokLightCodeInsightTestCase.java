@@ -72,7 +72,7 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightCodeIn
     }
   }
 
-  public void checkQuickFix(String message) {
+  protected void doCheckQuickFix(String message) {
     final List<IntentionAction> allQuickFixes = myFixture.getAllQuickFixes(getBasePath() + '/' + getTestName(false) + ".java");
     final Optional<String> quickFixWithMessage = allQuickFixes.stream()
       .filter(QuickFixWrapper.class::isInstance)

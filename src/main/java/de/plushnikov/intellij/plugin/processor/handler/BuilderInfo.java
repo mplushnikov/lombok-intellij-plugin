@@ -160,8 +160,8 @@ public class BuilderInfo {
     return !alreadyExistingFieldNames.contains(fieldInBuilderName);
   }
 
-  public boolean notAlreadyExistingMethod(Collection<String> existedMethodNames) {
-    return notAlreadyExistingField(existedMethodNames);
+  public boolean notAlreadyExistingMethod(Collection<String> alreadyExistedMethodNames) {
+    return !alreadyExistedMethodNames.contains(calcBuilderMethodName());
   }
 
   public Project getProject() {
@@ -221,8 +221,16 @@ public class BuilderInfo {
     return hasBuilderDefaultAnnotation;
   }
 
+  public boolean hasNoInitializer() {
+    return null == fieldInitializer;
+  }
+
   public boolean hasObtainViaAnnotation() {
     return null != obtainViaAnnotation;
+  }
+
+  public PsiExpression getFieldInitializer() {
+    return fieldInitializer;
   }
 
   public String getViaFieldName() {
@@ -252,12 +260,16 @@ public class BuilderInfo {
     return builderElementHandler.renderBuilderFields(this);
   }
 
+  private String calcBuilderMethodName() {
+    return builderElementHandler.calcBuilderMethodName(this);
+  }
+
   public Collection<PsiMethod> renderBuilderMethods() {
     return builderElementHandler.renderBuilderMethod(this);
   }
 
   public String renderBuildPrepare() {
-    return builderElementHandler.renderBuildPrepare(variableInClass, fieldInBuilderName);
+    return builderElementHandler.renderBuildPrepare(this);
   }
 
   public String renderSuperBuilderConstruction() {
@@ -265,7 +277,19 @@ public class BuilderInfo {
   }
 
   public String renderBuildCall() {
-    return fieldInBuilderName;
+    return renderFieldName();
+  }
+
+  public String renderFieldName() {
+    return hasBuilderDefaultAnnotation ? fieldInBuilderName + "$value" : fieldInBuilderName;
+  }
+
+  public String renderFieldDefaultSetName() {
+    return hasBuilderDefaultAnnotation ? fieldInBuilderName + "$set" : null;
+  }
+
+  public String renderFieldDefaultProviderName() {
+    return hasBuilderDefaultAnnotation ? "$default$" + fieldInBuilderName : null;
   }
 
   public CharSequence renderToBuilderCall() {

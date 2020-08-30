@@ -22,6 +22,11 @@ public class RedundantSlf4jDefinitionInspection extends AbstractBaseJavaLocalIns
     return new LombokDefinitionVisitor(holder);
   }
 
+  @Override
+  public @Nls(capitalization = Nls.Capitalization.Sentence) @NotNull String getDisplayName() {
+    return "@Slf4j";
+  }
+
   private static class LombokDefinitionVisitor extends JavaElementVisitor {
 
     private final ProblemsHolder holder;
@@ -49,12 +54,5 @@ public class RedundantSlf4jDefinitionInspection extends AbstractBaseJavaLocalIns
         }
       }
     }
-  }
-
-  @Override
-  public @Nls(capitalization = Nls.Capitalization.Sentence)
-  @NotNull
-  String getDisplayName() {
-    return "@Slf4j";
   }
 }

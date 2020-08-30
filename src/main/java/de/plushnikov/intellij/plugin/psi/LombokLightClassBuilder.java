@@ -14,14 +14,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
-public class LombokLightClassBuilder extends LightPsiClassBuilder implements PsiExtensibleClass {
+public class LombokLightClassBuilder extends LightPsiClassBuilder implements PsiExtensibleClass, SyntheticElement {
   private boolean myIsEnum;
   private final String myQualifiedName;
   private final Icon myBaseIcon;
@@ -211,5 +207,15 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   @Override
   public int hashCode() {
     return myQualifiedName.hashCode();
+  }
+
+  @Override
+  public boolean isValid() {
+    return super.isValid() && areAllFieldsAndMethodsValid();
+  }
+
+  private boolean areAllFieldsAndMethodsValid() {
+    return Arrays.stream(getFields()).allMatch(PsiElement::isValid)
+      && Arrays.stream(getMethods()).allMatch(PsiElement::isValid);
   }
 }
