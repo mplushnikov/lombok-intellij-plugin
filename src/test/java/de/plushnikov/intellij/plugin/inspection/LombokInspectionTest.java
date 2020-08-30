@@ -27,7 +27,7 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
     return LombokTestUtil.getProjectDescriptor();
   }
 
-  public void checkQuickFix(String message) {
+  protected void doCheckQuickFix(String message) {
     final List<IntentionAction> allQuickFixes = myFixture.getAllQuickFixes();
     final Optional<String> quickFixWithMessage = allQuickFixes.stream()
       .map(IntentionAction::getText)

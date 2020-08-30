@@ -21,22 +21,22 @@ public class RedundantModifiersQuickFixTest extends AbstractLombokLightCodeInsig
   }
 
   public void testUtilityClassClassWithStaticField() {
-    checkQuickFix("@UtilityClass already marks fields static.");
+    doCheckQuickFix("@UtilityClass already marks fields static.");
   }
 
   public void testUtilityClassClassWithStaticMethod() {
-    checkQuickFix("@UtilityClass already marks methods static.");
+    doCheckQuickFix("@UtilityClass already marks methods static.");
   }
 
   public void testUtilityClassClassWithStaticInnerClass() {
-    checkQuickFix("@UtilityClass already marks inner classes static.");
+    doCheckQuickFix("@UtilityClass already marks inner classes static.");
   }
 
   public void testValueClassWithPrivateField() {
-    checkQuickFix("@Value already marks non-static, package-local fields private.");
+    doCheckQuickFix("@Value already marks non-static, package-local fields private.");
   }
 
   public void testValueClassWithFinalField() {
-    checkQuickFix("@Value already marks non-static fields final.");
+    doCheckQuickFix("@Value already marks non-static fields final.");
   }
 }
