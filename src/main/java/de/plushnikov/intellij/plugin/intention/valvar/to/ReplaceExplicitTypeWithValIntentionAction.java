@@ -2,7 +2,7 @@ package de.plushnikov.intellij.plugin.intention.valvar.to;
 
 import com.intellij.psi.*;
 
-import static com.intellij.psi.PsiModifier.*;
+import static com.intellij.psi.PsiModifier.FINAL;
 
 public class ReplaceExplicitTypeWithValIntentionAction extends AbstractReplaceExplicitTypeWithVariableIntentionAction {
 
@@ -33,6 +33,6 @@ public class ReplaceExplicitTypeWithValIntentionAction extends AbstractReplaceEx
       return false;
     }
     PsiTypeElement typeElement = parameter.getTypeElement();
-    return typeElement == null || !typeElement.isInferredType();
+    return typeElement != null;
   }
 }

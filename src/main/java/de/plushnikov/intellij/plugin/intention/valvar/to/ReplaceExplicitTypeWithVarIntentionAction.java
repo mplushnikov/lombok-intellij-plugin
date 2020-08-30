@@ -3,7 +3,7 @@ package de.plushnikov.intellij.plugin.intention.valvar.to;
 import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 
-import static com.intellij.psi.PsiModifier.*;
+import static com.intellij.psi.PsiModifier.FINAL;
 
 public class ReplaceExplicitTypeWithVarIntentionAction extends AbstractReplaceExplicitTypeWithVariableIntentionAction {
 
@@ -31,7 +31,7 @@ public class ReplaceExplicitTypeWithVarIntentionAction extends AbstractReplaceEx
       return false;
     }
     PsiTypeElement typeElement = psiParameter.getTypeElement();
-    return typeElement != null && !typeElement.isInferredType() && isNotFinal(psiParameter);
+    return typeElement != null && isNotFinal(psiParameter);
   }
 
   private boolean isNotFinal(@NotNull PsiVariable variable) {

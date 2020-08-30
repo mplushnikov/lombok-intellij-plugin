@@ -41,9 +41,6 @@ public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction ext
     if (initializer instanceof PsiArrayInitializerExpression || initializer instanceof PsiLambdaExpression) {
       return false;
     }
-    if (localVariable.getTypeElement().isInferredType()) {
-      return false;
-    }
     return isAvailableOnDeclarationCustom(context, localVariable);
   }
 
@@ -62,7 +59,7 @@ public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction ext
     Project project = psiVariable.getProject();
     psiVariable.normalizeDeclaration();
     PsiTypeElement typeElement = psiVariable.getTypeElement();
-    if (typeElement == null || typeElement.isInferredType()) {
+    if (typeElement == null) {
       return;
     }
 

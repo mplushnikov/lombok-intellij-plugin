@@ -6,7 +6,6 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
-import com.intellij.psi.impl.source.JavaVarTypeUtil;
 import com.intellij.psi.util.TypeConversionUtil;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
@@ -235,8 +234,7 @@ public class ValProcessor extends AbstractProcessor {
         result = RecursionManager.doPreventingRecursion(psiExpression, true, psiExpression::getType);
       }
     }
-    //Get upward projection so you don't get types with missing diamonds.
-    return result != null ? JavaVarTypeUtil.getUpwardProjection(result) : result;
+    return result;
   }
 
   private PsiType processParameterDeclaration(PsiElement parentDeclarationScope) {
