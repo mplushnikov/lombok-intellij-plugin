@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.JavaVarTypeUtil;
+import com.intellij.psi.util.TypeConversionUtil;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import lombok.val;
@@ -206,24 +207,36 @@ public class ValProcessor extends AbstractProcessor {
   private PsiType processLocalVariableInitializer(final PsiExpression psiExpression) {
     PsiType result = null;
     if (null != psiExpression && !(psiExpression instanceof PsiArrayInitializerExpression)) {
-        result = RecursionManager.doPreventingRecursion(psiExpression, true, () -> {
-          PsiType type = psiExpression.getType();
-          // This is how Lombok resolves intersection types.
-          // This way auto-completion won't show unavailable methods.
-          if (type instanceof PsiIntersectionType) {
-            PsiType[] conjuncts = ((PsiIntersectionType) type).getConjuncts();
-            if (conjuncts.length > 0) {
-              return conjuncts[0];
-            }
-          }
-          if (type != null) {
-            return JavaVarTypeUtil.getUpwardProjection(type); //Get upward projection so you don't get types with missing diamonds.
-          }
-          return null;
-        });
-      }
 
-    return result;
+      if (psiExpression instanceof PsiConditionalExpression) {
+        result = RecursionManager.doPreventingRecursion(psiExpression, true, () -> {
+          final PsiExpression thenExpression = ((PsiConditionalExpression) psiExpression).getThenExpression();
+          final PsiExpression elseExpression = ((PsiConditionalExpression) psiExpression).getElseExpression();
+
+          final PsiType thenType = null != thenExpression ? thenExpression.getType() : null;
+          final PsiType elseType = null != elseExpression ? elseExpression.getType() : null;
+
+          if (thenType == null) {
+            return elseType;
+          }
+          if (elseType == null) {
+            return thenType;
+          }
+
+          if (TypeConversionUtil.isAssignable(thenType, elseType, false)) {
+            return thenType;
+          }
+          if (TypeConversionUtil.isAssignable(elseType, thenType, false)) {
+            return elseType;
+          }
+          return thenType;
+        });
+      } else {
+        result = RecursionManager.doPreventingRecursion(psiExpression, true, psiExpression::getType);
+      }
+    }
+    //Get upward projection so you don't get types with missing diamonds.
+    return result != null ? JavaVarTypeUtil.getUpwardProjection(result) : result;
   }
 
   private PsiType processParameterDeclaration(PsiElement parentDeclarationScope) {
