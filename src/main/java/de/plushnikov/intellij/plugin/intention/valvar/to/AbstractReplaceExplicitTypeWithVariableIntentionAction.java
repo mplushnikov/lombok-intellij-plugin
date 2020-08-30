@@ -1,10 +1,9 @@
 package de.plushnikov.intellij.plugin.intention.valvar.to;
 
-import com.intellij.codeInspection.RemoveRedundantTypeArgumentsUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.refactoring.introduceVariable.IntroduceVariableBase;
+import com.intellij.psi.impl.PsiDiamondTypeUtil;
 import de.plushnikov.intellij.plugin.intention.valvar.AbstractValVarIntentionAction;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -73,13 +72,33 @@ public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction ext
       return;
     }
     PsiJavaCodeReferenceElement referenceElementByFQClassName = elementFactory.createReferenceElementByFQClassName(variableClass.getName(), psiVariable.getResolveScope());
-    typeElement = (PsiTypeElement) IntroduceVariableBase.expandDiamondsAndReplaceExplicitTypeWithVar(typeElement, typeElement);
+    typeElement = (PsiTypeElement) expandDiamondsAndReplaceExplicitTypeWithVar(typeElement, typeElement);
     typeElement.deleteChildRange(typeElement.getFirstChild(), typeElement.getLastChild());
     typeElement.add(referenceElementByFQClassName);
-    RemoveRedundantTypeArgumentsUtil.removeRedundantTypeArguments(psiVariable);
+    removeRedundantTypeArguments(psiVariable);
     executeAfterReplacing(psiVariable);
     CodeStyleManager.getInstance(project).reformat(psiVariable);
   }
 
   protected abstract void executeAfterReplacing(PsiVariable psiVariable);
+
+  /**
+   * Ensure that diamond inside initializer is expanded, then replace variable type with var
+   * From IntroduceVariableBase
+   */
+  private PsiElement expandDiamondsAndReplaceExplicitTypeWithVar(PsiTypeElement typeElement, PsiElement context) {
+    PsiElement parent = typeElement.getParent();
+    if (parent instanceof PsiVariable) {
+      PsiExpression copyVariableInitializer = ((PsiVariable) parent).getInitializer();
+      if (copyVariableInitializer instanceof PsiNewExpression) {
+        final PsiDiamondType.DiamondInferenceResult diamondResolveResult =
+          PsiDiamondTypeImpl.resolveInferredTypesNoCheck((PsiNewExpression) copyVariableInitializer, copyVariableInitializer);
+        if (!diamondResolveResult.getInferredTypes().isEmpty()) {
+          PsiDiamondTypeUtil.expandTopLevelDiamondsInside(copyVariableInitializer);
+        }
+      }
+    }
+
+    return typeElement.replace(JavaPsiFacade.getElementFactory(context.getProject()).createTypeElementFromText("var", context));
+  }
 }

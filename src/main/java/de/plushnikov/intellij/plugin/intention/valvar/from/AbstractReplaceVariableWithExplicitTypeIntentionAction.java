@@ -1,13 +1,15 @@
 package de.plushnikov.intellij.plugin.intention.valvar.from;
 
-import com.intellij.codeInspection.RemoveRedundantTypeArgumentsUtil;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
-import com.intellij.psi.util.PsiTypesUtil;
+import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import com.intellij.util.IncorrectOperationException;
 import de.plushnikov.intellij.plugin.intention.valvar.AbstractValVarIntentionAction;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractReplaceVariableWithExplicitTypeIntentionAction extends AbstractValVarIntentionAction {
 
@@ -63,11 +65,36 @@ public abstract class AbstractReplaceVariableWithExplicitTypeIntentionAction ext
     if (psiTypeElement == null) {
       return;
     }
-    PsiTypesUtil.replaceWithExplicitType(psiTypeElement);
-    RemoveRedundantTypeArgumentsUtil.removeRedundantTypeArguments(psiVariable);
+    replaceWithExplicitTypeBP(psiTypeElement);
+    removeRedundantTypeArguments(psiVariable);
     executeAfterReplacing(psiVariable);
     CodeStyleManager.getInstance(psiVariable.getProject()).reformat(psiVariable);
   }
 
   protected abstract void executeAfterReplacing(PsiVariable psiVariable);
+
+  @Nullable
+  // from PsiTypesUtil.replaceWithExplicitType
+  private PsiTypeElement replaceWithExplicitTypeBP(PsiTypeElement typeElement) {
+    PsiType type = typeElement.getType();
+    if (!isDenotableType(type, typeElement)) {
+      return null;
+    }
+    Project project = typeElement.getProject();
+    PsiTypeElement typeElementByExplicitType = JavaPsiFacade.getElementFactory(project).createTypeElement(type);
+    PsiElement explicitTypeElement = typeElement.replace(typeElementByExplicitType);
+    explicitTypeElement = JavaCodeStyleManager.getInstance(project).shortenClassReferences(explicitTypeElement);
+    return (PsiTypeElement) CodeStyleManager.getInstance(project).reformat(explicitTypeElement);
+  }
+
+  private boolean isDenotableType(@Nullable PsiType type, @NotNull PsiElement context) {
+    if (type == null || type instanceof PsiWildcardType) return false;
+    PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(context.getProject());
+    try {
+      PsiType typeAfterReplacement = elementFactory.createTypeElementFromText(type.getCanonicalText(), context).getType();
+      return type.equals(typeAfterReplacement);
+    } catch (IncorrectOperationException e) {
+      return false;
+    }
+  }
 }

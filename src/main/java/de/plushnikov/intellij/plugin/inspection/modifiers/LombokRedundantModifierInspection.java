@@ -13,8 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersInfoType.INNER_CLASS;
-
 public abstract class LombokRedundantModifierInspection extends AbstractBaseJavaLocalInspectionTool {
 
   private final Class<?> supportedAnnotation;
@@ -86,7 +84,7 @@ public abstract class LombokRedundantModifierInspection extends AbstractBaseJava
           || (infoType != RedundantModifiersInfoType.VARIABLE && !(parentModifierListOwner instanceof PsiClass))) {
           continue;
         }
-        if ((supportedAnnotation == null || parentModifierListOwner.hasAnnotation(supportedAnnotation.getName())) &&
+        if ((supportedAnnotation == null || PsiAnnotationSearchUtil.isAnnotatedWith(parentModifierListOwner, supportedAnnotation.getName())) &&
           redundantModifiersInfo.getType().getSupportedClass().isAssignableFrom(psiModifierListOwner.getClass())) {
           PsiModifierList psiModifierList = psiModifierListOwner.getModifierList();
           if (psiModifierList == null ||
