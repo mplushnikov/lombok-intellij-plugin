@@ -9,6 +9,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.TypeConversionUtil;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.JavaVarTypeUtilBP;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -234,7 +235,7 @@ public class ValProcessor extends AbstractProcessor {
         result = RecursionManager.doPreventingRecursion(psiExpression, true, psiExpression::getType);
       }
     }
-    return result;
+    return result != null ? JavaVarTypeUtilBP.getUpwardProjection(result) : result;
   }
 
   private PsiType processParameterDeclaration(PsiElement parentDeclarationScope) {
