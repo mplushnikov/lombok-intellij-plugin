@@ -1,6 +1,7 @@
 package de.plushnikov.superbuilder;
 
 import lombok.experimental.SuperBuilder;
+import lombok.val;
 
 import java.util.List;
 

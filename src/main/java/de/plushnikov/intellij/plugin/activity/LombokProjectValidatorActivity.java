@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.activity;
 
 import com.intellij.compiler.CompilerConfiguration;
 import com.intellij.compiler.CompilerConfigurationImpl;
-import com.intellij.compiler.options.AnnotationProcessorsConfigurable;
 import com.intellij.notification.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -25,6 +24,7 @@ import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.model.java.compiler.AnnotationProcessingConfiguration;
 
 import javax.swing.event.HyperlinkEvent;
 import java.util.regex.Matcher;
@@ -100,7 +100,9 @@ public class LombokProjectValidatorActivity implements StartupActivity {
   }
 
   private void enableAnnotations(Project project) {
-    getCompilerConfiguration(project).getDefaultProcessorProfile().setEnabled(true);
+    CompilerConfigurationImpl compilerConfiguration = getCompilerConfiguration(project);
+    compilerConfiguration.getDefaultProcessorProfile().setEnabled(true);
+    compilerConfiguration.getModuleProcessorProfiles().forEach(pp -> pp.setEnabled(true));
 
     StatusBar statusBar = WindowManager.getInstance().getStatusBar(project);
     JBPopupFactory.getInstance()
@@ -120,7 +122,8 @@ public class LombokProjectValidatorActivity implements StartupActivity {
 
   private boolean hasAnnotationProcessorsEnabled(Project project) {
     CompilerConfigurationImpl compilerConfiguration = getCompilerConfiguration(project);
-    return compilerConfiguration.getDefaultProcessorProfile().isEnabled();
+    return compilerConfiguration.getDefaultProcessorProfile().isEnabled() &&
+      compilerConfiguration.getModuleProcessorProfiles().stream().anyMatch(AnnotationProcessingConfiguration::isEnabled);
   }
 
   private boolean hasLombokLibrary(Project project) {
