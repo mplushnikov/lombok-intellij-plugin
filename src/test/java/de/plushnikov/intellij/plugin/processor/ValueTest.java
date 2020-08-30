@@ -51,4 +51,8 @@ public class ValueTest extends AbstractLombokParsingTestCase {
   public void testValue$ValueWithPackagePrivate() {
     doTest(true);
   }
+
+  public void testValue$ValueWithNonDefaultConstructor() {
+    doTest(true);
+  }
 }
