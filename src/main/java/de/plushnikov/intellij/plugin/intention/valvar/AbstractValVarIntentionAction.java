@@ -9,9 +9,9 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.PsiDiamondTypeUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
-import com.siyeh.ig.psiutils.CommentTracker;
 import de.plushnikov.intellij.plugin.intention.AbstractLombokIntentionAction;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.CommentTracker;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractValVarIntentionAction extends AbstractLombokIntentionAction implements LowPriorityAction {
