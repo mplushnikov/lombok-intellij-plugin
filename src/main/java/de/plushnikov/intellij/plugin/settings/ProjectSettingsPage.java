@@ -102,7 +102,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_MISSING_LOMBOK_CHECK_ENABLED, myMissingLombokWarning.isSelected());
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_ANNOTATION_PROCESSING_CHECK_ENABLED, myAnnotationProcessingWarning.isSelected());
 
-    LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
+    LombokProcessorProvider lombokProcessorProvider = LombokProcessorProvider.getInstance(myProject);
     lombokProcessorProvider.initProcessors();
   }
 

@@ -1,6 +1,7 @@
 package de.plushnikov.intellij.plugin.lombokconfig;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -127,7 +128,7 @@ public class ConfigDiscovery {
 
   @VisibleForTesting
   protected FileBasedIndex getFileBasedIndex() {
-    return ServiceManager.getService(FileBasedIndex.class);
+    return ApplicationManager.getApplication().getComponent(FileBasedIndex.class);
   }
 
   @Nullable
