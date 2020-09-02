@@ -63,6 +63,7 @@
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomJsonSerializableProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomFormatBeanProcessor"/>
 
 
     <applicationService
@@ -257,6 +258,11 @@
               text="Default @JsonSerializable"
               description="Action to add toJson and formJson method with lombok @JsonSerializable annotation">
       </action>
+      <action id="defaultCustomForamtBean"
+              class="de.plushnikov.intellij.plugin.action.lombok.LombokCustomFormatBeanAction"
+              text="Default @Convertable"
+              description="Action to add toBean and formBean method with lombok @Convertable annotation">
+      </action>
       <separator/>
       <action id="defaultLombokLogger" class="de.plushnikov.intellij.plugin.action.lombok.LombokLoggerAction"
               text="@Log (and friends)" description="Action to replace logger with lombok @Log annotation">
@@ -323,6 +329,11 @@
               text="@JsonSerializable"
               description="Action to replace lombok @JsonSerializable annotation with vanilla java methods">
       </action>
+      <action id="delombokCustomFormatBean" class="de.plushnikov.intellij.plugin.action.delombok.DelombokCustomFormatBeanAction"
+              text="@Convertable"
+              description="Action to replace lombok @Convertable annotation with vanilla java methods">
+      </action>
+
 
       <separator/>
       <action id="delombokLogger" class="de.plushnikov.intellij.plugin.action.delombok.DelombokLoggerAction"

@@ -75,7 +75,8 @@ public class LombokProcessorManager {
       ServiceManager.getService(DelegateMethodProcessor.class),
 
       ServiceManager.getService(CleanupProcessor.class),
-      ServiceManager.getService(CustomJsonSerializableProcessor.class)
+      ServiceManager.getService(CustomJsonSerializableProcessor.class),
+      ServiceManager.getService(CustomFormatBeanProcessor.class)
 //      ,ServiceManager.getService(SynchronizedProcessor.class)
     );
   }
