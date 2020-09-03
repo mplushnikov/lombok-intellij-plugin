@@ -63,7 +63,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_FIELD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(fromBeanStringMethod(psiClass));
+    return Collections.singletonList(fromBeanMethod(psiClass));
   }
 
   @NotNull
@@ -72,10 +72,10 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_FIELD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(toBeanStringMethod(psiClass));
+    return Collections.singletonList(toBeanMethod(psiClass));
   }
 
-  private PsiMethod toBeanStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod toBeanMethod(@NotNull PsiClass psiClass) {
     final PsiManager psiManager = psiClass.getManager();
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, TO_BEAN_FIELD_NAME)
       .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
@@ -87,7 +87,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     return methodBuilder;
   }
 
-  private PsiMethod fromBeanStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod fromBeanMethod(@NotNull PsiClass psiClass) {
     final PsiManager psiManager = psiClass.getManager();
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, FROM_BEAN_FIELD_NAME)
       .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
