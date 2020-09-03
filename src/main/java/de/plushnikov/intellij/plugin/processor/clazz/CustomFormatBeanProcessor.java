@@ -78,7 +78,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
   private PsiMethod toBeanStringMethod(@NotNull PsiClass psiClass) {
     final PsiManager psiManager = psiClass.getManager();
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, TO_BEAN_FIELD_NAME)
-      .withMethodReturnType(PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
+      .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
       .withContainingClass(psiClass)
       .withParameter("clazz", PsiType.getJavaLangClass(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
       .withModifier(PsiModifier.PUBLIC);
@@ -92,10 +92,10 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     final LombokLightMethodBuilder  methodBuilder = new LombokLightMethodBuilder(psiManager, FROM_BEAN_FIELD_NAME)
       .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
       .withContainingClass(psiClass)
-      .withParameter("param", PsiType.getJavaLangClass(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
+      .withParameter("param", PsiType.getJavaLangObject(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
       .withModifier(PsiModifier.PUBLIC)
       .withModifier(PsiModifier.STATIC);
-    String blockText = String.format("return com.xyz.utils.JsonUtils.convert(param,%s)", psiClass.getQualifiedName()+".class");
+    String blockText = String.format("return com.xyz.utils.JsonUtils.convert(param,%s)", psiClass.getQualifiedName());
     methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(blockText, methodBuilder));
     return methodBuilder;
   }
