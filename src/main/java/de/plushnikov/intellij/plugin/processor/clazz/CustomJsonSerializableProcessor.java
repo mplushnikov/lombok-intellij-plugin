@@ -28,14 +28,14 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    final boolean result = validateAnnotationOnRigthType(psiClass, builder);
+    final boolean result = validateAnnotationOnRightType(psiClass, builder);
     if (result) {
       validateExistingMethods(psiClass, builder);
     }
     return result;
   }
 
-  private boolean validateAnnotationOnRigthType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {
       builder.addError("@JsonSerializable is only supported on a class or enum type");
       return false;
@@ -54,28 +54,28 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
 
   @Override
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.addAll(createToJsonStringMethod(psiClass, psiAnnotation));
-    target.addAll(createFromJsonStringMethod(psiClass, psiAnnotation));
+    target.addAll(createToJsonMethod(psiClass, psiAnnotation));
+    target.addAll(createFromJsonMethod(psiClass, psiAnnotation));
   }
 
-  private Collection<PsiMethod> createFromJsonStringMethod(PsiClass psiClass, PsiAnnotation psiAnnotation) {
+  private Collection<PsiMethod> createFromJsonMethod(PsiClass psiClass, PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
     if (PsiMethodUtil.hasMethodByName(classMethods, FROM_JSON_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(fromJsonStringMethod(psiClass));
+    return Collections.singletonList(fromJsonMethod(psiClass));
   }
 
   @NotNull
-  Collection<PsiMethod> createToJsonStringMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+  Collection<PsiMethod> createToJsonMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
     if (PsiMethodUtil.hasMethodByName(classMethods, TO_JSON_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(toJsonStringMethod(psiClass));
+    return Collections.singletonList(toJsonMethod(psiClass));
   }
 
-  private PsiMethod toJsonStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod toJsonMethod(@NotNull PsiClass psiClass) {
     final PsiManager psiManager = psiClass.getManager();
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, TO_JSON_METHOD_NAME)
       .withMethodReturnType(PsiType.getJavaLangString(psiManager, GlobalSearchScope.allScope(psiClass.getProject())))
@@ -85,7 +85,7 @@ public class CustomJsonSerializableProcessor extends AbstractClassProcessor {
     return methodBuilder;
   }
 
-  private PsiMethod fromJsonStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod fromJsonMethod(@NotNull PsiClass psiClass) {
     final PsiManager psiManager = psiClass.getManager();
     final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiManager, FROM_JSON_METHOD_NAME)
       .withMethodReturnType(PsiType.getTypeByName(Objects.requireNonNull(psiClass.getQualifiedName()), psiManager.getProject(), GlobalSearchScope.allScope(psiClass.getProject())))
