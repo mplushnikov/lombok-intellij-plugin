@@ -6,6 +6,9 @@ import lombok.Convertable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author lihongbin
@@ -32,15 +35,15 @@ public class LombokCustomFormatBeanHandler extends BaseLombokHandler {
     }
   }
 
-  private PsiMethod[] getFromBeanMethod(PsiClass psiClass) {
+  private List<PsiMethod> getFromBeanMethod(PsiClass psiClass) {
     PsiMethod[] methods = psiClass.findMethodsByName("fromBean", false);
-    return (PsiMethod[]) Arrays.stream(methods)
-      .filter(x -> x.getParameters().length == 1).toArray();
+    return Arrays.stream(methods)
+      .filter(x -> x.getParameters().length == 1).collect(toList());
   }
 
-  private PsiMethod[] getToBeanJsonMethod(PsiClass psiClass) {
+  private List<PsiMethod> getToBeanJsonMethod(PsiClass psiClass) {
     PsiMethod[] methods = psiClass.findMethodsByName("toBean", false);
-    return (PsiMethod[]) Arrays.stream(methods)
-      .filter(x -> x.getParameters().length == 1).toArray();
+    return Arrays.stream(methods)
+      .filter(x -> x.getParameters().length == 1).collect(toList());
   }
 }

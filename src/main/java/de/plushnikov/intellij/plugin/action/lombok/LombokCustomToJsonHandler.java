@@ -6,6 +6,10 @@ import lombok.JsonSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author lihongbin
@@ -32,15 +36,15 @@ public class LombokCustomToJsonHandler extends BaseLombokHandler {
     }
   }
 
-  private PsiMethod[] getFromJsonMethod(PsiClass psiClass) {
+  private List<PsiMethod> getFromJsonMethod(PsiClass psiClass) {
     PsiMethod[] methods = psiClass.findMethodsByName("fromJson", false);
-    return (PsiMethod[]) Arrays.stream(methods)
-      .filter(x -> x.getParameters().length == 0).toArray();
+    return Arrays.stream(methods)
+      .filter(x -> x.getParameters().length == 0).collect(Collectors.toList());
   }
 
-  private PsiMethod[] getToJsonJsonMethod(PsiClass psiClass) {
+  private List<PsiMethod> getToJsonJsonMethod(PsiClass psiClass) {
     PsiMethod[] methods = psiClass.findMethodsByName("toJson", false);
-    return (PsiMethod[]) Arrays.stream(methods)
-      .filter(x -> x.getParameters().length == 0).toArray();
+    return Arrays.stream(methods)
+      .filter(x -> x.getParameters().length == 0).collect(toList());
   }
 }
