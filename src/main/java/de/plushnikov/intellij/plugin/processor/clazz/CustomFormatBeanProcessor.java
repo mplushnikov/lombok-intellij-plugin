@@ -27,7 +27,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     TO_BEAN_FUNCTION = "public <T> T toBean(Class<T> clazz) {\n" +
       "        return JsonUtils.convert(this, clazz);\n" +
       "    }",
-    FROM_BEAN_METHOD = "  public static <T> statement fromBean(T param) {\n" +
+    FROM_BEAN_METHOD = "public static <T> statement fromBean(T param) {\n" +
       "        return  JsonUtils.convert(param, Statement.class);\n" +
       "    }";
 
@@ -103,7 +103,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiManager.getProject());
     PsiMethod methodFromText = elementFactory.createMethodFromText(FROM_BEAN_METHOD, null);
 
-    LombokLightMethodBuilder buildMethod = new LombokLightMethodBuilder(psiManager, TO_BEAN_FIELD_NAME)
+    LombokLightMethodBuilder buildMethod = new LombokLightMethodBuilder(psiManager, FROM_BEAN_FIELD_NAME)
       .withModifier(PsiModifier.PUBLIC, PsiModifier.STATIC)
       .withTypeParameter(methodFromText.getTypeParameters()[0])
       .withParameter((PsiParameterImpl) methodFromText.getParameters()[0])
