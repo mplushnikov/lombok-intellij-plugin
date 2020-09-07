@@ -122,6 +122,7 @@ copy {
     include 'lombok/JsonSerializable.java'
     include 'lombok/Convertable.java'
 
+
   }
   into("generated/src")
 }
