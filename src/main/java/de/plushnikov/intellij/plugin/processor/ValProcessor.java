@@ -4,6 +4,7 @@ import com.intellij.codeInsight.daemon.impl.analysis.JavaGenericsUtil;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.RecursionGuard;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.JavaVarTypeUtil;
@@ -203,27 +204,64 @@ public class ValProcessor extends AbstractProcessor {
     return psiType;
   }
 
+  private static final RecursionGuard<PsiExpression> guard = RecursionManager.createGuard("lombokValGuard");
+
   private PsiType processLocalVariableInitializer(final PsiExpression psiExpression) {
     PsiType result = null;
     if (null != psiExpression && !(psiExpression instanceof PsiArrayInitializerExpression)) {
-        result = RecursionManager.doPreventingRecursion(psiExpression, true, () -> {
-          PsiType type = psiExpression.getType();
-          // This is how Lombok resolves intersection types.
-          // This way auto-completion won't show unavailable methods.
-          if (type instanceof PsiIntersectionType) {
-            PsiType[] conjuncts = ((PsiIntersectionType) type).getConjuncts();
-            if (conjuncts.length > 0) {
-              return conjuncts[0];
-            }
+
+// WORKAROUND FROM https://github.com/mplushnikov/lombok-intellij-plugin/pull/804/files
+//      if (psiExpression instanceof PsiMethodCallExpression) {
+//        forceGenericLambdaArgTypePreComputation((PsiMethodCallExpression) psiExpression);
+//      }
+
+//    Peter Gromov Idee
+//      if (guard.currentStack().contains(psiExpression))
+//        return PsiType.NULL;
+
+      result = guard.doPreventingRecursion(psiExpression, true, () -> {
+        PsiType type = psiExpression.getType();
+        // This is how IntelliJ resolves intersection types.
+        // This way auto-completion won't show unavailable methods.
+        if (type instanceof PsiIntersectionType) {
+          PsiType[] conjuncts = ((PsiIntersectionType) type).getConjuncts();
+          if (conjuncts.length > 0) {
+            return conjuncts[0];
           }
-          if (type != null) {
-            return JavaVarTypeUtil.getUpwardProjection(type); //Get upward projection so you don't get types with missing diamonds.
-          }
-          return null;
-        });
-      }
+        }
+        if (type != null) {
+          //Get upward projection so you don't get types with missing diamonds.
+          return JavaVarTypeUtil.getUpwardProjection(type);
+        }
+        return null;
+      });
+    }
 
     return result;
+  }
+
+  /**
+   * When the val/var is assigned to the result of a method call
+   * parameterized in the return type of a lambda (e.g. Optional.map),
+   * we must first force pre-computation of the lambda return type, or
+   * it will always return e.g. Optional<Object> instead of the target
+   * type. See issue https://github.com/mplushnikov/lombok-intellij-plugin/issues/802
+   * <p>
+   * Current theory for why this works is that it forces either population
+   * or use of com.intellij.psi.ThreadLocalTypes.myMap with the appropriate
+   * type due to substitution in com.intellij.psi.LambdaUtil, which makes followup
+   * calls to getType succeed.
+   *
+   * @param methodCallExpr e.g. "stringOpt.map(str -> Integer.valueOf(str))"
+   */
+  private void forceGenericLambdaArgTypePreComputation(PsiMethodCallExpression methodCallExpr) {
+    PsiExpressionList methodArgs = methodCallExpr.getArgumentList(); // e.g. (str -> Integer.valueOf(str))
+    for (PsiExpression methodArg : methodArgs.getExpressions()) {
+      if (methodArg instanceof PsiLambdaExpression) {
+        PsiLambdaExpression lambdaExpr = (PsiLambdaExpression) methodArg; // e.g. str -> Integer.valueOf(str)
+        LambdaUtil.getFunctionalInterfaceType(lambdaExpr, true); // e.g. Function1<String, Integer>
+      }
+    }
   }
 
   private PsiType processParameterDeclaration(PsiElement parentDeclarationScope) {
