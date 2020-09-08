@@ -4,6 +4,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiParameterImpl;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
 import lombok.Convertable;
@@ -22,8 +23,9 @@ import java.util.List;
  */
 public class CustomFormatBeanProcessor extends AbstractClassProcessor {
 
-  private static final String TO_BEAN_FIELD_NAME = "toBean",
-    FROM_BEAN_FIELD_NAME = "fromBean",
+  private static final String TO_BEAN_METHOD_NAME = "toBean",
+    FROM_BEAN_METHOD_NAME = "fromBean",
+    BEAN_ANNOTATION_NAME = "bean",
     TO_BEAN_FUNCTION = "public <T> T toBean(Class<T> clazz) {\n" +
       "        return JsonUtils.convert(this, clazz);\n" +
       "    }",
@@ -37,14 +39,16 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    final boolean result = validateAnnotationOnRigthType(psiClass, builder);
+    final boolean result = validateAnnotationOnRightType(psiClass, builder);
     if (result) {
       validateExistingMethods(psiClass, builder);
     }
+    boolean hasBeanClass = PsiAnnotationUtil.hasDeclaredProperty(psiAnnotation, BEAN_ANNOTATION_NAME);
+    builder.addWarning(String.format("bean class is provided: %b", hasBeanClass));
     return result;
   }
 
-  private boolean validateAnnotationOnRigthType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {
       builder.addError("@Convertable is only supported on a class or enum type");
       return false;
@@ -52,33 +56,31 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     return true;
   }
 
-  private boolean validateExistingMethods(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  private void validateExistingMethods(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_FIELD_NAME, FROM_BEAN_FIELD_NAME)) {
-      builder.addWarning("Not generated '%s'() or '%s'(): A method with same name already exists", TO_BEAN_FIELD_NAME, FROM_BEAN_FIELD_NAME);
-      return false;
+    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME, FROM_BEAN_METHOD_NAME)) {
+      builder.addWarning("Not generated '%s'() or '%s'(): A method with same name already exists", TO_BEAN_METHOD_NAME, FROM_BEAN_METHOD_NAME);
     }
-    return true;
   }
 
   @Override
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.addAll(createToBeanStringMethod(psiClass, psiAnnotation));
-    target.addAll(createFromBeanStringMethod(psiClass, psiAnnotation));
+    target.addAll(createToBeanMethod(psiClass, psiAnnotation));
+    target.addAll(createFromBeanMethod(psiClass, psiAnnotation));
   }
 
-  private Collection<PsiMethod> createFromBeanStringMethod(PsiClass psiClass, PsiAnnotation psiAnnotation) {
+  private Collection<PsiMethod> createFromBeanMethod(PsiClass psiClass, PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_FIELD_NAME)) {
+    if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_METHOD_NAME)) {
       return new ArrayList<>();
     }
     return Collections.singletonList(fromBeanStringMethod(psiClass));
   }
 
   @NotNull
-  Collection<PsiMethod> createToBeanStringMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+  Collection<PsiMethod> createToBeanMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_FIELD_NAME)) {
+    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME)) {
       return new ArrayList<>();
     }
     return Collections.singletonList(toBeanStringMethod(psiClass));
@@ -89,7 +91,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiManager.getProject());
     PsiMethod methodFromText = elementFactory.createMethodFromText(TO_BEAN_FUNCTION, null);
 
-    return new LombokLightMethodBuilder(psiManager, TO_BEAN_FIELD_NAME)
+    return new LombokLightMethodBuilder(psiManager, TO_BEAN_METHOD_NAME)
       .withModifier(PsiModifier.PUBLIC)
       .withTypeParameter(methodFromText.getTypeParameters()[0])
       .withParameter((PsiParameterImpl) methodFromText.getParameters()[0])
@@ -103,7 +105,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiManager.getProject());
     PsiMethod methodFromText = elementFactory.createMethodFromText(FROM_BEAN_METHOD, null);
 
-    LombokLightMethodBuilder buildMethod = new LombokLightMethodBuilder(psiManager, FROM_BEAN_FIELD_NAME)
+    LombokLightMethodBuilder buildMethod = new LombokLightMethodBuilder(psiManager, FROM_BEAN_METHOD_NAME)
       .withModifier(PsiModifier.PUBLIC, PsiModifier.STATIC)
       .withTypeParameter(methodFromText.getTypeParameters()[0])
       .withParameter((PsiParameterImpl) methodFromText.getParameters()[0])
