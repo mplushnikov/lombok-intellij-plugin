@@ -7,6 +7,7 @@ import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
+import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import lombok.Convertable;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +27,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
   private static final String TO_BEAN_METHOD_NAME = "toBean",
     FROM_BEAN_METHOD_NAME = "fromBean",
     BEAN_ANNOTATION_NAME = "bean",
+    PARAM_NAME = "param",
     TO_BEAN_FUNCTION = "public <T> T toBean(Class<T> clazz) {\n" +
       "        return JsonUtils.convert(this, clazz);\n" +
       "    }",
@@ -43,8 +45,6 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     if (result) {
       validateExistingMethods(psiClass, builder);
     }
-    boolean hasBeanClass = PsiAnnotationUtil.hasDeclaredProperty(psiAnnotation, BEAN_ANNOTATION_NAME);
-    builder.addWarning(String.format("bean class is provided: %b", hasBeanClass));
     return result;
   }
 
@@ -74,7 +74,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(fromBeanStringMethod(psiClass));
+    return Collections.singletonList(fromBeanMethod(psiClass, psiAnnotation));
   }
 
   @NotNull
@@ -83,10 +83,39 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
     if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME)) {
       return new ArrayList<>();
     }
-    return Collections.singletonList(toBeanStringMethod(psiClass));
+    return Collections.singletonList(toBeanMethod(psiClass, psiAnnotation));
   }
 
-  private PsiMethod toBeanStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod toBeanMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    boolean hasBeanClass = PsiAnnotationUtil.hasDeclaredProperty(psiAnnotation, BEAN_ANNOTATION_NAME);
+    if (hasBeanClass) {
+      return toBeanMethodWithBeanClass(psiClass, psiAnnotation);
+    } else {
+      return toBeanMethodWithGeneric(psiClass);
+    }
+  }
+
+  private PsiMethod toBeanMethodWithBeanClass(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    PsiType returnType = this.getAnnotatedBeanType(psiAnnotation);
+    String beanClassName = PsiTypeUtil.getQualifiedName(returnType);
+
+    LombokLightMethodBuilder builder = new LombokLightMethodBuilder(psiClass.getManager(), TO_BEAN_METHOD_NAME)
+      .withModifier(PsiModifier.PUBLIC)
+      .withContainingClass(psiClass)
+      .withMethodReturnType(returnType);
+
+    PsiCodeBlock block = PsiMethodUtil.createCodeBlockFromText(String.format("return com.xyz.utils.JsonUtils.convert(this, %s.class)", beanClassName), builder);
+    builder.withBody(block);
+    return builder;
+  }
+
+  private PsiType getAnnotatedBeanType(@NotNull PsiAnnotation psiAnnotation) {
+    PsiAnnotationMemberValue attributeValue = psiAnnotation.findDeclaredAttributeValue(BEAN_ANNOTATION_NAME);
+    final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(psiAnnotation.getProject());
+    return (PsiType) javaPsiFacade.getConstantEvaluationHelper().computeConstantExpression(attributeValue);
+  }
+
+  private PsiMethod toBeanMethodWithGeneric(@NotNull PsiClass psiClass) {
     PsiManager psiManager = psiClass.getManager();
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiManager.getProject());
     PsiMethod methodFromText = elementFactory.createMethodFromText(TO_BEAN_FUNCTION, null);
@@ -100,22 +129,47 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
       .withBody(methodFromText.getBody());
   }
 
-  private PsiMethod fromBeanStringMethod(@NotNull PsiClass psiClass) {
+  private PsiMethod fromBeanMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    boolean hasBeanClass = PsiAnnotationUtil.hasDeclaredProperty(psiAnnotation, BEAN_ANNOTATION_NAME);
+    if (hasBeanClass) {
+      return fromBeanMethodWithBeanClass(psiClass, psiAnnotation);
+    } else {
+      return fromBeanMethodWithGeneric(psiClass);
+    }
+  }
+
+  private PsiMethod fromBeanMethodWithBeanClass(PsiClass psiClass, PsiAnnotation psiAnnotation) {
     PsiManager psiManager = psiClass.getManager();
+    PsiType paramType = this.getAnnotatedBeanType(psiAnnotation);
+    PsiClassType returnType = PsiType.getTypeByName(psiClass.getQualifiedName(), psiManager.getProject(), psiClass.getResolveScope());
+    String returnClassName = PsiTypeUtil.getQualifiedName(returnType);
+
+    LombokLightMethodBuilder builder = new LombokLightMethodBuilder(psiManager, FROM_BEAN_METHOD_NAME)
+      .withModifier(PsiModifier.PUBLIC, PsiModifier.STATIC)
+      .withParameter(PARAM_NAME, paramType)
+      .withContainingClass(psiClass)
+      .withMethodReturnType(returnType);
+
+    PsiCodeBlock block = PsiMethodUtil.createCodeBlockFromText(String.format("return com.xyz.utils.JsonUtils.convert(%s, %s.class)", PARAM_NAME, returnClassName), builder);
+    builder.withBody(block);
+    return builder;
+  }
+
+  private PsiMethod fromBeanMethodWithGeneric(@NotNull PsiClass psiClass) {
+    PsiManager psiManager = psiClass.getManager();
+    PsiClassType returnType = PsiType.getTypeByName(psiClass.getQualifiedName(), psiManager.getProject(), psiClass.getResolveScope());
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(psiManager.getProject());
     PsiMethod methodFromText = elementFactory.createMethodFromText(FROM_BEAN_METHOD, null);
 
-    LombokLightMethodBuilder buildMethod = new LombokLightMethodBuilder(psiManager, FROM_BEAN_METHOD_NAME)
+    LombokLightMethodBuilder builder = new LombokLightMethodBuilder(psiManager, FROM_BEAN_METHOD_NAME)
       .withModifier(PsiModifier.PUBLIC, PsiModifier.STATIC)
       .withTypeParameter(methodFromText.getTypeParameters()[0])
       .withParameter((PsiParameterImpl) methodFromText.getParameters()[0])
       .withContainingClass(psiClass)
-      .withMethodReturnType(PsiType.getTypeByName(psiClass.getQualifiedName(), psiManager.getProject(), psiClass.getResolveScope()));
-    buildMethod.withBody(PsiMethodUtil.createCodeBlockFromText(
-      String.format("return com.xyz.utils.JsonUtils.convert(param,%s)", psiClass.getQualifiedName() + ".class")
-      , buildMethod)
-    );
-    return buildMethod;
-  }
+      .withMethodReturnType(returnType);
 
+    PsiCodeBlock block = PsiMethodUtil.createCodeBlockFromText(String.format("return com.xyz.utils.JsonUtils.convert(param,%s.class)", psiClass.getQualifiedName()), builder);
+    builder.withBody(block);
+    return builder;
+  }
 }
