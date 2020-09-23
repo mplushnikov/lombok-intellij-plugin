@@ -60,7 +60,7 @@ intellij {
 
 patchPluginXml {
   version artifactVersion
-
+  untilBuild null //Dumps the until-build field from getting populated.
   pluginDescription(file(descriptionFile).text)
   changeNotes(file(changesFile).text)
 }
