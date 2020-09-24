@@ -183,14 +183,18 @@ public class ValProcessor extends AbstractProcessor {
     }
   }
 
+  public boolean canInferType(@NotNull PsiTypeElement typeElement) {
+    final PsiElement parent = typeElement.getParent();
+    return (parent instanceof PsiLocalVariable && isValOrVar((PsiLocalVariable) parent)) ||
+      (parent instanceof PsiParameter && isValOrVarForEach((PsiParameter) parent));
+  }
+
   @Nullable
   public PsiType inferType(PsiTypeElement typeElement) {
     PsiType psiType = null;
 
-    final PsiElement parent = typeElement.getParent();
-    if ((parent instanceof PsiLocalVariable && isValOrVar((PsiLocalVariable) parent)) ||
-      (parent instanceof PsiParameter && isValOrVarForEach((PsiParameter) parent))) {
-
+    if (canInferType(typeElement)) {
+      final PsiElement parent = typeElement.getParent();
       if (parent instanceof PsiLocalVariable) {
         psiType = processLocalVariableInitializer(((PsiLocalVariable) parent).getInitializer());
       } else {
