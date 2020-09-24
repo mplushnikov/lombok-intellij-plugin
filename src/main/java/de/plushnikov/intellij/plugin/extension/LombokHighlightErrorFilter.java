@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.extension;
 
-import com.intellij.codeInsight.daemon.JavaErrorBundle;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
 import com.intellij.codeInsight.intention.AddAnnotationFix;
@@ -16,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
-
 
 public class LombokHighlightErrorFilter implements HighlightInfoFilter {
   private static final Pattern LOMBOK_ANY_ANNOTATION_REQUIRED = Pattern.compile("Incompatible types\\. Found: '__*', required: 'lombok.*AnyAnnotation\\[\\]'");
@@ -144,7 +142,8 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
     CONSTANT_EXPRESSION_REQUIRED(HighlightSeverity.ERROR, CodeInsightColors.ERRORS_ATTRIBUTES) {
       @Override
       public boolean descriptionCheck(@Nullable String description) {
-        return JavaErrorBundle.message("constant.expression.required").equals(description);
+//        message("constant.expression.required")
+        return "Constant expression required".equals(description);
       }
 
       @Override
