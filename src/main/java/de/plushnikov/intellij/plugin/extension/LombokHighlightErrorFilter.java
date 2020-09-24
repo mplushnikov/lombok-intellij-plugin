@@ -8,17 +8,13 @@ import com.intellij.openapi.editor.colors.CodeInsightColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import de.plushnikov.intellij.plugin.handler.BuilderHandler;
-import de.plushnikov.intellij.plugin.handler.EqualsAndHashCodeCallSuperHandler;
-import de.plushnikov.intellij.plugin.handler.LazyGetterHandler;
-import de.plushnikov.intellij.plugin.handler.OnXAnnotationHandler;
+import de.plushnikov.intellij.plugin.handler.*;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
-
 
 public class LombokHighlightErrorFilter implements HighlightInfoFilter {
   private static final Pattern LOMBOK_ANY_ANNOTATION_REQUIRED = Pattern.compile("Incompatible types\\. Found: '__*', required: 'lombok.*AnyAnnotation\\[\\]'");
@@ -140,6 +136,19 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
       @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
         return !LazyGetterHandler.isLazyGetterHandled(highlightedElement);
+      }
+    },
+
+    CONSTANT_EXPRESSION_REQUIRED(HighlightSeverity.ERROR, CodeInsightColors.ERRORS_ATTRIBUTES) {
+      @Override
+      public boolean descriptionCheck(@Nullable String description) {
+//        message("constant.expression.required")
+        return "Constant expression required".equals(description);
+      }
+
+      @Override
+      public boolean accept(@NotNull PsiElement highlightedElement) {
+        return !FieldNameConstantsHandler.isFiledNameConstants(highlightedElement);
       }
     },
 
