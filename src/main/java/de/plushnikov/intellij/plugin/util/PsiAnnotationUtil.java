@@ -67,6 +67,11 @@ public final class PsiAnnotationUtil {
     return result == null ? defaultValue : result;
   }
 
+  public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, @NotNull String defaultValue) {
+    String result = getStringAnnotationValue(psiAnnotation, parameter);
+    return result != null ? result : defaultValue;
+  }
+
   public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
     PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
     return null != attrValue ? resolveElementValue(attrValue, String.class) : null;
