@@ -92,6 +92,11 @@ public final class PsiAnnotationUtil {
   }
 
   @Nullable
+  private static PsiAnnotationMemberValue getAnnotationAttribute(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+    return psiAnnotation.hasAttribute(parameter) ? psiAnnotation.findAttributeValue(parameter) : null;
+  }
+
+  @Nullable
   private static <T> T resolveElementValue(@NotNull PsiElement psiElement, @NotNull Class<T> asClass) {
     T value = null;
     if (psiElement instanceof PsiReferenceExpression) {
