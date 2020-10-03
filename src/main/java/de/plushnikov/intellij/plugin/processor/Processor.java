@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +28,11 @@ public interface Processor {
 
   @NotNull
   default List<? super PsiElement> process(@NotNull PsiClass psiClass) {
+    return process(psiClass, null);
+  }
+
+  @NotNull
+  default List<? super PsiElement> process(@NotNull PsiClass psiClass, @Nullable String nameHint) {
     return Collections.emptyList();
   }
 
