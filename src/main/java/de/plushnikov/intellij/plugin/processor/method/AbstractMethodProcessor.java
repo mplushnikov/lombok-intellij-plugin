@@ -45,7 +45,7 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
     for (PsiMethod psiMethod : PsiClassUtil.collectClassMethodsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMethod, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
-        if (possibleToGenerateElementNamed(nameHint) &&
+        if (possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation, psiMethod) &&
           validate(psiAnnotation, psiMethod, ProblemEmptyBuilder.getInstance())) {
           processIntern(psiMethod, psiAnnotation, result);
         }
@@ -54,13 +54,12 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
     return result;
   }
 
-  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint) {
+  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint, @NotNull PsiClass psiClass,
+                                                   @NotNull PsiAnnotation psiAnnotation, @NotNull PsiMethod psiMethod) {
     if (null == nameHint) {
       return true;
     }
-
     //TODO: implement handling
-
     return true;
   }
 

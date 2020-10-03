@@ -62,14 +62,19 @@ public final class PsiAnnotationUtil {
   }
 
   public static boolean getBooleanAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, boolean defaultValue) {
-    PsiAnnotationMemberValue attrValue = psiAnnotation.findAttributeValue(parameter);
+    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
     final Boolean result = null != attrValue ? resolveElementValue(attrValue, Boolean.class) : null;
     return result == null ? defaultValue : result;
   }
 
   public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    PsiAnnotationMemberValue attrValue = psiAnnotation.findAttributeValue(parameter);
+    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
     return null != attrValue ? resolveElementValue(attrValue, String.class) : null;
+  }
+
+  @Nullable
+  private static PsiAnnotationMemberValue getAnnotationAttribute(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+    return psiAnnotation.hasAttribute(parameter) ? psiAnnotation.findAttributeValue(parameter) : null;
   }
 
   @Nullable
