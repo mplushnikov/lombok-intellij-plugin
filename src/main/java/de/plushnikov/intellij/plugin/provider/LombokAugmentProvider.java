@@ -66,6 +66,13 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   @NotNull
   @Override
   public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element,
+                                                        @NotNull final Class<Psi> type) {
+    return getAugments(element, type, null);
+  }
+
+  @NotNull
+//  @Override available from 2020.2
+  public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element,
                                                         @NotNull final Class<Psi> type,
                                                         @Nullable String nameHint) {
     final List<Psi> emptyResult = Collections.emptyList();
