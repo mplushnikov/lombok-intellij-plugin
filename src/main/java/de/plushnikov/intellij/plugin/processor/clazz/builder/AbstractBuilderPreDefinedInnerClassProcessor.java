@@ -69,16 +69,6 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
     return result;
   }
 
-  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint) {
-    if (null == nameHint) {
-      return true;
-    }
-
-    //TODO: implement handling
-
-    return true;
-  }
-
   protected abstract BuilderHandler getBuilderHandler();
 
   protected abstract Collection<? extends PsiElement> generatePsiElements(@NotNull PsiClass psiParentClass, @Nullable PsiMethod psiParentMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiBuilderClass);

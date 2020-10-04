@@ -68,6 +68,12 @@ public final class LombokProcessorUtil {
     return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> AccessLevel.NONE);
   }
 
+//  @Nullable
+//  public static String getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+//    final String annotationValue = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, parameter);
+//    return annotationValue == null ? null : VALUE_ACCESS_LEVEL_MAP.get(annotationValue);
+//  }
+
   public static boolean isLevelVisible(@NotNull PsiAnnotation psiAnnotation) {
     return null != getLevelVisibility(psiAnnotation);
   }

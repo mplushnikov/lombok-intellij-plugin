@@ -142,8 +142,9 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
   private void compareType(PsiType beforeType, PsiType afterType, PomNamedTarget whereTarget) {
     if (null != beforeType && null != afterType) {
-      final String afterText = stripJavaLang(afterType.getCanonicalText());
-      final String beforeText = stripJavaLang(beforeType.getCanonicalText());
+      //TODO fix me ?
+      final String afterText = stripJavaLang(afterType.toString());
+      final String beforeText = stripJavaLang(beforeType.toString());
       assertEquals(String.format("Types are not equal for element: %s", whereTarget.getName()), afterText, beforeText);
     }
   }
@@ -162,7 +163,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
     for (String modifier : PsiModifier.MODIFIERS) {
       boolean haveSameModifiers = afterModifierList.hasModifierProperty(modifier) == beforeModifierList.hasModifierProperty(modifier);
-      assertTrue("'" + modifier + "' Modifier is not equal for: " + elementName, haveSameModifiers);
+      assertTrue(modifier + " Modifier is not equal for " + elementName, haveSameModifiers);
     }
 
     if (shouldCompareAnnotations()) {
