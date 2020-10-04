@@ -13,8 +13,10 @@ import de.plushnikov.intellij.plugin.processor.handler.SuperBuilderHandler;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -31,6 +33,22 @@ public class SuperBuilderClassProcessor extends AbstractClassProcessor {
 
   protected SuperBuilderHandler getBuilderHandler() {
     return ApplicationManager.getApplication().getService(SuperBuilderHandler.class);
+  }
+
+  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint, @NotNull PsiClass psiClass,
+                                                   @NotNull PsiAnnotation psiAnnotation) {
+    if (null == nameHint) {
+      return true;
+    }
+    final SuperBuilderHandler builderHandler = getBuilderHandler();
+
+    final String builderClassName = builderHandler.getBuilderClassName(psiClass);
+    boolean foundPossibleMath = Objects.equals(nameHint, builderClassName);
+    if (!foundPossibleMath && !psiClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
+      final String builderImplClassName = builderHandler.getBuilderImplClassName(psiClass);
+      return Objects.equals(nameHint, builderImplClassName);
+    }
+    return foundPossibleMath;
   }
 
   @Override
