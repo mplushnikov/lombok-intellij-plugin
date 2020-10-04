@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.util;
 
+import com.intellij.codeInsight.AnnotationUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -62,24 +63,32 @@ public final class PsiAnnotationUtil {
   }
 
   public static boolean getBooleanAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, boolean defaultValue) {
-    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
-    final Boolean result = null != attrValue ? resolveElementValue(attrValue, Boolean.class) : null;
+    final Boolean result = psiAnnotation.hasAttribute(parameter) ? AnnotationUtil.getBooleanAttributeValue(psiAnnotation, parameter) : null;
     return result == null ? defaultValue : result;
   }
 
   public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, @NotNull String defaultValue) {
-    String result = getStringAnnotationValue(psiAnnotation, parameter);
+    final String result = AnnotationUtil.getDeclaredStringAttributeValue(psiAnnotation, parameter);
+//    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
+//    return null != attrValue ? AnnotationUtil.getStringAttributeValue(attrValue) : null;
     return result != null ? result : defaultValue;
   }
 
-  public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
-    return null != attrValue ? resolveElementValue(attrValue, String.class) : null;
+  public static String getEnumAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String attributeName, @NotNull Enum defaultValue) {
+    PsiAnnotationMemberValue attrValue = psiAnnotation.findDeclaredAttributeValue(attributeName);
+    String result = attrValue != null ? resolveElementValue(attrValue, String.class) : null;
+    return result != null ? result : defaultValue.name();
+    // doesn't work for definition using static import for Enum.value for example
+//    PsiConstantEvaluationHelper evaluationHelper = JavaPsiFacade.getInstance(psiAnnotation.getProject()).getConstantEvaluationHelper();
+//    Object result = evaluationHelper.computeConstantExpression(attrValue);
+//    return result instanceof Enum ? ((Enum<?>) result).name() : defaultValue.name();
   }
 
-  @Nullable
-  private static PsiAnnotationMemberValue getAnnotationAttribute(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    return psiAnnotation.hasAttribute(parameter) ? psiAnnotation.findAttributeValue(parameter) : null;
+  public static int getIntAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String attributeName, int defaultValue) {
+    PsiAnnotationMemberValue attrValue = psiAnnotation.findDeclaredAttributeValue(attributeName);
+    PsiConstantEvaluationHelper evaluationHelper = JavaPsiFacade.getInstance(psiAnnotation.getProject()).getConstantEvaluationHelper();
+    Object result = evaluationHelper.computeConstantExpression(attrValue);
+    return result instanceof Number ? ((Number) result).intValue() : defaultValue;
   }
 
   @Nullable
@@ -128,11 +137,8 @@ public final class PsiAnnotationUtil {
   @Nullable
   public static Boolean getDeclaredBooleanAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
     PsiAnnotationMemberValue attributeValue = psiAnnotation.findDeclaredAttributeValue(parameter);
-    Object constValue = null;
-    if (null != attributeValue) {
-      final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(psiAnnotation.getProject());
-      constValue = javaPsiFacade.getConstantEvaluationHelper().computeConstantExpression(attributeValue);
-    }
+    final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(psiAnnotation.getProject());
+    Object constValue = javaPsiFacade.getConstantEvaluationHelper().computeConstantExpression(attributeValue);
     return constValue instanceof Boolean ? (Boolean) constValue : null;
   }
 

@@ -50,7 +50,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation
       && supportAnnotationVariant(psiAnnotation)
-      && possibleToGenerateElementNamed(nameHint)
+      && possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)
       && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
 
       result = new ArrayList<>();
@@ -59,7 +59,8 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     return result;
   }
 
-  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint) {
+  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint, @NotNull PsiClass psiClass,
+                                                   @NotNull PsiAnnotation psiAnnotation) {
     if (null == nameHint) {
       return true;
     }

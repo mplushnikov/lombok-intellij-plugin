@@ -54,13 +54,13 @@ public final class LombokProcessorUtil {
   @Nullable
   @PsiModifier.ModifierConstant
   private static String getLevelVisibility(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    return convertAccessLevelToJavaModifier(PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, parameter));
+    return convertAccessLevelToJavaModifier(PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, AccessLevel.PUBLIC));
   }
 
-  @Nullable
-  public static String getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    final String annotationValue = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, parameter);
-    return annotationValue == null ? null : VALUE_ACCESS_LEVEL_MAP.get(annotationValue);
+  @NotNull
+  public static AccessLevel getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+    final String annotationValue = PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, AccessLevel.NONE);
+    return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> AccessLevel.NONE);
   }
 
   public static boolean isLevelVisible(@NotNull PsiAnnotation psiAnnotation) {

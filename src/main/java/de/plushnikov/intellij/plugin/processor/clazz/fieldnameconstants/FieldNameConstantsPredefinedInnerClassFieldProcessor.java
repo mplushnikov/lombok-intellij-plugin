@@ -39,7 +39,7 @@ public class FieldNameConstantsPredefinedInnerClassFieldProcessor extends Abstra
         if (super.validate(psiAnnotation, parentClass, problemBuilder)) {
           final String typeName = FieldNameConstantsHandler.getTypeName(parentClass, psiAnnotation);
           if (typeName.equals(psiClass.getName())
-            && possibleToGenerateElementNamed(nameHint)
+            && possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)
             && validate(psiAnnotation, parentClass, problemBuilder)) {
 
             List<? super PsiElement> result = new ArrayList<>();

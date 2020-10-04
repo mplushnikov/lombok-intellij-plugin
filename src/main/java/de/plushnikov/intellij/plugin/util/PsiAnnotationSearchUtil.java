@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.util;
 
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.SourceJavaCodeReference;
@@ -11,17 +10,37 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-public final class PsiAnnotationSearchUtil {
-  private static final Key<String> LOMBOK_ANNOTATION_FQN_KEY = Key.create("LOMBOK_ANNOTATION_FQN");
+public class PsiAnnotationSearchUtil {
 
   @Nullable
   public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationFQN) {
+//    return AnnotationUtil.findAnnotation(psiModifierListOwner, annotationFQN);
     return findAnnotationQuick(psiModifierListOwner.getModifierList(), annotationFQN);
   }
 
   @Nullable
   public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String... annotationFQNs) {
+//    return AnnotationUtil.findAnnotation(psiModifierListOwner, annotationFQNs);
     return findAnnotationQuick(psiModifierListOwner.getModifierList(), annotationFQNs);
+  }
+
+  @Nullable
+  public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
+//    return AnnotationUtil.findAnnotation(psiModifierListOwner, annotationType.getName());
+    return findAnnotationQuick(psiModifierListOwner.getModifierList(), annotationType.getName());
+  }
+
+  @Nullable
+  public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation>... annotationTypes) {
+    if (annotationTypes.length == 1) {
+      return findAnnotation(psiModifierListOwner, annotationTypes[0]);
+    }
+
+    final String[] qualifiedNames = new String[annotationTypes.length];
+    for (int i = 0; i < annotationTypes.length; i++) {
+      qualifiedNames[i] = annotationTypes[i].getName();
+    }
+    return findAnnotation(psiModifierListOwner, qualifiedNames);
   }
 
   @Nullable
@@ -50,8 +69,7 @@ public final class PsiAnnotationSearchUtil {
             }
           }
 
-          final String annotationQualifiedName = getAndCacheFQN(annotation, referenceName);
-          if (null != annotationQualifiedName && qualifiedName.endsWith(annotationQualifiedName)) {
+          if (qualifiedName.endsWith(annotation.getQualifiedName())) {
             return annotation;
           }
         }
@@ -91,8 +109,7 @@ public final class PsiAnnotationSearchUtil {
             }
           }
 
-          final String annotationQualifiedName = getAndCacheFQN(annotation, referenceName);
-          if (ArrayUtil.find(qualifiedNames, annotationQualifiedName) > -1) {
+          if (ArrayUtil.find(qualifiedNames, annotation.getQualifiedName()) > -1) {
             return annotation;
           }
         }
@@ -102,21 +119,14 @@ public final class PsiAnnotationSearchUtil {
     return null;
   }
 
-  @Nullable
-  private static String getAndCacheFQN(@NotNull PsiAnnotation annotation, @Nullable String referenceName) {
-    String annotationQualifiedName = annotation.getCopyableUserData(LOMBOK_ANNOTATION_FQN_KEY);
-    // if not cached or cache is not up to date (because existing annotation was renamed for example)
-    if (null == annotationQualifiedName || (null != referenceName && !annotationQualifiedName.endsWith(".".concat(referenceName)))) {
-      annotationQualifiedName = annotation.getQualifiedName();
-      if (null != annotationQualifiedName && annotationQualifiedName.indexOf('.') > -1) {
-        annotation.putCopyableUserData(LOMBOK_ANNOTATION_FQN_KEY, annotationQualifiedName);
-      }
-    }
-    return annotationQualifiedName;
+  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
+//    return psiModifierListOwner.hasAnnotation(annotationType.getName());
+    return null != findAnnotation(psiModifierListOwner, annotationType.getName());
   }
 
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationTypeName) {
-    return null != findAnnotation(psiModifierListOwner, annotationTypeName);
+  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationFQN) {
+//    return psiModifierListOwner.hasAnnotation(annotationFQN);
+    return null != findAnnotation(psiModifierListOwner, annotationFQN);
   }
 
   public static boolean isNotAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, String annotationTypeName) {
@@ -124,6 +134,7 @@ public final class PsiAnnotationSearchUtil {
   }
 
   public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final String... annotationTypes) {
+    //    return Arrays.stream(annotationTypes).map(Class::getName).anyMatch(psiModifierListOwner::hasAnnotation);
     return null != findAnnotation(psiModifierListOwner, annotationTypes);
   }
 

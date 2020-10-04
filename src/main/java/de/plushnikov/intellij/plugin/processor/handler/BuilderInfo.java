@@ -127,8 +127,8 @@ public class BuilderInfo {
   public BuilderInfo withObtainVia() {
     obtainViaAnnotation = PsiAnnotationSearchUtil.findAnnotation(variableInClass, BUILDER_OBTAIN_VIA_ANNOTATION);
     if (null != obtainViaAnnotation) {
-      viaFieldName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_FIELD);
-      viaMethodName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_METHOD);
+      viaFieldName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_FIELD, "");
+      viaMethodName = PsiAnnotationUtil.getStringAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_METHOD, "");
       viaStaticCall = PsiAnnotationUtil.getBooleanAnnotationValue(obtainViaAnnotation, BUILDER_OBTAIN_VIA_STATIC, false);
     }
     return this;

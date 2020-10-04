@@ -6,6 +6,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.LombokClassNames;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
@@ -139,7 +140,7 @@ public class BuilderHandler {
 
     builderInfos.stream().filter(BuilderInfo::hasSingularAnnotation).forEach(builderInfo -> {
       final PsiType psiVariableType = builderInfo.getVariable().getType();
-      final String qualifiedName = PsiTypeUtil.getQualifiedName(psiVariableType);
+      final String qualifiedName = ((PsiClassReferenceType) psiVariableType).getClassName();//PsiTypeUtil.getQualifiedName(psiVariableType);
       if (SingularHandlerFactory.isInvalidSingularType(qualifiedName)) {
         problemBuilder.addError(LombokBundle.message("inspection.message.lombok.does.not.know"), qualifiedName != null ? qualifiedName : psiVariableType.getCanonicalText());
         result.set(false);
@@ -218,19 +219,19 @@ public class BuilderHandler {
 
   @NotNull
   public String getBuildMethodName(@NotNull PsiAnnotation psiAnnotation) {
-    final String buildMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILD_METHOD_NAME);
+    final String buildMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILD_METHOD_NAME, BUILD_METHOD_NAME);
     return StringUtil.isEmptyOrSpaces(buildMethodName) ? BUILD_METHOD_NAME : buildMethodName;
   }
 
   @NotNull
   String getBuilderMethodName(@NotNull PsiAnnotation psiAnnotation) {
-    final String builderMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILDER_METHOD_NAME);
+    final String builderMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILDER_METHOD_NAME, BUILDER_METHOD_NAME);
     return null == builderMethodName ? BUILDER_METHOD_NAME : builderMethodName;
   }
 
   @NotNull
   private String getSetterPrefix(@NotNull PsiAnnotation psiAnnotation) {
-    final String setterPrefix = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_SETTER_PREFIX);
+    final String setterPrefix = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_SETTER_PREFIX, "");
     return null == setterPrefix ? "" : setterPrefix;
   }
 
@@ -255,7 +256,7 @@ public class BuilderHandler {
 
   @NotNull
   public String getBuilderClassName(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @Nullable PsiMethod psiMethod) {
-    final String builderClassName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILDER_CLASS_NAME);
+    final String builderClassName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILDER_CLASS_NAME, "");
     if (!StringUtil.isEmptyOrSpaces(builderClassName)) {
       return builderClassName;
     }

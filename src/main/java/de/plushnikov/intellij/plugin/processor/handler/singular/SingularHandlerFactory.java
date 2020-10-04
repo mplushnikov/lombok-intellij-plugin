@@ -4,7 +4,7 @@ import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
-import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,7 +53,11 @@ public final class SingularHandlerFactory {
   }
 
   public static boolean isInvalidSingularType(@Nullable String qualifiedName) {
-    return qualifiedName == null || !VALID_SINGULAR_TYPES.contains(qualifiedName);
+    return qualifiedName == null || !containsOrAnyEndsWith(VALID_SINGULAR_TYPES, qualifiedName);
+  }
+
+  private static boolean containsOrAnyEndsWith(@NotNull Set<String> elements, @NotNull String className) {
+    return elements.contains(className) || elements.stream().anyMatch(t -> t.endsWith("." + className));
   }
 
   @NotNull
@@ -63,21 +67,21 @@ public final class SingularHandlerFactory {
     }
 
     final PsiType psiType = psiVariable.getType();
-    final String qualifiedName = PsiTypeUtil.getQualifiedName(psiType);
+    final String qualifiedName = ((PsiClassReferenceType) psiType).getClassName();//PsiTypeUtil.getQualifiedName(psiType);
     if (!isInvalidSingularType(qualifiedName)) {
-      if (COLLECTION_TYPES.contains(qualifiedName)) {
+      if (containsOrAnyEndsWith(COLLECTION_TYPES, qualifiedName)) {
         return new SingularCollectionHandler(qualifiedName);
       }
-      if (MAP_TYPES.contains(qualifiedName)) {
+      if (containsOrAnyEndsWith(MAP_TYPES, qualifiedName)) {
         return new SingularMapHandler(qualifiedName);
       }
-      if (GUAVA_COLLECTION_TYPES.contains(qualifiedName)) {
+      if (containsOrAnyEndsWith(GUAVA_COLLECTION_TYPES, qualifiedName)) {
         return new SingularGuavaCollectionHandler(qualifiedName, qualifiedName.contains("Sorted"));
       }
-      if (GUAVA_MAP_TYPES.contains(qualifiedName)) {
+      if (containsOrAnyEndsWith(GUAVA_MAP_TYPES, qualifiedName)) {
         return new SingularGuavaMapHandler(qualifiedName, qualifiedName.contains("Sorted"));
       }
-      if (GUAVA_TABLE_TYPES.contains(qualifiedName)) {
+      if (containsOrAnyEndsWith(GUAVA_TABLE_TYPES, qualifiedName)) {
         return new SingularGuavaTableHandler(qualifiedName, false);
       }
     }

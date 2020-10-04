@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.handler;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
@@ -24,8 +25,8 @@ import java.util.stream.Collectors;
 public final class FieldNameConstantsHandler {
 
   public static String getTypeName(@NotNull PsiClass containingClass, @NotNull PsiAnnotation fieldNameConstants) {
-    String typeName = PsiAnnotationUtil.getStringAnnotationValue(fieldNameConstants, "innerTypeName");
-    if (typeName == null || typeName.equals("")) {
+    String typeName = PsiAnnotationUtil.getStringAnnotationValue(fieldNameConstants, "innerTypeName", "");
+    if (StringUtil.isEmptyOrSpaces(typeName)) {
       final ConfigDiscovery configDiscovery = ConfigDiscovery.getInstance();
       typeName = configDiscovery.getStringLombokConfigProperty(ConfigKey.FIELD_NAME_CONSTANTS_TYPENAME, containingClass);
     }
