@@ -3,7 +3,7 @@ package de.plushnikov.intellij.plugin.processor.handler.singular;
 import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
+import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,7 +66,7 @@ public final class SingularHandlerFactory {
     }
 
     final PsiType psiType = psiVariable.getType();
-    final String qualifiedName = ((PsiClassReferenceType) psiType).getClassName();//PsiTypeUtil.getQualifiedName(psiType);
+    final String qualifiedName = PsiTypeUtil.getQualifiedName(psiType);
     if (!isInvalidSingularType(qualifiedName)) {
       if (containsOrAnyEndsWith(COLLECTION_TYPES, qualifiedName)) {
         return new SingularCollectionHandler(qualifiedName);

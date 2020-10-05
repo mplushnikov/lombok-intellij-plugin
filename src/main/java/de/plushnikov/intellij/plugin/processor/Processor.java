@@ -8,6 +8,8 @@ import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
