@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.processor;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -9,6 +8,7 @@ import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +26,10 @@ public interface Processor {
   @NotNull
   Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation);
 
+  default boolean notNameHintIsEqualToSupportedAnnotation(@Nullable String nameHint) {
+    return null == nameHint || Arrays.stream(getSupportedAnnotationClasses()).map(Class::getSimpleName).noneMatch(nameHint::equals);
+  }
+
   @NotNull
   default List<? super PsiElement> process(@NotNull PsiClass psiClass) {
     return process(psiClass, null);
@@ -37,5 +41,4 @@ public interface Processor {
   }
 
   LombokPsiElementUsage checkFieldUsage(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation);
-
 }

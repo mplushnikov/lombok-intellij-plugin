@@ -69,7 +69,7 @@ public class PsiAnnotationSearchUtil {
             }
           }
 
-          if (qualifiedName.endsWith(annotation.getQualifiedName())) {
+          if (annotation.hasQualifiedName(qualifiedName)) {
             return annotation;
           }
         }

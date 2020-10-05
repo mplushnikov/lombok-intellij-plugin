@@ -8,7 +8,6 @@ import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
-import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemNewBuilder;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
@@ -46,13 +45,12 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
   @Override
   public List<? super PsiElement> process(@NotNull PsiClass psiClass, @Nullable String nameHint) {
     List<? super PsiElement> result = Collections.emptyList();
-
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation
       && supportAnnotationVariant(psiAnnotation)
       && possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)
-      && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
-
+      //ToDo check it  && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())
+    ) {
       result = new ArrayList<>();
       generatePsiElements(psiClass, psiAnnotation, result);
     }

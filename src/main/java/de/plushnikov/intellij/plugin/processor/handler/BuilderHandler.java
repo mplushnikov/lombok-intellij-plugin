@@ -400,32 +400,41 @@ public class BuilderHandler {
 
   @NotNull
   public PsiClass createBuilderClass(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
-    LombokLightClassBuilder builderClass;
+    final LombokLightClassBuilder builderClass;
     if (null != psiMethod) {
       builderClass = createEmptyBuilderClass(psiClass, psiMethod, psiAnnotation);
     } else {
       builderClass = createEmptyBuilderClass(psiClass, psiAnnotation);
     }
-    builderClass.withMethods(createConstructors(builderClass, psiAnnotation));
 
-    final List<BuilderInfo> builderInfos = createBuilderInfos(psiAnnotation, psiClass, psiMethod, builderClass);
+    builderClass.withFieldSupplier(() -> {
+      final List<BuilderInfo> builderInfos = createBuilderInfos(psiAnnotation, psiClass, psiMethod, builderClass);
+      // create builder Fields
+      return builderInfos.stream()
+        .map(BuilderInfo::renderBuilderFields)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+    });
 
-    // create builder Fields
-    builderInfos.stream()
-      .map(BuilderInfo::renderBuilderFields)
-      .forEach(builderClass::withFields);
+    builderClass.withMethodSupplier(() -> {
+      Collection<PsiMethod> psiMethods = new ArrayList<>(
+        createConstructors(builderClass, psiAnnotation));
 
-    // create builder methods
-    builderInfos.stream()
-      .map(BuilderInfo::renderBuilderMethods)
-      .forEach(builderClass::withMethods);
+      final List<BuilderInfo> builderInfos = createBuilderInfos(psiAnnotation, psiClass, psiMethod, builderClass);
+      // create builder methods
+      builderInfos.stream()
+        .map(BuilderInfo::renderBuilderMethods)
+        .forEach(psiMethods::addAll);
 
-    // create 'build' method
-    final String buildMethodName = getBuildMethodName(psiAnnotation);
-    builderClass.addMethod(createBuildMethod(psiAnnotation, psiClass, psiMethod, builderClass, buildMethodName, builderInfos));
+      // create 'build' method
+      final String buildMethodName = getBuildMethodName(psiAnnotation);
+      psiMethods.add(createBuildMethod(psiAnnotation, psiClass, psiMethod, builderClass, buildMethodName, builderInfos));
 
-    // create 'toString' method
-    builderClass.addMethod(createToStringMethod(psiAnnotation, builderClass));
+      // create 'toString' method
+      psiMethods.add(createToStringMethod(psiAnnotation, builderClass));
+
+      return psiMethods;
+    });
 
     return builderClass;
   }
