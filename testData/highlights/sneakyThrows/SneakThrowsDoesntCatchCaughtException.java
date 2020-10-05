@@ -1,7 +1,7 @@
 import lombok.SneakyThrows;
 
 
-public class SneakThrowsCheckThatSneakyThrowsDoesntCatchCaughtException {
+public class SneakThrowsDoesntCatchCaughtException {
 
   @SneakyThrows
   public static void m() {

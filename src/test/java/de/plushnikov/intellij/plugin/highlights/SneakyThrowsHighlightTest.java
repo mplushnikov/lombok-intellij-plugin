@@ -10,7 +10,11 @@ public class SneakyThrowsHighlightTest extends AbstractLombokHighlightsTest {
     return TEST_DATA_INSPECTION_DIRECTORY + "/sneakyThrows";
   }
 
-  public void testSneakThrowsCheckThatSneakyThrowsDoesntCatchCaughtException() {
+  public void testSneakThrowsDoesntCatchCaughtException() {
+    doTest();
+  }
+
+  public void testSneakThrowsDoesntCatchCaughtExceptionNested() {
     doTest();
   }
 }

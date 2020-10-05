@@ -27,12 +27,11 @@ public class SneakyThrowsExceptionHandler extends CustomExceptionHandler {
       return false;
     } else if (parent instanceof PsiTryStatement && isHandledByTryCatch(exceptionType, (PsiTryStatement) parent)) {
       // that exception MAY be already handled by regular try-catch statement
-      // (just in case should be handled in another way but if somebody decided to reused method for their check)
       return false;
     }
 
     if (topElement instanceof PsiTryStatement && isHandledByTryCatch(exceptionType, (PsiTryStatement) topElement)) {
-      // that exception MAY be already handled by regular try-catch statement
+      // that exception MAY be already handled by regular try-catch statement (don't forget about nested try-catch)
       return false;
     } else if (!(topElement instanceof PsiCodeBlock)) {
       final PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
