@@ -90,7 +90,7 @@ dependencies {
   testImplementation("junit:junit:4.13")
   testImplementation("org.mockito:mockito-core:3.5.7")
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.6.2")
-  lombok group: 'com.xyz', name: 'lombok-plus', version: '1.0.0', classifier: 'sources', ext: 'jar'
+  lombok group: 'com.xyz', name: 'lombok-plus', version: '1.1', classifier: 'sources', ext: 'jar'
 }
 
 // Tasks
@@ -121,7 +121,7 @@ copy {
     include 'lombok/core/handlers/Singulars.java'
     include 'lombok/JsonSerializable.java'
     include 'lombok/Convertable.java'
-
+    include 'lombok/WithCodeAndDesc.java'
 
   }
   into("generated/src")
