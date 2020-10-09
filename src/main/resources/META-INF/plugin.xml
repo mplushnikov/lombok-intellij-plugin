@@ -64,6 +64,9 @@
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomJsonSerializableProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.CustomFormatBeanProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescFieldProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescConstructorProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescMethodProcessor"/>
 
 
     <applicationService
