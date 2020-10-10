@@ -58,7 +58,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
 
   private void validateExistingMethods(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME, FROM_BEAN_METHOD_NAME)) {
+    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME, 1) || PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_METHOD_NAME, 0)) {
       builder.addWarning("Not generated '%s'() or '%s'(): A method with same name already exists", TO_BEAN_METHOD_NAME, FROM_BEAN_METHOD_NAME);
     }
   }
@@ -71,7 +71,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
 
   private Collection<PsiMethod> createFromBeanMethod(PsiClass psiClass, PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_METHOD_NAME)) {
+    if (PsiMethodUtil.hasMethodByName(classMethods, FROM_BEAN_METHOD_NAME, 0)) {
       return new ArrayList<>();
     }
     return Collections.singletonList(fromBeanMethod(psiClass, psiAnnotation));
@@ -80,7 +80,7 @@ public class CustomFormatBeanProcessor extends AbstractClassProcessor {
   @NotNull
   Collection<PsiMethod> createToBeanMethod(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
-    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME)) {
+    if (PsiMethodUtil.hasMethodByName(classMethods, TO_BEAN_METHOD_NAME, 1)) {
       return new ArrayList<>();
     }
     return Collections.singletonList(toBeanMethod(psiClass, psiAnnotation));

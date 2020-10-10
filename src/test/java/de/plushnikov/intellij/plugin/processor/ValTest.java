@@ -12,7 +12,7 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     super.setUp();
 
     //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
+   // RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   public void testSimpleInt() {
