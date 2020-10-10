@@ -6,6 +6,9 @@ import de.plushnikov.intellij.plugin.processor.clazz.builder.*;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescConstructorProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescFieldProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.enumcodeanddesc.WithCodeAndDescMethodProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsOldProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsPredefinedInnerClassFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsProcessor;
@@ -60,7 +63,12 @@ public class DelombokEverythingAction extends AbstractDelombokAction {
       ServiceManager.getService(SuperBuilderClassProcessor.class),
       ServiceManager.getService(SuperBuilderProcessor.class),
       ServiceManager.getService(CustomJsonSerializableProcessor.class),
-      ServiceManager.getService(CustomFormatBeanProcessor.class));
+      ServiceManager.getService(CustomFormatBeanProcessor.class),
+      ServiceManager.getService(WithCodeAndDescFieldProcessor.class),
+      ServiceManager.getService(WithCodeAndDescConstructorProcessor.class),
+      ServiceManager.getService(WithCodeAndDescMethodProcessor.class)
+      );
+
   }
 
 }
