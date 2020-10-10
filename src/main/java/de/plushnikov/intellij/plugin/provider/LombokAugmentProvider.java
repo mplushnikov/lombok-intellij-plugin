@@ -54,6 +54,17 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     return result;
   }
 
+  /**
+   * This method should be available in the next IntelliJ 203 Release
+   */
+  //  @Override
+  public boolean canInferType(@NotNull PsiTypeElement typeElement) {
+    if (!valProcessor.isEnabled(typeElement.getProject())) {
+      return false;
+    }
+    return valProcessor.canInferType(typeElement);
+  }
+
   @Nullable
   @Override
   protected PsiType inferType(@NotNull PsiTypeElement typeElement) {
@@ -71,10 +82,6 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       return emptyResult;
     }
 
-    // Don't filter !isPhysical elements or code auto completion will not work
-    if (!element.isValid()) {
-      return emptyResult;
-    }
     final PsiClass psiClass = (PsiClass) element;
     // Skip processing of Annotations and Interfaces
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {

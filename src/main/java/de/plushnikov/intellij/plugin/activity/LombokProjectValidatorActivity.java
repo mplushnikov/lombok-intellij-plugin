@@ -5,7 +5,6 @@ import com.intellij.compiler.CompilerConfigurationImpl;
 import com.intellij.notification.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -36,6 +35,8 @@ import java.util.regex.Pattern;
  * @author Alexej Kubarev
  */
 public class LombokProjectValidatorActivity implements StartupActivity {
+
+  private static final Pattern LOMBOK_VERSION_PATTERN = Pattern.compile("(.*:)([\\d.]+)(.*)");
 
   @Override
   public void runActivity(@NotNull Project project) {
@@ -121,9 +122,9 @@ public class LombokProjectValidatorActivity implements StartupActivity {
   }
 
   private boolean hasAnnotationProcessorsEnabled(Project project) {
-    CompilerConfigurationImpl compilerConfiguration = getCompilerConfiguration(project);
+    final CompilerConfigurationImpl compilerConfiguration = getCompilerConfiguration(project);
     return compilerConfiguration.getDefaultProcessorProfile().isEnabled() &&
-      compilerConfiguration.getModuleProcessorProfiles().stream().anyMatch(AnnotationProcessingConfiguration::isEnabled);
+      compilerConfiguration.getModuleProcessorProfiles().stream().allMatch(AnnotationProcessingConfiguration::isEnabled);
   }
 
   private boolean hasLombokLibrary(Project project) {
@@ -152,8 +153,7 @@ public class LombokProjectValidatorActivity implements StartupActivity {
     String result = null;
     if (null != orderEntry) {
       final String presentableName = orderEntry.getPresentableName();
-      Pattern pattern = Pattern.compile("(.*:)([\\d.]+)(.*)");
-      final Matcher matcher = pattern.matcher(presentableName);
+      final Matcher matcher = LOMBOK_VERSION_PATTERN.matcher(presentableName);
       if (matcher.find()) {
         result = matcher.group(2);
       }
@@ -178,27 +178,5 @@ public class LombokProjectValidatorActivity implements StartupActivity {
       }
     }
     return 0;
-  }
-
-  /**
-   * Simple {@link NotificationListener.Adapter} that opens Settings Page for correct dialog.
-   */
-  private static class SettingsOpeningListener extends NotificationListener.Adapter {
-
-    private final Project project;
-    private final String nameToSelect;
-
-    SettingsOpeningListener(Project project, String nameToSelect) {
-      this.project = project;
-      this.nameToSelect = nameToSelect;
-    }
-
-    @Override
-    protected void hyperlinkActivated(@NotNull final Notification notification, @NotNull final HyperlinkEvent e) {
-
-      if (!project.isDisposed()) {
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, nameToSelect);
-      }
-    }
   }
 }
