@@ -24,6 +24,7 @@ import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.handler.EqualsAndHashCodeCallSuperHandler;
@@ -34,11 +35,16 @@ import de.plushnikov.intellij.plugin.LombokNames;
 import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.handler.*;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.LombokNames;
+import de.plushnikov.intellij.plugin.handler.*;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import lombok.Builder;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 public class LombokHighlightErrorFilter implements HighlightInfoFilter {
@@ -134,7 +140,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
         // applicable only for methods
         if (importantParent instanceof PsiMethod) {
-          AddAnnotationFix fix = new AddAnnotationFix(SneakyThrows.class.getCanonicalName(), (PsiModifierListOwner) importantParent);
+          AddAnnotationFix fix = new AddAnnotationFix(LombokNames.SNEAKY_THROWS, (PsiModifierListOwner) importantParent);
           highlightInfo.registerFix(fix, null, null, null, null);
         }
       }
@@ -253,7 +259,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
           return true;
         }
 
-        return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, Builder.Default.class.getCanonicalName());
+        return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, LombokNames.BUILDER_DEFAULT);
       }
     };
 
