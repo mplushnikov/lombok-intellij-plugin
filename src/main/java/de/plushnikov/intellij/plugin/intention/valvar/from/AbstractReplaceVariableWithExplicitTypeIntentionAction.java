@@ -7,6 +7,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTypesUtil;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.LombokClassNames;
+import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.intention.valvar.AbstractValVarIntentionAction;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import org.jetbrains.annotations.Nls;
