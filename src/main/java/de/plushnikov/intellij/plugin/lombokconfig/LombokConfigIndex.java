@@ -155,7 +155,7 @@ public class LombokConfigIndex extends FileBasedIndexExtension<ConfigIndexKey, C
   }
 
   // TODO: make this index shareable IDEA-253057. Avoid using canonical paths.
-  @Override
+ // @Override
   public boolean canBeShared() {
     return false;
   }
