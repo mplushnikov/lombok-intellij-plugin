@@ -22,12 +22,18 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.handler.EqualsAndHashCodeCallSuperHandler;
 import de.plushnikov.intellij.plugin.handler.FieldNameConstantsHandler;
 import de.plushnikov.intellij.plugin.handler.LazyGetterHandler;
 import de.plushnikov.intellij.plugin.handler.OnXAnnotationHandler;
+import de.plushnikov.intellij.plugin.LombokNames;
+import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
+import de.plushnikov.intellij.plugin.handler.*;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import lombok.Builder;
 import lombok.SneakyThrows;
@@ -61,6 +67,12 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
   @Override
   public boolean accept(@NotNull HighlightInfo highlightInfo, @Nullable PsiFile file) {
     if (null == file) {
+      return true;
+    }
+
+    Project project = file.getProject();
+    if (!ProjectSettings.isLombokEnabledInProject(project) ||
+        !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
       return true;
     }
 
