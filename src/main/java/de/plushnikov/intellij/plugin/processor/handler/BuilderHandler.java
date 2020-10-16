@@ -42,7 +42,7 @@ public class BuilderHandler {
 
   private final static String BUILD_METHOD_NAME = "build";
   private final static String BUILDER_METHOD_NAME = "builder";
-  private static final String TO_BUILDER_METHOD_NAME = "toBuilder";
+  public static final String TO_BUILDER_METHOD_NAME = "toBuilder";
   static final String TO_BUILDER_ANNOTATION_KEY = "toBuilder";
 
   private static final Collection<String> INVALID_ON_BUILDERS = Stream.of(LombokClassNames.GETTER,
@@ -224,7 +224,7 @@ public class BuilderHandler {
   }
 
   @NotNull
-  String getBuilderMethodName(@NotNull PsiAnnotation psiAnnotation) {
+  public String getBuilderMethodName(@NotNull PsiAnnotation psiAnnotation) {
     final String builderMethodName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, ANNOTATION_BUILDER_METHOD_NAME, BUILDER_METHOD_NAME);
     return null == builderMethodName ? BUILDER_METHOD_NAME : builderMethodName;
   }

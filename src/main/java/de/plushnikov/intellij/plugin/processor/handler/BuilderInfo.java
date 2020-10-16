@@ -62,7 +62,7 @@ public class BuilderInfo {
     result.fieldInBuilderName = psiParameter.getName();
 
     result.singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiParameter, LombokClassNames.SINGULAR);
-    result.builderElementHandler = SingularHandlerFactory.getHandlerFor(psiParameter, result.singularAnnotation);
+    result.builderElementHandler = SingularHandlerFactory.getHandlerFor(psiParameter, null!=result.singularAnnotation);
 
     return result;
   }
@@ -84,7 +84,7 @@ public class BuilderInfo {
     result.fieldInBuilderName = accessorsInfo.removePrefix(psiField.getName());
 
     result.singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, LombokClassNames.SINGULAR);
-    result.builderElementHandler = SingularHandlerFactory.getHandlerFor(psiField, result.singularAnnotation);
+    result.builderElementHandler = SingularHandlerFactory.getHandlerFor(psiField, null!=result.singularAnnotation);
 
     return result;
   }

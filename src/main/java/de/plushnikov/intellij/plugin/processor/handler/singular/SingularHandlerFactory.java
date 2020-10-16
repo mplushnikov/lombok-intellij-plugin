@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.handler.singular;
 
 import com.intellij.psi.CommonClassNames;
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiVariable;
 import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
@@ -61,8 +60,8 @@ public final class SingularHandlerFactory {
   }
 
   @NotNull
-  public static BuilderElementHandler getHandlerFor(@NotNull PsiVariable psiVariable, @Nullable PsiAnnotation singularAnnotation) {
-    if (null == singularAnnotation) {
+  public static BuilderElementHandler getHandlerFor(@NotNull PsiVariable psiVariable, boolean hasSingularAnnotation) {
+    if (!hasSingularAnnotation) {
       return new NonSingularHandler();
     }
 

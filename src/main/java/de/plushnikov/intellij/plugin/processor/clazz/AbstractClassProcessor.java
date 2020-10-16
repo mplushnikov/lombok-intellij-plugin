@@ -8,6 +8,7 @@ import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
 import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
+import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
 import de.plushnikov.intellij.plugin.problem.ProblemNewBuilder;
 import de.plushnikov.intellij.plugin.processor.AbstractProcessor;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
@@ -49,7 +50,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     if (null != psiAnnotation
       && supportAnnotationVariant(psiAnnotation)
       && possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)
-      //ToDo check it  && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())
+      && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())
     ) {
       result = new ArrayList<>();
       generatePsiElements(psiClass, psiAnnotation, result);
