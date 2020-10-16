@@ -23,12 +23,12 @@ public class BuilderAtConstructorSimple {
     BuilderAtConstructorSimpleBuilder() {
     }
 
-    public BuilderAtConstructorSimpleBuilder myInt(int myInt) {
+    public BuilderAtConstructorSimple.BuilderAtConstructorSimpleBuilder myInt(int myInt) {
       this.myInt = myInt;
       return this;
     }
 
-    public BuilderAtConstructorSimpleBuilder myString(String myString) {
+    public BuilderAtConstructorSimple.BuilderAtConstructorSimpleBuilder myString(String myString) {
       this.myString = myString;
       return this;
     }
