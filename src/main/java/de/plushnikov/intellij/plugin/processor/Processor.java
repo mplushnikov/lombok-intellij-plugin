@@ -27,7 +27,7 @@ public interface Processor {
   Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation);
 
   default boolean notNameHintIsEqualToSupportedAnnotation(@Nullable String nameHint) {
-    return null == nameHint || Arrays.stream(getSupportedAnnotationClasses()).map(Class::getSimpleName).noneMatch(nameHint::equals);
+    return null == nameHint || (!"lombok".equals(nameHint) && Arrays.stream(getSupportedAnnotationClasses()).map(Class::getSimpleName).noneMatch(nameHint::equals));
   }
 
   @NotNull
