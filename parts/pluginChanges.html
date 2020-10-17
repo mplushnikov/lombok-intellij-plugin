@@ -1,4 +1,19 @@
 <ul>
+  <li>0.33
+    <ol>
+      <li>Implemented new intention actions to replace explicit getter and setter by lombok annotation, thanks to
+        @Lekanich (Aleksandr Zhelezniak)</li>
+      <li>Fixed #799: @SneakyThrows mistakenly swallow checked exception in lambda without "throws", thanks to
+        @Lekanich (Aleksandr Zhelezniak)
+      </li>
+      <li>Fixed #838: @Builder.Default and final keyword: erroneous ConstantConditions warning, thanks to
+        @Lekanich (Aleksandr Zhelezniak)
+      </li>
+      <li>Fixed #938: @SneakyThrows hides compilation error: Variable might not have been not initialized, thanks to
+        @Lekanich (Aleksandr Zhelezniak)
+      </li>
+    </ol>
+  </li>
   <li>0.32
     <ol>
       <li>Fixed #761: EqualsAndHashCode: Wrong warning 'A method with one of those names already exists'</li>
