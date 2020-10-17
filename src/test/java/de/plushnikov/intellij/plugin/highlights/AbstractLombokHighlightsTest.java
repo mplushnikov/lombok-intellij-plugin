@@ -3,15 +3,17 @@ package de.plushnikov.intellij.plugin.highlights;
 import com.intellij.codeInspection.InspectionProfileEntry;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.siyeh.ig.LightJavaInspectionTestCase;
+import com.siyeh.ig.LightInspectionTestCase;
 import de.plushnikov.intellij.plugin.LombokTestUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static com.intellij.testFramework.LightPlatformTestCase.getModule;
 
 
 /**
  * @author Lekanich
  */
-public abstract class AbstractLombokHighlightsTest extends LightJavaInspectionTestCase {
+public abstract class AbstractLombokHighlightsTest extends LightInspectionTestCase {
   public static final String TEST_DATA_INSPECTION_DIRECTORY = "testData/highlights";
 
   @Override
@@ -19,8 +21,6 @@ public abstract class AbstractLombokHighlightsTest extends LightJavaInspectionTe
     super.setUp();
 
     LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
-
-    Registry.get("platform.random.idempotence.check.rate").setValue(1, getTestRootDisposable());
   }
 
   @NotNull
