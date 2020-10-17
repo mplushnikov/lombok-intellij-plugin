@@ -197,7 +197,7 @@
       shortName="RedundantSlf4jDefinition"
       enabledByDefault="true"
       implementationClass="de.plushnikov.intellij.plugin.inspection.RedundantSlf4jDefinitionInspection"/>
-    
+
     <localInspection
       displayName="Unnecessary final before 'val'"
       groupPath="Lombok"
@@ -220,6 +220,10 @@
     </intentionAction>
     <intentionAction>
       <className>de.plushnikov.intellij.plugin.intention.valvar.from.ReplaceVarWithExplicitTypeIntentionAction</className>
+      <category>Lombok</category>
+    </intentionAction>
+    <intentionAction>
+      <className>de.plushnikov.intellij.plugin.intention.ReplaceWithLombokAnnotationAction</className>
       <category>Lombok</category>
     </intentionAction>
 
