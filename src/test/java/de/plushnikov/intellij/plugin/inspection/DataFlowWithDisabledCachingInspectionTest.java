@@ -17,14 +17,6 @@ public class DataFlowWithDisabledCachingInspectionTest extends LombokInspectionT
     return new DataFlowInspection();
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
-  }
-
   public void testDefaultBuilderFinalValueInspectionIsAlwaysThat() {
     doTest();
   }

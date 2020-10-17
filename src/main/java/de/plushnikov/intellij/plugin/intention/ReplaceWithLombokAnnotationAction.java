@@ -106,7 +106,7 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
     // it should have 1 parameter with the same type
     if (Optional.of(method.getParameterList())
       .filter(paramList -> paramList.getParametersCount() == 1)
-      .map(paramList -> paramList.getParameter(0))
+      .map(paramList -> paramList.getParameters()[0])
       .map(PsiParameter::getType)
       .filter(expectedType -> Optional.ofNullable(method.getContainingClass())
         .map(PsiClassUtil::collectClassFieldsIntern)
