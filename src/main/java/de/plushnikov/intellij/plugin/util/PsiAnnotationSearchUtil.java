@@ -27,28 +27,6 @@ public class PsiAnnotationSearchUtil {
     return Stream.of(annotationFQNs).map(psiModifierListOwner::getAnnotation).filter(Objects::nonNull).findAny().orElse(null);
   }
 
-  @Nullable
-  public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
-    return findAnnotation(psiModifierListOwner, annotationType.getName());
-  }
-
-  @Nullable
-  public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation>... annotationTypes) {
-    if (annotationTypes.length == 1) {
-      return findAnnotation(psiModifierListOwner, annotationTypes[0]);
-    }
-
-    final String[] qualifiedNames = new String[annotationTypes.length];
-    for (int i = 0; i < annotationTypes.length; i++) {
-      qualifiedNames[i] = annotationTypes[i].getName();
-    }
-    return findAnnotation(psiModifierListOwner, qualifiedNames);
-  }
-
-  public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull final Class<? extends Annotation> annotationType) {
-    return psiModifierListOwner.hasAnnotation(annotationType.getName());
-  }
-
   public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationFQN) {
     return psiModifierListOwner.hasAnnotation(annotationFQN);
   }

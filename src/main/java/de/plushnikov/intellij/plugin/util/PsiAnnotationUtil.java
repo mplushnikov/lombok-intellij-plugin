@@ -74,10 +74,10 @@ public final class PsiAnnotationUtil {
     return result != null ? result : defaultValue;
   }
 
-  public static String getEnumAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String attributeName, @NotNull Enum defaultValue) {
+  public static String getEnumAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String attributeName, @NotNull String defaultValue) {
     PsiAnnotationMemberValue attrValue = psiAnnotation.findDeclaredAttributeValue(attributeName);
     String result = attrValue != null ? resolveElementValue(attrValue, String.class) : null;
-    return result != null ? result : defaultValue.name();
+    return result != null ? result : defaultValue;
     // doesn't work for definition using static import for Enum.value for example
 //    PsiConstantEvaluationHelper evaluationHelper = JavaPsiFacade.getInstance(psiAnnotation.getProject()).getConstantEvaluationHelper();
 //    Object result = evaluationHelper.computeConstantExpression(attrValue);

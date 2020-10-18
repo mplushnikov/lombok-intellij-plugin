@@ -7,6 +7,7 @@ import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
 import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;

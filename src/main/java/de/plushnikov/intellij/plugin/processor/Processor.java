@@ -1,5 +1,7 @@
 package de.plushnikov.intellij.plugin.processor;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -8,7 +10,6 @@ import de.plushnikov.intellij.plugin.problem.LombokProblem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +30,8 @@ public interface Processor {
   Collection<LombokProblem> verifyAnnotation(@NotNull PsiAnnotation psiAnnotation);
 
   default boolean notNameHintIsEqualToSupportedAnnotation(@Nullable String nameHint) {
-    return null == nameHint || (!"lombok".equals(nameHint) && Arrays.stream(getSupportedAnnotationClasses()).map(Class::getSimpleName).noneMatch(nameHint::equals));
+    return null == nameHint || (!"lombok".equals(nameHint) && Arrays.stream(getSupportedAnnotationClasses())
+      .map(StringUtil::getShortName).noneMatch(nameHint::equals));
   }
 
   @NotNull
