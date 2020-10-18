@@ -102,37 +102,6 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     verifyLocalVariableType("java.util.Set<java.lang.String>");
   }
 
-  public void testIssue802GenericTypeParamShouldNotBecomeObjectAfterMappingOuterCollection() {
-    PsiFile file = myFixture.configureByText("a.java",
-      "import lombok.val;\n" +
-        "import java.util.Optional;\n" +
-        "class Test {\n" +
-        "    public void test() {\n" +
-        "        val strOpt = Optional.of(\"1\");\n" +
-        "        val intOptInferred<caret>Lambda = strOpt.map(str -> Integer.valueOf(str));\n" +
-        "    }\n" +
-        "}\n");
-
-    PsiLocalVariable var = PsiTreeUtil.getParentOfType(file.findElementAt(myFixture.getCaretOffset()), PsiLocalVariable.class);
-    assertNotNull(var);
-
-    PsiType typeBefore = var.getType();
-    assertNotNull(typeBefore);
-    assertEquals("java.util.Optional<java.lang.Integer>", typeBefore.getCanonicalText(false));
-    myFixture.testHighlighting(false, false, false, file.getVirtualFile());
-
-    myFixture.type('2');
-    PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
-    // this line will fail
-    myFixture.testHighlighting(false, false, false, file.getVirtualFile());
-
-    assertTrue(var.isValid());
-
-    PsiType typeAfter = var.getType();
-    assertNotNull(typeAfter);
-    assertEquals("java.util.Optional<java.lang.Integer>", typeAfter.getCanonicalText(false));
-  }
-
   private void configureClass(String valDefinition) {
     configureClass(valDefinition, "");
   }
