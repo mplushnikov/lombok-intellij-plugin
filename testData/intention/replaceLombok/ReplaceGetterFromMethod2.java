@@ -5,7 +5,7 @@ public class ReplaceGetterFromMethod2 {
     return field;
   }
 
-  public int setField(int field) {
+  public void setField(int field) {
     this.field = field;
   }
 }

@@ -1,19 +1,27 @@
 package de.plushnikov.intellij.plugin.extension;
 
+import com.intellij.codeInsight.daemon.JavaErrorBundle;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
 import com.intellij.codeInsight.intention.AddAnnotationFix;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.colors.CodeInsightColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.*;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import de.plushnikov.intellij.plugin.LombokClassNames;
+import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
+import de.plushnikov.intellij.plugin.handler.*;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.handler.*;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
-import lombok.Builder;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -44,6 +52,12 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
   @Override
   public boolean accept(@NotNull HighlightInfo highlightInfo, @Nullable PsiFile file) {
     if (null == file) {
+      return true;
+    }
+
+    Project project = file.getProject();
+    if (!ProjectSettings.isLombokEnabledInProject(project) ||
+        !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
       return true;
     }
 
@@ -105,7 +119,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
         // applicable only for methods
         if (importantParent instanceof PsiMethod) {
-          AddAnnotationFix fix = new AddAnnotationFix(SneakyThrows.class.getCanonicalName(), (PsiModifierListOwner) importantParent);
+          AddAnnotationFix fix = new AddAnnotationFix(LombokClassNames.SNEAKY_THROWS, (PsiModifierListOwner) importantParent);
           highlightInfo.registerFix(fix, null, null, null, null);
         }
       }
@@ -225,7 +239,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
           return true;
         }
 
-        return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, Builder.Default.class.getCanonicalName());
+        return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, LombokClassNames.BUILDER_DEFAULT);
       }
     };
 
