@@ -3,21 +3,20 @@ package de.plushnikov.intellij.plugin.intention;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PropertyUtilBase;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.IncorrectOperationException;
+import de.plushnikov.intellij.plugin.LombokClassNames;
+import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author Lekanich
@@ -30,63 +29,86 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
   }
 
   @Override
+  public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
+    boolean parentAvailable = super.isAvailable(project, editor, element);
+    if (!parentAvailable || !(element instanceof PsiIdentifier)) return false;
+
+    PsiElement parent = PsiTreeUtil.getParentOfType(element, PsiField.class, PsiMethod.class);
+    if (parent instanceof PsiField) {
+      return Stream.of(findGetterMethodToReplace((PsiField)parent), findSetterMethodToReplace((PsiField)parent))
+        .anyMatch(Optional::isPresent);
+    }
+    else if (parent instanceof PsiMethod) {
+      return Stream.of(findAnchorFieldForGetter((PsiMethod)parent), findAnchorFieldForSetter((PsiMethod)parent))
+        .anyMatch(Optional::isPresent);
+    }
+    return false;
+  }
+
+  @Override
   public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
     PsiElement parent = PsiTreeUtil.getParentOfType(element, PsiVariable.class, PsiClass.class, PsiMethod.class);
 
     if (parent instanceof PsiField) {
-      handleField((PsiField) parent);
-    } else if (parent instanceof PsiMethod) {
-      handleMethod((PsiMethod) parent);
+      handleField((PsiField)parent);
+    }
+    else if (parent instanceof PsiMethod) {
+      handleMethod((PsiMethod)parent);
     }
   }
 
-  private void handleMethod(PsiMethod parent) {
-    Optional.ofNullable(findAnchorFieldForGetter(parent))
+  private void handleMethod(@NotNull PsiMethod psiMethod) {
+    findAnchorFieldForGetter(psiMethod)
       .map(PsiField::getModifierList)
-      .ifPresent(modifierList -> replaceWithAnnotation(modifierList, parent, Getter.class));
-    Optional.ofNullable(findAnchorFieldForSetter(parent))
+      .ifPresent(modifierList -> replaceWithAnnotation(modifierList, psiMethod, LombokClassNames.GETTER));
+
+    findAnchorFieldForSetter(psiMethod)
       .map(PsiField::getModifierList)
-      .ifPresent(modifierList -> replaceWithAnnotation(modifierList, parent, Setter.class));
+      .ifPresent(modifierList -> replaceWithAnnotation(modifierList, psiMethod, LombokClassNames.SETTER));
   }
 
-  private void handleField(PsiField field) {
-    PsiModifierList modifierList = field.getModifierList();
-    if (modifierList == null) {
-      // it should never happen but just in case
+  private Optional<PsiMethod> findGetterMethodToReplace(@NotNull PsiField psiField) {
+    final PsiMethod getterForField = PropertyUtilBase.findGetterForField(psiField);
+    if (null != getterForField && !(getterForField instanceof LombokLightClassBuilder)) {
+      if (findAnchorFieldForGetter(getterForField).filter(psiField::equals).isPresent()) {
+        return Optional.of(getterForField);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private Optional<PsiMethod> findSetterMethodToReplace(@NotNull PsiField psiField) {
+    final PsiMethod setterForField = PropertyUtilBase.findSetterForField(psiField);
+    if (null != setterForField && !(setterForField instanceof LombokLightClassBuilder)) {
+      if (findAnchorFieldForSetter(setterForField).filter(psiField::equals).isPresent()) {
+        return Optional.of(setterForField);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private void handleField(@NotNull PsiField psiField) {
+    PsiModifierList psiFieldModifierList = psiField.getModifierList();
+    if (null == psiFieldModifierList) {
       return;
     }
 
-    Collection<PsiMethod> methods = Optional.ofNullable(field.getContainingClass())
-      .map(PsiClassUtil::collectClassMethodsIntern)
-      .orElse(Collections.emptyList());
-
     // replace getter if it matches the requirements
-    String getterName = LombokUtils.getGetterName(field);
-    methods.stream()
-      .filter(method -> getterName.equals(method.getName()))
-      .findAny()
-      .ifPresent(method -> Optional.ofNullable(findAnchorFieldForGetter(method))
-        .filter(anchorField -> anchorField == field)
-        .ifPresent(f -> replaceWithAnnotation(modifierList, method, Getter.class))
-      );
+    findGetterMethodToReplace(psiField).ifPresent(
+      psiMethod -> replaceWithAnnotation(psiFieldModifierList, psiMethod, LombokClassNames.GETTER)
+    );
 
     // replace setter if it matches the requirements
-    String setterName = LombokUtils.getSetterName(field);
-    methods.stream()
-      .filter(method -> setterName.equals(method.getName()))
-      .findAny()
-      .ifPresent(method -> Optional.ofNullable(findAnchorFieldForSetter(method))
-        .filter(anchorField -> anchorField == field)
-        .ifPresent(f -> replaceWithAnnotation(modifierList, method, Setter.class))
-      );
+    findSetterMethodToReplace(psiField).ifPresent(
+      psiMethod -> replaceWithAnnotation(psiFieldModifierList, psiMethod, LombokClassNames.SETTER)
+    );
   }
 
-  @Nullable
-  private PsiField findAnchorFieldForSetter(PsiMethod method) {
+  private Optional<PsiField> findAnchorFieldForSetter(@NotNull PsiMethod method) {
     // it seems wrong to replace abstract possible getters
     // abstract methods maybe the part of interface so let them live
-    if (method.hasModifierProperty(PsiModifier.ABSTRACT)) {
-      return null;
+    if (!PropertyUtilBase.isSimplePropertySetter(method) || method.hasModifierProperty(PsiModifier.ABSTRACT)) {
+      return Optional.empty();
     }
 
     // check the parameter list
@@ -102,7 +124,7 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
         .filter(field -> method.getName().equals(LombokUtils.getSetterName(field)))
         .noneMatch(field -> expectedType.equals(field.getType()))
       ).isPresent()) {
-      return null;
+      return Optional.empty();
     }
 
     PsiCodeBlock body = method.getBody();
@@ -112,35 +134,36 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
         .orElse(Collections.emptyList())
         .stream()
         .filter(field -> method.getName().equals(LombokUtils.getSetterName(field)))
-        .findAny()
-        .orElse(null);
-    } else if (body.getStatementCount() == 1) {
+        .findAny();
+    }
+    else if (body.getStatementCount() == 1) {
       // validate that the method body doesn't contain anything additional
       // and also contain proper assign statement
-      return Optional.of(body.getStatements()[0])
+      Optional<PsiAssignmentExpression> assignmentExpression = Optional.of(body.getStatements()[0])
         .filter(PsiExpressionStatement.class::isInstance)
         .map(PsiExpressionStatement.class::cast)
         .map(PsiExpressionStatement::getExpression)
         .filter(PsiAssignmentExpression.class::isInstance)
-        .map(PsiAssignmentExpression.class::cast)
-        .map(PsiAssignmentExpression::getLExpression)
-        .filter(PsiReferenceExpression.class::isInstance)
-        .map(PsiReferenceExpression.class::cast)
-        .map(PsiReferenceExpression::resolve)
-        .filter(PsiField.class::isInstance)
-        .map(PsiField.class::cast)
-        .orElse(null);
-    }
+        .map(PsiAssignmentExpression.class::cast);
 
-    return null;
+      if (assignmentExpression.map(PsiAssignmentExpression::getRExpression)
+        .filter(PsiReferenceExpression.class::isInstance).map(PsiReferenceExpression.class::cast)
+        .map(PsiReferenceExpression::resolve).filter(PsiParameter.class::isInstance).isPresent()) {
+
+        return assignmentExpression.map(PsiAssignmentExpression::getLExpression)
+          .filter(PsiReferenceExpression.class::isInstance).map(PsiReferenceExpression.class::cast)
+          .map(PsiReferenceExpression::resolve) .filter(PsiField.class::isInstance)
+          .map(PsiField.class::cast);
+      }
+    }
+    return Optional.empty();
   }
 
-  @Nullable
-  private PsiField findAnchorFieldForGetter(PsiMethod method) {
+  private Optional<PsiField> findAnchorFieldForGetter(@NotNull PsiMethod method) {
     // it seems wrong to replace abstract possible getters
     // abstract methods maybe the part of interface so let them live
-    if (method.hasModifierProperty(PsiModifier.ABSTRACT)) {
-      return null;
+    if (!PropertyUtilBase.isSimplePropertyGetter(method) || method.hasModifierProperty(PsiModifier.ABSTRACT)) {
+      return Optional.empty();
     }
 
     PsiCodeBlock body = method.getBody();
@@ -150,9 +173,9 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
         .orElse(Collections.emptyList())
         .stream()
         .filter(field -> method.getName().equals(LombokUtils.getGetterName(field)))
-        .findAny()
-        .orElse(null);
-    } else if (body.getStatementCount() == 1) {
+        .findAny();
+    }
+    else if (body.getStatementCount() == 1) {
       return Optional.of(body.getStatements()[0])
         .filter(PsiReturnStatement.class::isInstance)
         .map(PsiReturnStatement.class::cast)
@@ -162,16 +185,14 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
         .map(PsiReferenceExpression.class::cast)
         .map(PsiReferenceExpression::resolve)
         .filter(PsiField.class::isInstance)
-        .map(PsiField.class::cast)
-        .orElse(null);
+        .map(PsiField.class::cast);
     }
-
-    return null;
+    return Optional.empty();
   }
 
-  private void replaceWithAnnotation(PsiModifierList modifierList, PsiMethod method, Class<? extends Annotation> annotation) {
+  private void replaceWithAnnotation(@NotNull PsiModifierList modifierList, @NotNull PsiMethod method, @NotNull String annotationName) {
     method.delete();
-    modifierList.addAnnotation(annotation.getCanonicalName());
+    modifierList.addAnnotation(annotationName);
   }
 
   @Nls(capitalization = Nls.Capitalization.Sentence)
@@ -179,13 +200,5 @@ public class ReplaceWithLombokAnnotationAction extends AbstractLombokIntentionAc
   @Override
   public String getFamilyName() {
     return "Replace with annotations (Lombok)";
-  }
-
-  @Override
-  public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-    boolean parentAvailable = super.isAvailable(project, editor, element);
-    return parentAvailable
-      && element instanceof PsiIdentifier
-      && PsiTreeUtil.getParentOfType(element, PsiField.class, PsiMethod.class) != null;
   }
 }
