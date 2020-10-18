@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.clazz.builder;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.LombokClassNames;
@@ -27,7 +27,7 @@ public class SuperBuilderProcessor extends AbstractClassProcessor {
   }
 
   protected SuperBuilderHandler getBuilderHandler() {
-    return ApplicationManager.getApplication().getService(SuperBuilderHandler.class);
+    return ServiceManager.getService(SuperBuilderHandler.class);
   }
 
   @Override

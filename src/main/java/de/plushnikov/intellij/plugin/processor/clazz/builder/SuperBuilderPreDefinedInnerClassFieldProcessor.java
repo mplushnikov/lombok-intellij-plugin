@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.clazz.builder;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -28,7 +28,7 @@ public class SuperBuilderPreDefinedInnerClassFieldProcessor extends AbstractSupe
   }
 
   protected SuperBuilderHandler getBuilderHandler() {
-    return ApplicationManager.getApplication().getService(SuperBuilderHandler.class);
+    return ServiceManager.getService(SuperBuilderHandler.class);
   }
 
   @Override

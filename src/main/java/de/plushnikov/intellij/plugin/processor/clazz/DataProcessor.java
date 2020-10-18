@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.clazz;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
@@ -26,27 +26,27 @@ public class DataProcessor extends AbstractClassProcessor {
   }
 
   private ToStringProcessor getToStringProcessor() {
-    return ApplicationManager.getApplication().getService(ToStringProcessor.class);
+    return ServiceManager.getService(ToStringProcessor.class);
   }
 
   private NoArgsConstructorProcessor getNoArgsConstructorProcessor() {
-    return ApplicationManager.getApplication().getService(NoArgsConstructorProcessor.class);
+    return ServiceManager.getService(NoArgsConstructorProcessor.class);
   }
 
   private GetterProcessor getGetterProcessor() {
-    return ApplicationManager.getApplication().getService(GetterProcessor.class);
+    return ServiceManager.getService(GetterProcessor.class);
   }
 
   private SetterProcessor getSetterProcessor() {
-    return ApplicationManager.getApplication().getService(SetterProcessor.class);
+    return ServiceManager.getService(SetterProcessor.class);
   }
 
   private EqualsAndHashCodeProcessor getEqualsAndHashCodeProcessor() {
-    return ApplicationManager.getApplication().getService(EqualsAndHashCodeProcessor.class);
+    return ServiceManager.getService(EqualsAndHashCodeProcessor.class);
   }
 
   private RequiredArgsConstructorProcessor getRequiredArgsConstructorProcessor() {
-    return ApplicationManager.getApplication().getService(RequiredArgsConstructorProcessor.class);
+    return ServiceManager.getService(RequiredArgsConstructorProcessor.class);
   }
 
   @Override

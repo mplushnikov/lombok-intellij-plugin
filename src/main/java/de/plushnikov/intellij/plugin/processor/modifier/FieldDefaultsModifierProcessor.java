@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.modifier;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
@@ -25,7 +25,7 @@ import java.util.Set;
 public class FieldDefaultsModifierProcessor implements ModifierProcessor {
 
   private ConfigDiscovery getConfigDiscovery() {
-    return ApplicationManager.getApplication().getService(ConfigDiscovery.class);
+    return ServiceManager.getService(ConfigDiscovery.class);
   }
 
   @Override

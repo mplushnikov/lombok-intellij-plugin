@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  *
  * @author Alexej Kubarev
  */
-public class LombokProjectValidatorActivity implements StartupActivity.DumbAware {
+public class LombokProjectValidatorActivity implements StartupActivity {
 
   private static final Pattern LOMBOK_VERSION_PATTERN = Pattern.compile("(.*:)([\\d.]+)(.*)");
 
