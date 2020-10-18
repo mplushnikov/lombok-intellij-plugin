@@ -44,7 +44,7 @@ public abstract class AbstractProcessor implements Processor {
     this.supportedAnnotationClasses = supportedAnnotationClasses;
   }
 
-  public final @NotNull String @NotNull [] getSupportedAnnotationClasses() {
+  public final @NotNull String [] getSupportedAnnotationClasses() {
     return supportedAnnotationClasses;
   }
 

@@ -6,6 +6,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -36,7 +37,8 @@ public class ReplaceFromFieldWithLombokAnnotationActionTest extends LombokIntent
       return false;
     }
 
-    return expectedAnnotations.stream().allMatch(field::hasAnnotation) && field.getAnnotations().length == expectedAnnotations.size();
+    return expectedAnnotations.stream().allMatch(annotationName-> PsiAnnotationSearchUtil.isAnnotatedWith(field, annotationName))
+      && field.getAnnotations().length == expectedAnnotations.size();
   }
 
   public void testReplaceGetterFromField() {

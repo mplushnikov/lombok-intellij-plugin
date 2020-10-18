@@ -3,6 +3,8 @@ package de.plushnikov.intellij.plugin.processor;
 import de.plushnikov.intellij.plugin.AbstractLombokParsingTestCase;
 import de.plushnikov.intellij.plugin.LombokTestUtil;
 
+import static com.intellij.testFramework.LightPlatformTestCase.getModule;
+
 /**
  * Unit tests for @FieldNameConstants annotation from old version of lombok
  */

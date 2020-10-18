@@ -72,7 +72,7 @@ public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction ext
     if (variablePsiClass == null) {
       return;
     }
-    PsiJavaCodeReferenceElement referenceElementByFQClassName = elementFactory.createReferenceElementByFQClassName(variableClass.getName(), psiVariable.getResolveScope());
+    PsiJavaCodeReferenceElement referenceElementByFQClassName = elementFactory.createReferenceElementByFQClassName(variableClassName, psiVariable.getResolveScope());
     typeElement = (PsiTypeElement) expandDiamondsAndReplaceExplicitTypeWithVar(typeElement, typeElement);
     typeElement.deleteChildRange(typeElement.getFirstChild(), typeElement.getLastChild());
     typeElement.add(referenceElementByFQClassName);
