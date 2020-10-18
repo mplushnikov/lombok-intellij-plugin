@@ -1,33 +1,25 @@
 package de.plushnikov.intellij.plugin.intention;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
+import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ContainerUtil;
+import de.plushnikov.intellij.plugin.LombokClassNames;
+
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import com.intellij.codeInsight.intention.IntentionAction;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.util.PsiTreeUtil;
-import lombok.Getter;
-import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
-
 
 /**
  * @author Lekanich
  */
 public class ReplaceFromFieldWithLombokAnnotationActionTest extends LombokIntentionActionTest {
-  private Collection<Class<? extends Annotation>> expectedAnnotations = Collections.emptyList();
+  private Set<String> expectedAnnotations = Collections.emptySet();
 
   @Override
   protected String getBasePath() {
-    return TEST_DATA_INTENTION_DIRECTORY + "/replaceLombok";
+    return super.getBasePath() + "/replaceLombok";
   }
 
   @Override
@@ -44,86 +36,80 @@ public class ReplaceFromFieldWithLombokAnnotationActionTest extends LombokIntent
       return false;
     }
 
-    Set<String> requiredAnnotations = expectedAnnotations.stream()
-      .map(Class::getCanonicalName)
-      .collect(Collectors.toSet());
-
-    @NotNull PsiAnnotation[] annotations = Optional.ofNullable(field)
-      .map(PsiField::getModifierList)
-      .map(PsiModifierList::getAnnotations)
-      .orElse(new PsiAnnotation[0]);
-    return Stream.of(annotations)
-      .filter(annotation -> requiredAnnotations.contains(annotation.getQualifiedName()))
-      .distinct()
-      .count() == expectedAnnotations.size() && expectedAnnotations.size() == annotations.length;
+    return expectedAnnotations.stream().allMatch(field::hasAnnotation) && field.getAnnotations().length == expectedAnnotations.size();
   }
 
   public void testReplaceGetterFromField() {
-    setExpectedAnnotations(Getter.class);
+    setExpectedAnnotations(LombokClassNames.GETTER);
     doTest();
   }
 
   public void testReplaceSetterFromField() {
-    setExpectedAnnotations(Setter.class);
+    setExpectedAnnotations(LombokClassNames.SETTER);
     doTest();
   }
 
   public void testReplaceAccessorsFromField() {
-    setExpectedAnnotations(Getter.class, Setter.class);
+    setExpectedAnnotations(LombokClassNames.GETTER, LombokClassNames.SETTER);
     doTest();
   }
 
   public void testNotReplaceIncorrectAccessors() {
     setExpectedAnnotations();
-    doTest();
+    doTest(false);
+  }
+
+  public void testNotReplaceSetterWithAdditionalCode() {
+    setExpectedAnnotations();
+    doTest(false);
   }
 
   public void testReplaceGetterFromMethod() {
-    setExpectedAnnotations(Getter.class);
+    setExpectedAnnotations(LombokClassNames.GETTER);
     doTest();
   }
 
   public void testReplaceSetterFromMethod() {
-    setExpectedAnnotations(Setter.class);
+    setExpectedAnnotations(LombokClassNames.SETTER);
     doTest();
   }
 
   public void testReplaceGetterFromMethod2() {
-    setExpectedAnnotations(Getter.class);
+    setExpectedAnnotations(LombokClassNames.GETTER);
     doTest();
   }
 
   public void testReplaceSetterFromMethod2() {
-    setExpectedAnnotations(Setter.class);
+    setExpectedAnnotations(LombokClassNames.SETTER);
     doTest();
   }
 
   public void testReplaceGetterFromFieldNotCompleteMethod() {
-    setExpectedAnnotations(Getter.class);
+    setExpectedAnnotations(LombokClassNames.GETTER);
     doTest();
   }
 
   public void testReplaceSetterFromFieldNotCompleteMethod() {
-    setExpectedAnnotations(Setter.class);
+    setExpectedAnnotations(LombokClassNames.SETTER);
     doTest();
   }
 
   public void testNotReplaceAbstractGetterFromField() {
     setExpectedAnnotations();
-    doTest();
+    doTest(false);
   }
 
   public void testNotReplaceAbstractSetterFromField() {
     setExpectedAnnotations();
-    doTest();
+    doTest(false);
   }
 
   public void testNotReplaceSetterWithWrongParamFromField() {
     setExpectedAnnotations();
-    doTest();
+    doTest(false);
   }
 
-  private void setExpectedAnnotations(Class<? extends Annotation>... annotations) {
-    this.expectedAnnotations = Arrays.asList(annotations);
+  private void setExpectedAnnotations(String... annotationNames) {
+    expectedAnnotations = ContainerUtil.set(annotationNames);
   }
 }

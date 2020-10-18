@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.intention.valvar.to;
 
 import com.intellij.codeInspection.RemoveRedundantTypeArgumentsUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.refactoring.introduceVariable.IntroduceVariableBase;
@@ -11,17 +12,17 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction extends AbstractValVarIntentionAction {
 
-  private final Class<?> variableClass;
+  private final String variableClassName;
 
-  public AbstractReplaceExplicitTypeWithVariableIntentionAction(Class<?> variableClass) {
-    this.variableClass = variableClass;
+  public AbstractReplaceExplicitTypeWithVariableIntentionAction(String variableClassName) {
+    this.variableClassName = variableClassName;
   }
 
   @Nls(capitalization = Nls.Capitalization.Sentence)
   @NotNull
   @Override
   public String getFamilyName() {
-    return "Replace explicit type with '" + variableClass.getSimpleName() + "' (Lombok)";
+    return "Replace explicit type with '" + StringUtil.getShortName(variableClassName) + "' (Lombok)";
   }
 
   @Override
@@ -68,11 +69,11 @@ public abstract class AbstractReplaceExplicitTypeWithVariableIntentionAction ext
     }
 
     PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
-    PsiClass variablePsiClass = JavaPsiFacade.getInstance(project).findClass(variableClass.getName(), psiVariable.getResolveScope());
+    PsiClass variablePsiClass = JavaPsiFacade.getInstance(project).findClass(variableClassName, psiVariable.getResolveScope());
     if (variablePsiClass == null) {
       return;
     }
-    PsiJavaCodeReferenceElement referenceElementByFQClassName = elementFactory.createReferenceElementByFQClassName(variableClass.getName(), psiVariable.getResolveScope());
+    PsiJavaCodeReferenceElement referenceElementByFQClassName = elementFactory.createReferenceElementByFQClassName(variableClassName, psiVariable.getResolveScope());
     typeElement = (PsiTypeElement) IntroduceVariableBase.expandDiamondsAndReplaceExplicitTypeWithVar(typeElement, typeElement);
     typeElement.deleteChildRange(typeElement.getFirstChild(), typeElement.getLastChild());
     typeElement.add(referenceElementByFQClassName);

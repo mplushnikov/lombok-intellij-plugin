@@ -5,7 +5,7 @@ public class ReplaceAccessorsFromField {
     return field;
   }
 
-  public int setField(int field) {
+  public void setField(int field) {
     this.field = field;
   }
 }
