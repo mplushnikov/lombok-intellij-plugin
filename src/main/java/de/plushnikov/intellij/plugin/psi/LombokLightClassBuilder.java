@@ -42,7 +42,7 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   @Override
   @NotNull
   public PsiField[] getFields() {
-    return myFields.toArray(new PsiField[0]);
+    return myFields.toArray(PsiField.EMPTY_ARRAY);
   }
 
   private void addField(PsiField field) {

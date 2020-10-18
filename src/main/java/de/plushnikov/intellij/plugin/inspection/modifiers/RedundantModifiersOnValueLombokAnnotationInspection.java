@@ -1,6 +1,6 @@
 package de.plushnikov.intellij.plugin.inspection.modifiers;
 
-import lombok.Value;
+import de.plushnikov.intellij.plugin.LombokClassNames;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,7 +13,7 @@ public class RedundantModifiersOnValueLombokAnnotationInspection extends LombokR
 
   public RedundantModifiersOnValueLombokAnnotationInspection() {
     super(
-      Value.class,
+      LombokClassNames.VALUE,
       new RedundantModifiersInfo(RedundantModifiersInfoType.CLASS, null, "@Value already marks the class final.", FINAL),
       new RedundantModifiersInfo(RedundantModifiersInfoType.FIELD, STATIC, "@Value already marks non-static fields final.", FINAL),
       new RedundantModifiersInfo(RedundantModifiersInfoType.FIELD, STATIC, "@Value already marks non-static, package-local fields private.", PRIVATE));

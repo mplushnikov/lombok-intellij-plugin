@@ -5,7 +5,7 @@ public class ReplaceSetterFromMethod2 {
     return field;
   }
 
-  public int set<caret>Field(int field) {
+  public void set<caret>Field(int field) {
     this.field = field;
   }
 }

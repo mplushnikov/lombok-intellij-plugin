@@ -6,7 +6,7 @@ public class ReplaceGetterFromField {
     return 0;
   }
 
-  public int setField(int field) {
+  public void setField(int field) {
     System.out.println("Additional monitoring");
     this.field = field;
   }
