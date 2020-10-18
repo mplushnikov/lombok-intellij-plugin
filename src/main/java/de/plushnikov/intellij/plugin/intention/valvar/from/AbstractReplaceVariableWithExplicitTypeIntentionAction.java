@@ -1,8 +1,12 @@
 package de.plushnikov.intellij.plugin.intention.valvar.from;
 
+import com.intellij.codeInspection.RemoveRedundantTypeArgumentsUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.util.PsiTypesUtil;
+import de.plushnikov.intellij.plugin.LombokClassNames;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.util.IncorrectOperationException;
 import de.plushnikov.intellij.plugin.intention.valvar.AbstractValVarIntentionAction;
@@ -13,25 +17,25 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractReplaceVariableWithExplicitTypeIntentionAction extends AbstractValVarIntentionAction {
 
-  private final Class<?> variableClass;
+  private final String variableClassName;
 
-  public AbstractReplaceVariableWithExplicitTypeIntentionAction(Class<?> variableClass) {
-    this.variableClass = variableClass;
+  public AbstractReplaceVariableWithExplicitTypeIntentionAction(String variableClassName) {
+    this.variableClassName = variableClassName;
   }
 
   @Nls(capitalization = Nls.Capitalization.Sentence)
   @NotNull
   @Override
   public String getFamilyName() {
-    return "Replace '" + variableClass.getSimpleName() + "' with explicit type (Lombok)";
+    return "Replace '" + StringUtil.getShortName(variableClassName) + "' with explicixt type (Lombok)";
   }
 
   @Override
   public boolean isAvailableOnVariable(PsiVariable psiVariable) {
-    if (variableClass == lombok.val.class) {
+    if (LombokClassNames.VAL.equals(variableClassName)) {
       return ValProcessor.isVal(psiVariable);
     }
-    if (variableClass == lombok.var.class) {
+    if (LombokClassNames.VAR.equals(variableClassName)) {
       return ValProcessor.isVar(psiVariable);
     }
     return false;

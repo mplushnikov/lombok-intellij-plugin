@@ -10,6 +10,7 @@ public class DelombokDelegateAction extends AbstractDelombokAction {
   @NotNull
   protected DelombokHandler createHandler() {
     return new DelombokHandler(
-      ServiceManager.getService(DelegateFieldProcessor.class), ServiceManager.getService(DelegateMethodProcessor.class));
+      ServiceManager.getService(DelegateFieldProcessor.class),
+      ServiceManager.getService(DelegateMethodProcessor.class));
   }
 }

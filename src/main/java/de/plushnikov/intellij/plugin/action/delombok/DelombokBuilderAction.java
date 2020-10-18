@@ -14,11 +14,11 @@ public class DelombokBuilderAction extends AbstractDelombokAction {
   @NotNull
   protected DelombokHandler createHandler() {
     return new DelombokHandler(true,
-      ServiceManager.getService(BuilderPreDefinedInnerClassFieldProcessor.class),
-      ServiceManager.getService(BuilderPreDefinedInnerClassMethodProcessor.class),
-      ServiceManager.getService(BuilderClassProcessor.class),
-      ServiceManager.getService(BuilderClassMethodProcessor.class),
-      ServiceManager.getService(BuilderMethodProcessor.class),
-      ServiceManager.getService(BuilderProcessor.class));
+                               ServiceManager.getService(BuilderPreDefinedInnerClassFieldProcessor.class),
+                               ServiceManager.getService(BuilderPreDefinedInnerClassMethodProcessor.class),
+                               ServiceManager.getService(BuilderClassProcessor.class),
+                               ServiceManager.getService(BuilderClassMethodProcessor.class),
+                               ServiceManager.getService(BuilderMethodProcessor.class),
+                               ServiceManager.getService(BuilderProcessor.class));
   }
 }

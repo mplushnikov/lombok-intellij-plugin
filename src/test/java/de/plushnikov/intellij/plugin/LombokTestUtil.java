@@ -19,11 +19,16 @@ import java.io.File;
 
 public class LombokTestUtil {
   private static final String THIRD_PARTY_LIB_DIRECTORY = "lib";
-  private static final String LOMBOK_JAR_NAME = "lombok-1.18.12.jar";
+  private static final String OLD_LOMBOK_JAR_NAME = "lombok-1.18.2.jar";
+  private static final String LOMBOK_JAR_NAME = "lombok-1.18.16.jar";
   private static final String SLF4J_JAR_NAME = "slf4j-api-1.7.30.jar";
 
   public static void loadLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
     loadLibrary(projectDisposable, module, "Lombok Library", LOMBOK_JAR_NAME);
+  }
+
+  public static void loadOldLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
+    loadLibrary(projectDisposable, module, "Lombok Old Library", OLD_LOMBOK_JAR_NAME);
   }
 
   public static void loadSlf4jLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {

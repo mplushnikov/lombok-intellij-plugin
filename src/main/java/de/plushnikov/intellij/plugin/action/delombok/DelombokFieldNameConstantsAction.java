@@ -11,9 +11,9 @@ public class DelombokFieldNameConstantsAction extends AbstractDelombokAction {
   @NotNull
   protected DelombokHandler createHandler() {
     return new DelombokHandler(true,
-      ServiceManager.getService(FieldNameConstantsOldProcessor.class),
-      ServiceManager.getService(FieldNameConstantsFieldProcessor.class),
-      ServiceManager.getService(FieldNameConstantsProcessor.class),
-      ServiceManager.getService(FieldNameConstantsPredefinedInnerClassFieldProcessor.class));
+                               ServiceManager.getService(FieldNameConstantsOldProcessor.class),
+                               ServiceManager.getService(FieldNameConstantsFieldProcessor.class),
+                               ServiceManager.getService(FieldNameConstantsProcessor.class),
+                               ServiceManager.getService(FieldNameConstantsPredefinedInnerClassFieldProcessor.class));
   }
 }
