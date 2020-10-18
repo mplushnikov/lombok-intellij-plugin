@@ -45,15 +45,6 @@ Various problems with spring have also been reported. See issue #287, issue #271
     return toSetterName(accessorsInfo, psiField.getName(), isBoolean);
   }
 
-  public static String getSetterName(@NotNull PsiField psiField) {
-    return getSetterName(psiField, PsiType.BOOLEAN.equals(psiField.getType()));
-  }
-
-  public static String getSetterName(@NotNull PsiField psiField, boolean isBoolean) {
-    final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
-    return LombokUtils.toSetterName(accessorsInfo, psiField.getName(), isBoolean);
-  }
-
   /**
    * Generates a getter name from a given field name.
    * <p/>
