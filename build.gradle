@@ -21,16 +21,15 @@ apply plugin: "com.github.ManifestClasspath"
 def isCI = System.getenv("CI")
 def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
 ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
-def isEAP = ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")
-def artifactVersion = pluginVersion + "-" + (isEAP ? "EAP" : ideaVersion)
+def artifactVersion = pluginVersion + "-" + ideaVersion
 println "IdeaVersion is : ${ideaVersion}"
 println "ArtifactVersion is : ${artifactVersion}"
 
 group = pluginGroup
 version = artifactVersion
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 tasks.withType(JavaCompile) {
   options.encoding = 'UTF-8'

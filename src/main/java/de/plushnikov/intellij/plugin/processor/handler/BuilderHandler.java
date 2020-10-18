@@ -44,17 +44,19 @@ public class BuilderHandler {
   static final String TO_BUILDER_ANNOTATION_KEY = "toBuilder";
 
   private static final Collection<String> INVALID_ON_BUILDERS = Stream.of(LombokClassNames.GETTER,
-                                                                          LombokClassNames.SETTER,
-                                                                          LombokClassNames.WITHER,
-                                                                          LombokClassNames.WITH,
-                                                                          LombokClassNames.TO_STRING,
-                                                                          LombokClassNames.EQUALS_AND_HASHCODE,
-                                                                          LombokClassNames.REQUIRED_ARGS_CONSTRUCTOR,
-                                                                          LombokClassNames.ALL_ARGS_CONSTRUCTOR,
-                                                                          LombokClassNames.NO_ARGS_CONSTRUCTOR,
-                                                                          LombokClassNames.DATA,
-                                                                          LombokClassNames.VALUE,
-                                                                          LombokClassNames.FIELD_DEFAULTS).map(fqn -> StringUtil.getShortName(fqn)).collect(Collectors.toUnmodifiableSet());
+    LombokClassNames.SETTER,
+    LombokClassNames.WITHER,
+    LombokClassNames.WITH,
+    LombokClassNames.TO_STRING,
+    LombokClassNames.EQUALS_AND_HASHCODE,
+    LombokClassNames.REQUIRED_ARGS_CONSTRUCTOR,
+    LombokClassNames.ALL_ARGS_CONSTRUCTOR,
+    LombokClassNames.NO_ARGS_CONSTRUCTOR,
+    LombokClassNames.DATA,
+    LombokClassNames.VALUE,
+    LombokClassNames.FIELD_DEFAULTS)
+    .map(StringUtil::getShortName)
+    .collect(Collectors.toSet());
 
   PsiSubstitutor getBuilderSubstitutor(@NotNull PsiTypeParameterListOwner classOrMethodToBuild, @NotNull PsiClass innerClass) {
     PsiSubstitutor substitutor = PsiSubstitutor.EMPTY;
@@ -109,7 +111,7 @@ public class BuilderHandler {
       }
     );
 
-    return anyBuilderDefaultAndSingulars.isEmpty() || anyBuilderDefaultWithoutInitializer.isEmpty();
+    return !anyBuilderDefaultAndSingulars.isPresent() || !anyBuilderDefaultWithoutInitializer.isPresent();
   }
 
   public boolean validate(@NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull ProblemBuilder problemBuilder) {
@@ -442,7 +444,7 @@ public class BuilderHandler {
 
   public Optional<PsiClass> createBuilderClassIfNotExist(@NotNull PsiClass psiClass, @Nullable PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation) {
     PsiClass builderClass = null;
-    if (getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation).isEmpty()) {
+    if (!getExistInnerBuilderClass(psiClass, psiMethod, psiAnnotation).isPresent()) {
       builderClass = createBuilderClass(psiClass, psiMethod, psiAnnotation);
     }
     return Optional.ofNullable(builderClass);
@@ -530,7 +532,7 @@ public class BuilderHandler {
     methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(codeBlockText, methodBuilder));
 
     Optional<PsiMethod> definedConstructor = Optional.ofNullable(psiMethod);
-    if (definedConstructor.isEmpty()) {
+    if (!definedConstructor.isPresent()) {
       final Collection<PsiMethod> classConstructors = PsiClassUtil.collectClassConstructorIntern(parentClass);
       definedConstructor = classConstructors.stream()
         .filter(m -> sameParameters(m.getParameterList().getParameters(), builderInfos))
