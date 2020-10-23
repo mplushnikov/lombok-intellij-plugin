@@ -64,6 +64,7 @@ Features / Supports
 - [@SneakyThrows](https://projectlombok.org/features/SneakyThrows.html)
 - [@val](https://projectlombok.org/features/val.html) available from IntelliJ 14.1 (improved in 2016.2)
 - [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass.html) available from IntelliJ 2016.2
+- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html)
 - [lombok config files syntax highlighting](https://projectlombok.org/features/configuration.html)
 - code inspections
 - refactoring actions (lombok and delombok)
@@ -175,6 +176,7 @@ Developed By
 - [**@wyhasany** Michał Rowicki](https://github.com/wyhasany)
 - [**@ocadaruma** Haruki Okada](https://github.com/ocadaruma)
 - [**@mackatozis** Alexandros Efthymiadis](https://github.com/mackatozis)
+- [**@NekoCaffeine** NekoCaffeine](https://github.com/NekoCaffeine)
 
 Supporters
 --------
