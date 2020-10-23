@@ -63,21 +63,21 @@ public class EMHandler {
     if (place instanceof PsiMethodReferenceExpression)
       return result;
     if ((!(processor instanceof MethodResolverProcessor) || !((MethodResolverProcessor) processor).isConstructor())) {
-      @Nullable PsiClass context = PsiTreeUtil.getParentOfType(place, PsiClass.class);
-      while (context != null) {
-        final @Nullable PsiAnnotation annotation = context.getAnnotation(LombokClassNames.EXTENSION_METHOD);
-        if (annotation != null) {
-          final Set<PsiClass> providers = PsiAnnotationUtil.getAnnotationValues(annotation, "value", PsiType.class).stream()
-            .filter(PsiClassType.class::isInstance)
-            .map(PsiClassType.class::cast)
-            .map(PsiClassType::resolve)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-          if (!providers.isEmpty()) {
-            final @Nullable NameHint nameHint = processor.getHint(NameHint.KEY);
-            final @Nullable String name = nameHint == null ? null : nameHint.getName(state);
-            final ElementClassHint classHint = processor.getHint(ElementClassHint.KEY);
-            if (classHint == null || classHint.shouldProcess(ElementClassHint.DeclarationKind.METHOD)) {
+      final @Nullable NameHint nameHint = processor.getHint(NameHint.KEY);
+      final @Nullable String name = nameHint == null ? null : nameHint.getName(state);
+      final ElementClassHint classHint = processor.getHint(ElementClassHint.KEY);
+      if (classHint == null || classHint.shouldProcess(ElementClassHint.DeclarationKind.METHOD)) {
+        @Nullable PsiClass context = PsiTreeUtil.getParentOfType(place, PsiClass.class);
+        while (context != null) {
+          final @Nullable PsiAnnotation annotation = context.getAnnotation(LombokClassNames.EXTENSION_METHOD);
+          if (annotation != null) {
+            final Set<PsiClass> providers = PsiAnnotationUtil.getAnnotationValues(annotation, "value", PsiType.class).stream()
+              .filter(PsiClassType.class::isInstance)
+              .map(PsiClassType.class::cast)
+              .map(PsiClassType::resolve)
+              .filter(Objects::nonNull)
+              .collect(Collectors.toSet());
+            if (!providers.isEmpty()) {
               final List<PsiElement> collect = supers(psiClass).map(PsiClassUtil::collectClassMethodsIntern).flatMap(Collection::stream).collect(Collectors.toList());
               PsiType type = null;
               if (place instanceof PsiMethodCallExpression) {
@@ -96,8 +96,8 @@ public class EMHandler {
                 return false;
             }
           }
+          context = PsiTreeUtil.getParentOfType(context, PsiClass.class);
         }
-        context = PsiTreeUtil.getParentOfType(context, PsiClass.class);
       }
     }
     return true;
