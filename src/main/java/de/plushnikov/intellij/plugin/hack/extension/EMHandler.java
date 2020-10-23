@@ -190,7 +190,10 @@ public class EMHandler {
             }
           } else
             typeMapper = Function.identity();
-          final LombokLightMethodBuilder lightMethod = new LombokLightMethodBuilder(methodNode.getManager(), methodNode.getName());
+          final LombokLightMethodBuilder lightMethod = new LombokLightMethodBuilder(methodNode.getManager(), methodNode.getName()) {
+            @Override
+            public boolean isEquivalentTo(final PsiElement another) { return methodNode.isEquivalentTo(another); }
+          };
           lightMethod
             .addModifiers(PsiModifier.PUBLIC)
             .setMethodReturnType(typeMapper.apply(methodNode.getReturnType()));
