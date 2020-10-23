@@ -3,12 +3,14 @@ package de.plushnikov.intellij.plugin.hack.extension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -16,10 +18,10 @@ import java.util.stream.Stream;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -32,7 +34,6 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.impl.PsiClassImplUtil;
-import com.intellij.psi.impl.light.LightParameter;
 import com.intellij.psi.impl.light.LightTypeParameterListBuilder;
 import com.intellij.psi.impl.source.PsiImmediateClassType;
 import com.intellij.psi.scope.ElementClassHint;
@@ -50,6 +51,7 @@ import com.intellij.psi.util.TypeConversionUtil;
 import com.google.common.collect.MapMaker;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
+import de.plushnikov.intellij.plugin.psi.LombokLightParameter;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
@@ -78,7 +80,8 @@ public class EMHandler {
               .filter(Objects::nonNull)
               .collect(Collectors.toSet());
             if (!providers.isEmpty()) {
-              final List<PsiElement> collect = supers(psiClass).map(PsiClassUtil::collectClassMethodsIntern).flatMap(Collection::stream).collect(Collectors.toList());
+              final Collection<PsiMethod> collect = supers(psiClass).map(PsiClassUtil::collectClassMethodsIntern).flatMap(Collection::stream).collect(Collectors.toSet());
+              final Map<PsiClass, Collection<PsiMethod>> providerRecord = new HashMap<>();
               PsiType type = null;
               if (place instanceof PsiMethodCallExpression) {
                 final @Nullable PsiExpression expression = ((PsiMethodCallExpression) place).getMethodExpression().getQualifierExpression();
@@ -88,9 +91,12 @@ public class EMHandler {
                 type = ((PsiReferenceExpression) place).getQualifierExpression().getType();
               if (type == null)
                 type = PsiTypesUtil.getClassType(psiClass);
-              final boolean match = injectAugment(providers, type, psiClass)
-                .filter(method -> name == null || method.getName().equals(name))
-                .filter(method -> checkMethod(collect, method))
+              final PsiType finalType = type;
+              final boolean match = (name == null ?
+                injectAugment(providers, finalType, psiClass) :
+                supers(psiClass).flatMap(node -> injectAugment(providers, psiClass == node ? finalType : new PsiImmediateClassType(node, PsiSubstitutor.EMPTY), node))
+                  .filter(method -> name.equals(method.getName())))
+                .filter(method -> checkMethod(collect, providerRecord, method))
                 .allMatch(method -> processor.execute(method, state));
               if (!match)
                 return false;
@@ -112,7 +118,7 @@ public class EMHandler {
       .flatMap(List::stream)
       .map(function -> {
         try {
-          return function.apply(node);
+          return function.apply(node, type);
         } catch (Throwable throwable) {
           if (throwable instanceof ProcessCanceledException)
             throw throwable;
@@ -138,34 +144,60 @@ public class EMHandler {
       } else
         return node.equals(resolved);
     }
+    if (type instanceof PsiArrayType && nodeType instanceof PsiArrayType) {
+      if (((PsiArrayType) nodeType).getComponentType() instanceof PsiPrimitiveType)
+        return ((PsiArrayType) nodeType).getComponentType().equals(((PsiArrayType) type).getComponentType());
+      final PsiType componentType = type.getDeepComponentType();
+      final int componentDimensions = type.getArrayDimensions();
+      if (nodeType.getArrayDimensions() < componentDimensions)
+        return false;
+      PsiType checkType = nodeType;
+      for (int i = 0; i < componentDimensions; i++)
+        checkType = ((PsiArrayType) checkType).getComponentType();
+      if (componentType instanceof PsiClassType) {
+        final PsiClass resolved = ((PsiClassType) componentType).resolve();
+        if (resolved instanceof PsiTypeParameter) {
+          for (final PsiClassType bound : resolved.getExtendsListTypes())
+            if (!TypeConversionUtil.isAssignable(bound, checkType))
+              return false;
+          return true;
+        }
+      }
+    }
     return TypeConversionUtil.isAssignable(type, nodeType);
   }
 
-  public static Map<PsiType, List<Function<PsiClass, PsiMethod>>> providerData(final PsiClass node) {
+  public static Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> providerData(final PsiClass node) {
     return CachedValuesManager.getCachedValue(node, () -> CachedValueProvider.Result.create(syncProviderData(node), node, PsiModificationTracker.MODIFICATION_COUNT));
   }
 
-  private static Map<PsiType, List<Function<PsiClass, PsiMethod>>> syncProviderData(final PsiClass node) {
-    final Map<PsiType, List<Function<PsiClass, PsiMethod>>> result = new ConcurrentHashMap<>();
-    Stream.of(node.getMethods())
+  private static Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
+    final Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ConcurrentHashMap<>();
+    PsiClassUtil.collectClassStaticMethodsIntern(node).stream()
       .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.STATIC) && methodNode.hasModifierProperty(PsiModifier.PUBLIC))
       .filter(methodNode -> methodNode.getParameterList().getParametersCount() > 0)
       .filter(methodNode -> !(methodNode.getParameterList().getParameters()[0].getType() instanceof PsiPrimitiveType))
       .forEach(methodNode -> {
-        final PsiType type = methodNode.getParameterList().getParameters()[0].getType();
-        final Function<PsiClass, PsiMethod> function = injectNode -> {
+        final BiFunction<PsiClass, PsiType, PsiMethod> function = (injectNode, injectType) -> {
+          final PsiType type = methodNode.getParameterList().getParameters()[0].getType(), innerType = type.getDeepComponentType();
           final List<PsiTypeParameter> dropTypeParameters = new LinkedList<>();
           final Function<PsiType, PsiType> typeMapper;
-          if (type instanceof PsiClassType) {
-            final Map<PsiType, PsiType> mapping = new HashMap<>();
-            final PsiClass resolve = ((PsiClassType) type).resolve();
-            if (resolve instanceof PsiTypeParameter)
-              mapping.put(type, "_Dummy_.__Array__".equals(injectNode.getQualifiedName()) ?
-                PsiElementFactory.getInstance(node.getProject()).createTypeByFQClassName(Object.class.getCanonicalName()).createArrayType() :
-                new PsiImmediateClassType(injectNode, PsiSubstitutor.EMPTY));
-            final PsiType[] superTypes = type.getSuperTypes();
+          final Map<PsiType, PsiType> mapping = new HashMap<>();
+          if (innerType instanceof PsiClassType) {
+            final PsiClass resolveParameter = ((PsiClassType) innerType).resolve();
+            if (resolveParameter instanceof PsiTypeParameter) {
+              final int componentDimensions = type.getArrayDimensions();
+              PsiType checkType = injectType;
+              for (int i = 0; i < componentDimensions; i++)
+                checkType = ((PsiArrayType) checkType).getComponentType();
+              mapping.put(innerType, checkType);
+              dropTypeParameters.add((PsiTypeParameter) resolveParameter);
+            }
+          }
+          if (innerType instanceof PsiClassType) {
+            final PsiType[] superTypes = innerType.getSuperTypes();
             final PsiType parameters[] = superTypes.length > 0 ? superTypes[0] instanceof PsiClassType ? ((PsiClassType) superTypes[0]).getParameters()
-              : ((PsiClassType) type).getParameters() : ((PsiClassType) type).getParameters();
+              : ((PsiClassType) innerType).getParameters() : ((PsiClassType) innerType).getParameters();
             if (parameters.length > 0) {
               final int p_count[] = { -1 };
               final PsiTypeParameter resolveTypeParameters[] = injectNode.getTypeParameters();
@@ -182,12 +214,8 @@ public class EMHandler {
                   }
                 });
             }
-            if (mapping.isEmpty())
-              typeMapper = Function.identity();
-            else {
-              final TypeMapper mapper = new TypeMapper(mapping);
-              typeMapper = targetType -> targetType.accept(mapper);
-            }
+            final TypeMapper mapper = new TypeMapper(mapping);
+            typeMapper = targetType -> targetType.accept(mapper);
           } else
             typeMapper = Function.identity();
           final LombokLightMethodBuilder lightMethod = new LombokLightMethodBuilder(methodNode.getManager(), methodNode.getName()) {
@@ -199,7 +227,7 @@ public class EMHandler {
             .setMethodReturnType(typeMapper.apply(methodNode.getReturnType()));
           Stream.of(methodNode.getParameterList().getParameters())
             .skip(1L)
-            .map(parameter -> new LightParameter(parameter.getName(), typeMapper.apply(parameter.getType()), lightMethod, JavaLanguage.INSTANCE, parameter.isVarArgs()))
+            .map(parameter -> new LombokLightParameter(parameter.getName(), typeMapper.apply(parameter.getType()), lightMethod, JavaLanguage.INSTANCE))
             .forEach(lightMethod::addParameter);
           Stream.of(methodNode.getThrowsList().getReferencedTypes())
             .map(typeMapper)
@@ -214,23 +242,26 @@ public class EMHandler {
             lightMethod.addModifier(PsiModifier.DEFAULT);
           return lightMethod;
         };
-        final Map<PsiClass, PsiMethod> cache = new MapMaker().weakKeys().makeMap();
-        result.computeIfAbsent(type, key -> new ArrayList<>()).add(containingClass -> cache.computeIfAbsent(containingClass, function));
+        final MapMaker maker = new MapMaker().weakKeys();
+        final Map<PsiType, Map<PsiClass, PsiMethod>> cache = maker.makeMap();
+        result.computeIfAbsent(methodNode.getParameterList().getParameters()[0].getType(), key -> new ArrayList<>())
+          .add((injectNode, injectType) -> cache.computeIfAbsent(injectType, $ -> maker.makeMap()).computeIfAbsent(injectNode, $ -> function.apply(injectNode, injectType)));
       });
     return result;
   }
 
   @NotNull
   private static Stream<PsiClass> supers(PsiClass psiClass) {
-    return Stream.concat(Stream.of(psiClass), Stream.of(PsiClassImplUtil.getSupers(psiClass)));
+    return Stream.concat(Stream.of(psiClass), Stream.of(PsiClassImplUtil.getSupers(psiClass))).filter(new HashSet<>()::add);
   }
 
-  private static boolean checkMethod(final List<PsiElement> members, final PsiMethod methodTree) {
-    return members.stream()
-      .filter(PsiMethod.class::isInstance)
-      .map(PsiMethod.class::cast)
-      .map(tree -> MethodSignatureBackedByPsiMethod.create(tree, PsiSubstitutor.EMPTY, true))
-      .noneMatch(MethodSignatureBackedByPsiMethod.create(methodTree, PsiSubstitutor.EMPTY, true)::equals);
+  private static boolean checkMethod(final Collection<PsiMethod> members, final Map<PsiClass, Collection<PsiMethod>> record, final PsiMethod methodTree) {
+    final Collection<PsiMethod> collection = record.computeIfAbsent(((PsiMethod) methodTree.getNavigationElement()).getContainingClass(), $ -> new ArrayList<>());
+    try {
+      return Stream.concat(members.stream(), collection.stream())
+        .map(tree -> MethodSignatureBackedByPsiMethod.create(tree, PsiSubstitutor.EMPTY, true))
+        .noneMatch(MethodSignatureBackedByPsiMethod.create(methodTree, PsiSubstitutor.EMPTY, true)::equals);
+    } finally { collection.add(methodTree); }
   }
 
 }
