@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.hack;
 
 import java.lang.instrument.Instrumentation;
 
-// use Maho
 public class LiveInjector {
 
     public static /*@Nullable*/ String agentArgs;
