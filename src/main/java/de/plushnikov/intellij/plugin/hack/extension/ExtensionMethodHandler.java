@@ -92,10 +92,8 @@ public class ExtensionMethodHandler {
               if (type == null)
                 type = PsiTypesUtil.getClassType(psiClass);
               final PsiType finalType = type;
-              final boolean match = (name == null ?
-                injectAugment(providers, finalType, psiClass) :
-                supers(psiClass).flatMap(node -> injectAugment(providers, psiClass == node ? finalType : new PsiImmediateClassType(node, PsiSubstitutor.EMPTY), node))
-                  .filter(method -> name.equals(method.getName())))
+              final Stream<PsiMethod> stream = supers(psiClass).flatMap(node -> injectAugment(providers, psiClass == node ? finalType : new PsiImmediateClassType(node, PsiSubstitutor.EMPTY), node));
+              final boolean match = (name == null ? stream : stream.filter(method -> name.equals(method.getName())))
                 .filter(method -> checkMethod(collect, providerRecord, method))
                 .allMatch(method -> processor.execute(method, state));
               if (!match)
