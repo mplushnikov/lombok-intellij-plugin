@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
@@ -39,14 +40,24 @@ public class ExtensionMethodSupport {
   static {
     try {
       final ClassLoader loader = PsiClassImplUtil.class.getClassLoader();
-      final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
-      defineClass.setAccessible(true);
-      final byte[] bytes = getBytesFromClass(ExtensionMethodHolder.class);
-      final Class<?> holder = (Class<?>) defineClass.invoke(loader, bytes, 0, bytes.length);
-      final Field handle = holder.getField("handle");
-      handle.setAccessible(true);
-      handle.set(null, MethodHandles.lookup().findStatic(ExtensionMethodHandler.class, "processDeclarations",
-        MethodType.methodType(boolean.class, boolean.class, PsiClass.class, PsiScopeProcessor.class, ResolveState.class, PsiElement.class, PsiElement.class)));
+      final MethodHandle handle = MethodHandles.lookup().findStatic(ExtensionMethodHandler.class, "processDeclarations",
+        MethodType.methodType(boolean.class, boolean.class, PsiClass.class, PsiScopeProcessor.class, ResolveState.class, PsiElement.class, PsiElement.class));
+      if (ExtensionMethodHolder.class.getClassLoader() == PsiClassImplUtil.class.getClassLoader()) // test env classloader same
+        ExtensionMethodHolder.handle = handle;
+      else {
+        Class<?> holder;
+        try {
+          holder = Class.forName(ExtensionMethodHolder.class.getName(), true, loader);
+        } catch (Throwable throwable) {
+          final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
+          defineClass.setAccessible(true);
+          final byte[] bytes = getBytesFromClass(ExtensionMethodHolder.class);
+          holder = (Class<?>) defineClass.invoke(loader, bytes, 0, bytes.length);
+        }
+        final Field handleField = holder.getField("handle");
+        handleField.setAccessible(true);
+        handleField.set(null, handle);
+      }
       final Instrumentation instrumentation = Injector.instrumentation();
       instrumentation.addTransformer(new ClassFileTransformer() {
         @Override
