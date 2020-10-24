@@ -2,7 +2,7 @@ package de.plushnikov.intellij.plugin.hack.extension;
 
 import java.lang.invoke.MethodHandle;
 
-public class EMHolder {
+public class ExtensionMethodHolder {
 
   public static MethodHandle handle;
 

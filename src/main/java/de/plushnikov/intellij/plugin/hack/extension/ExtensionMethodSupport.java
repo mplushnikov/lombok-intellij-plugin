@@ -34,18 +34,18 @@ import org.jetbrains.org.objectweb.asm.tree.VarInsnNode;
 
 import static org.jetbrains.org.objectweb.asm.Opcodes.*;
 
-public class EMSupport {
+public class ExtensionMethodSupport {
 
   static {
     try {
       final ClassLoader loader = PsiClassImplUtil.class.getClassLoader();
       final Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", byte[].class, int.class, int.class);
       defineClass.setAccessible(true);
-      final byte[] bytes = getBytesFromClass(EMHolder.class);
+      final byte[] bytes = getBytesFromClass(ExtensionMethodHolder.class);
       final Class<?> holder = (Class<?>) defineClass.invoke(loader, bytes, 0, bytes.length);
       final Field handle = holder.getField("handle");
       handle.setAccessible(true);
-      handle.set(null, MethodHandles.lookup().findStatic(EMHandler.class, "processDeclarations",
+      handle.set(null, MethodHandles.lookup().findStatic(ExtensionMethodHandler.class, "processDeclarations",
         MethodType.methodType(boolean.class, boolean.class, PsiClass.class, PsiScopeProcessor.class, ResolveState.class, PsiElement.class, PsiElement.class)));
       final Instrumentation instrumentation = Injector.instrumentation();
       instrumentation.addTransformer(new ClassFileTransformer() {
@@ -69,7 +69,7 @@ public class EMSupport {
                 }
                 target.forEach(insn -> {
                   final InsnList list = new InsnList();
-                  list.add(new FieldInsnNode(GETSTATIC, "de/plushnikov/intellij/plugin/hack/extension/EMHolder", "handle", "Ljava/lang/invoke/MethodHandle;"));
+                  list.add(new FieldInsnNode(GETSTATIC, "de/plushnikov/intellij/plugin/hack/extension/ExtensionMethodHolder", "handle", "Ljava/lang/invoke/MethodHandle;"));
                   list.add(new InsnNode(SWAP));
                   list.add(new VarInsnNode(ALOAD, 0));
                   list.add(new VarInsnNode(ALOAD, 1));

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.intellij.lang.java.JavaLanguage;
-import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
@@ -57,14 +57,14 @@ import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class EMHandler {
+public class ExtensionMethodHandler {
 
   public static boolean processDeclarations(final boolean result, final PsiClass psiClass, final PsiScopeProcessor processor, final ResolveState state, final PsiElement lastParent, final PsiElement place) {
     if (!result)
       return false;
     if (place instanceof PsiMethodReferenceExpression)
       return result;
-    if ((!(processor instanceof MethodResolverProcessor) || !((MethodResolverProcessor) processor).isConstructor())) {
+    if (Registry.is("lombok.experimental.ExtensionMethod") && (!(processor instanceof MethodResolverProcessor) || !((MethodResolverProcessor) processor).isConstructor())) {
       final @Nullable NameHint nameHint = processor.getHint(NameHint.KEY);
       final @Nullable String name = nameHint == null ? null : nameHint.getName(state);
       final ElementClassHint classHint = processor.getHint(ElementClassHint.KEY);
@@ -110,7 +110,7 @@ public class EMHandler {
   }
 
   private static Stream<PsiMethod> injectAugment(final Set<PsiClass> providers, final PsiType type, final PsiClass node) {
-    return providers.stream().map(EMHandler::providerData)
+    return providers.stream().map(ExtensionMethodHandler::providerData)
       .map(Map::entrySet)
       .flatMap(Set::stream)
       .filter(e -> checkType(e.getKey(), type, node))

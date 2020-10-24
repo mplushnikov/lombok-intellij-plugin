@@ -18,7 +18,7 @@
 
   <project-components>
     <component>
-      <implementation-class>de.plushnikov.intellij.plugin.hack.extension.EMSupport</implementation-class>
+      <implementation-class>de.plushnikov.intellij.plugin.hack.extension.ExtensionMethodSupport</implementation-class>
     </component>
   </project-components>
 
@@ -236,6 +236,8 @@
 
     <codeInsight.template.postfixTemplateProvider language="JAVA"
                                                   implementationClass="de.plushnikov.intellij.plugin.extension.postfix.LombokPostfixTemplateProvider"/>
+
+    <registryKey key="lombok.experimental.ExtensionMethod" defaultValue="true" description="Enable @ExtensionMethod support"/>
   </extensions>
 
   <actions>
