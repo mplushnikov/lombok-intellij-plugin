@@ -116,16 +116,7 @@ public class EMHandler {
       .filter(e -> checkType(e.getKey(), type, node))
       .map(Map.Entry::getValue)
       .flatMap(List::stream)
-      .map(function -> {
-        try {
-          return function.apply(node, type);
-        } catch (Throwable throwable) {
-          if (throwable instanceof ProcessCanceledException)
-            throw throwable;
-          throwable.printStackTrace();
-          return null;
-        }
-      })
+      .map(function -> function.apply(node, type))
       .filter(Objects::nonNull);
   }
 
