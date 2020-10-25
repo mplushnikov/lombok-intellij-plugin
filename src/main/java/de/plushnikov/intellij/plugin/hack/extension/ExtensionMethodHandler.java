@@ -163,7 +163,7 @@ public class ExtensionMethodHandler {
   private static Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
     final Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ConcurrentHashMap<>();
     PsiClassUtil.collectClassStaticMethodsIntern(node).stream()
-      .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.STATIC) && methodNode.hasModifierProperty(PsiModifier.PUBLIC))
+      .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.PUBLIC))
       .filter(methodNode -> methodNode.getParameterList().getParametersCount() > 0)
       .filter(methodNode -> !(methodNode.getParameterList().getParameters()[0].getType() instanceof PsiPrimitiveType))
       .forEach(methodNode -> {
