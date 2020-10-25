@@ -42,6 +42,7 @@ import com.intellij.psi.scope.PsiScopeProcessor;
 import com.intellij.psi.scope.processor.MethodResolverProcessor;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.MethodSignatureBackedByPsiMethod;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -240,9 +241,7 @@ public class ExtensionMethodHandler {
   }
 
   @NotNull
-  private static Stream<PsiClass> supers(PsiClass psiClass) {
-    return Stream.concat(Stream.of(psiClass), Stream.of(PsiClassImplUtil.getSupers(psiClass))).filter(new HashSet<>()::add);
-  }
+  private static Stream<PsiClass> supers(PsiClass psiClass) { return Stream.concat(Stream.of(psiClass), InheritanceUtil.getSuperClasses(psiClass).stream()); }
 
   private static boolean checkMethod(final Collection<PsiMethod> members, final Map<PsiClass, Collection<PsiMethod>> record, final PsiMethod methodTree) {
     final Collection<PsiMethod> collection = record.computeIfAbsent(((PsiMethod) methodTree.getNavigationElement()).getContainingClass(), $ -> new ArrayList<>());
