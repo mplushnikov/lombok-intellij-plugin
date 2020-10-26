@@ -240,7 +240,17 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
     },
 
     /**
-     * Caller of extension methods do not need to perform null pointer checking
+     * Caller of extension methods do not need to perform null pointer checking.
+     * This is a compromise because IntelliJ will only warn of the first possible null pointer call.
+     * See the example code below for details.
+     *
+     * static boolean isNullOrEmpty(String str) { return str == null || str.isEmpty(); }
+     *
+     * {
+     *   String a = null;
+     *   a.isNullOrEmpty(); // Warning is eliminated by filter.
+     *   a.isBlank();       // This call will not be warned.
+     * }
      */
     EXTENSION_METHOD_CALLER_NULL_CHECKING(HighlightSeverity.WARNING, CodeInsightColors.WARNINGS_ATTRIBUTES) {
       private final Pattern patternMayNPE = Pattern.compile("Method invocation '.+' (may|will) produce 'NullPointerException'");
@@ -252,15 +262,20 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
       @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
-        if (highlightedElement instanceof PsiMethodCallExpression) {
-          final @Nullable PsiMethod method = ((PsiMethodCallExpression) highlightedElement).resolveMethod();
-          if (method instanceof LombokLightMethodBuilder) {
-            final PsiElement navigationElement = method.getNavigationElement();
-            return navigationElement instanceof PsiMethod && ((PsiMethod) navigationElement).hasModifierProperty(PsiModifier.STATIC);
+        final PsiElement parent = highlightedElement.getParent();
+        if (parent != null) {
+          final PsiElement parentParent = parent.getParent();
+          if (parentParent instanceof PsiMethodCallExpression) {
+            final @Nullable PsiMethod method = ((PsiMethodCallExpression) parentParent).resolveMethod();
+            if (method instanceof LombokLightMethodBuilder) {
+              final PsiElement navigationElement = method.getNavigationElement();
+              return !(navigationElement instanceof PsiMethod && ((PsiMethod) navigationElement).hasModifierProperty(PsiModifier.STATIC));
+            }
           }
         }
-        return false;
+        return true;
       }
+
     };
 
     private final HighlightSeverity severity;
