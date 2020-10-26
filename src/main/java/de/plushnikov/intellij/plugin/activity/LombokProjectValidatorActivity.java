@@ -147,31 +147,6 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
     }) != null;
   }
 
-  public static boolean isVersionLessThan1_18_16(Project project) {
-    if (ProjectSettings.isLombokEnabledInProject(project) && hasLombokLibrary(project)) {
-      return CachedValuesManager.getManager(project)
-        .getCachedValue(project, () -> {
-          Boolean isVersionLessThan = ReadAction.compute(() -> isVersionLessThan1_18_16_Internal(project));
-          return new CachedValueProvider.Result<>(isVersionLessThan, ProjectRootManager.getInstance(project));
-        });
-    }
-    return false;
-  }
-
-  private static boolean isVersionLessThan1_18_16_Internal(@NotNull Project project) {
-    PsiPackage aPackage = JavaPsiFacade.getInstance(project).findPackage("lombok.experimental");
-    if (aPackage != null) {
-      PsiDirectory[] directories = aPackage.getDirectories();
-      if (directories.length > 0) {
-        List<OrderEntry> entries = ProjectRootManager.getInstance(project).getFileIndex().getOrderEntriesForFile(directories[0].getVirtualFile());
-        if (!entries.isEmpty()) {
-          return Version.isLessThan(entries.get(0), "1.18.16");
-        }
-      }
-    }
-    return false;
-  }
-
   @Nullable
   private static OrderEntry findLombokEntry(@NotNull ModuleRootManager moduleRootManager) {
     final OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
