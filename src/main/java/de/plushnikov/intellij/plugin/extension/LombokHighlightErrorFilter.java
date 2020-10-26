@@ -13,6 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.handler.*;
+import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import org.jetbrains.annotations.NotNull;
@@ -252,8 +253,8 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
       @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
         if (highlightedElement instanceof PsiMethodCallExpression) {
-          final PsiMethod method = ((PsiMethodCallExpression) highlightedElement).resolveMethod();
-          if (method != null) {
+          final @Nullable PsiMethod method = ((PsiMethodCallExpression) highlightedElement).resolveMethod();
+          if (method instanceof LombokLightMethodBuilder) {
             final PsiElement navigationElement = method.getNavigationElement();
             return navigationElement instanceof PsiMethod && ((PsiMethod) navigationElement).hasModifierProperty(PsiModifier.STATIC);
           }
