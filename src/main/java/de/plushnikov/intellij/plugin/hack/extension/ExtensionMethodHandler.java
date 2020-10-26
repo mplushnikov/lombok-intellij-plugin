@@ -27,6 +27,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiSubstitutor;
@@ -34,6 +35,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.impl.PsiClassImplUtil;
+import com.intellij.psi.impl.light.LightParameter;
 import com.intellij.psi.impl.light.LightTypeParameterListBuilder;
 import com.intellij.psi.impl.source.PsiImmediateClassType;
 import com.intellij.psi.scope.ElementClassHint;
@@ -120,8 +122,6 @@ public class ExtensionMethodHandler {
   }
 
   public static boolean checkType(final PsiType type, final PsiType nodeType, final PsiClass node) {
-    if (type == null)
-      return false;
     if (type.equals(nodeType))
       return true;
     if (type instanceof PsiClassType) {
@@ -166,6 +166,7 @@ public class ExtensionMethodHandler {
     PsiClassUtil.collectClassStaticMethodsIntern(node).stream()
       .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.PUBLIC))
       .filter(methodNode -> methodNode.getParameterList().getParametersCount() > 0)
+      .filter(methodNode -> Stream.of(methodNode.getParameterList().getParameters()).map(PsiParameter::getType).allMatch(Objects::nonNull))
       .filter(methodNode -> !(methodNode.getParameterList().getParameters()[0].getType() instanceof PsiPrimitiveType))
       .forEach(methodNode -> {
         final BiFunction<PsiClass, PsiType, PsiMethod> function = (injectNode, injectType) -> {
@@ -217,7 +218,15 @@ public class ExtensionMethodHandler {
             .setMethodReturnType(typeMapper.apply(methodNode.getReturnType()));
           Stream.of(methodNode.getParameterList().getParameters())
             .skip(1L)
-            .map(parameter -> new LombokLightParameter(parameter.getName(), typeMapper.apply(parameter.getType()), lightMethod, JavaLanguage.INSTANCE))
+            .map(parameter -> new LombokLightParameter(parameter.getName(), typeMapper.apply(parameter.getType()), lightMethod, JavaLanguage.INSTANCE) {
+              @Override
+              public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                final LombokLightParameter parameter = (LombokLightParameter) o;
+                return Objects.equals(getName(), parameter.getName()) && Objects.equals(getType(), parameter.getType());
+              }
+            })
             .forEach(lightMethod::addParameter);
           Stream.of(methodNode.getThrowsList().getReferencedTypes())
             .map(typeMapper)

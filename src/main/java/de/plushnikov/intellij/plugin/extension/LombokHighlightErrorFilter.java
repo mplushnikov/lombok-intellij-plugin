@@ -236,6 +236,30 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
         return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, LombokClassNames.BUILDER_DEFAULT);
       }
+    },
+
+    /**
+     * Caller of extension methods do not need to perform null pointer checking
+     */
+    EXTENSION_METHOD_CALLER_NULL_CHECKING(HighlightSeverity.WARNING, CodeInsightColors.WARNINGS_ATTRIBUTES) {
+      private final Pattern patternMayNPE = Pattern.compile("Method invocation '.+' (may|will) produce 'NullPointerException'");
+
+      @Override
+      public boolean descriptionCheck(@Nullable String description) {
+        return description != null && patternMayNPE.matcher(description).matches();
+      }
+
+      @Override
+      public boolean accept(@NotNull PsiElement highlightedElement) {
+        if (highlightedElement instanceof PsiMethodCallExpression) {
+          final PsiMethod method = ((PsiMethodCallExpression) highlightedElement).resolveMethod();
+          if (method != null) {
+            final PsiElement navigationElement = method.getNavigationElement();
+            return navigationElement instanceof PsiMethod && ((PsiMethod) navigationElement).hasModifierProperty(PsiModifier.STATIC);
+          }
+        }
+        return false;
+      }
     };
 
     private final HighlightSeverity severity;
