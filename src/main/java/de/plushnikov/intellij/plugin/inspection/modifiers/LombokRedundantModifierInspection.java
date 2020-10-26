@@ -84,7 +84,7 @@ public abstract class LombokRedundantModifierInspection extends AbstractBaseJava
           || (infoType != RedundantModifiersInfoType.VARIABLE && !(parentModifierListOwner instanceof PsiClass))) {
           continue;
         }
-        if ((supportedAnnotation == null || PsiAnnotationSearchUtil.isAnnotatedWith(psiModifierListOwner, supportedAnnotation)) &&
+        if ((supportedAnnotation == null || PsiAnnotationSearchUtil.isAnnotatedWith(parentModifierListOwner, supportedAnnotation)) &&
           redundantModifiersInfo.getType().getSupportedClass().isAssignableFrom(psiModifierListOwner.getClass())) {
           PsiModifierList psiModifierList = psiModifierListOwner.getModifierList();
           if (psiModifierList == null ||
