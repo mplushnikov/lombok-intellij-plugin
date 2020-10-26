@@ -40,6 +40,7 @@ public class ExtensionMethodSupport {
   static {
     try {
       final ClassLoader loader = PsiClassImplUtil.class.getClassLoader();
+      // Since the injection target and the injection callback may not be the same class loader, they need to be called using the method handle.
       final MethodHandle handle = MethodHandles.lookup().findStatic(ExtensionMethodHandler.class, "processDeclarations",
         MethodType.methodType(boolean.class, boolean.class, PsiClass.class, PsiScopeProcessor.class, ResolveState.class, PsiElement.class, PsiElement.class));
       if (ExtensionMethodHolder.class.getClassLoader() == PsiClassImplUtil.class.getClassLoader()) // test env classloader same

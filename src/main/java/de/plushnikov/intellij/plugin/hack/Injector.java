@@ -17,9 +17,8 @@ public class Injector {
     if (instrumentation == null) {
       try {
         AgentInjector.inject(Injector.class.getName(), LiveInjector.class);
-        // Maho may not be loaded by SystemClassLoader
-        // noinspection unchecked
-        final Class<LiveInjector> classLiveInjector = (Class<LiveInjector>) ClassLoader.getSystemClassLoader().loadClass(LiveInjector.class.getName());
+        // May not be loaded by SystemClassLoader
+        final Class<?> classLiveInjector = ClassLoader.getSystemClassLoader().loadClass(LiveInjector.class.getName());
         final Field fieldInstrumentation = classLiveInjector.getField("instrumentation");
         instrumentation = (Instrumentation) fieldInstrumentation.get(null);
       } catch (Exception e) { throw new InternalError("can't inject instrumentation instance", e); }
