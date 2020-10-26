@@ -60,4 +60,8 @@ public class WithTest extends AbstractLombokParsingTestCase {
     doTest(true);
   }
 
+  public void testWith$WithAndBuilderDefaultOnFieldAndValueOnClass() {
+    doTest(true);
+  }
+
 }
