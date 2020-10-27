@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin;
 
+import com.intellij.openapi.util.RecursionManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
