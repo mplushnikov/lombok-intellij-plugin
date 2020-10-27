@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -131,60 +131,20 @@ public class ExtensionMethodHandler {
   // Traverse the provider to get the method to inject.
   private static Stream<PsiMethod> injectAugment(final Set<PsiClass> providers, final PsiType type, final PsiClass node) {
     return providers.stream().map(ExtensionMethodHandler::providerData)
-      .map(Map::entrySet)
-      .flatMap(Set::stream)
-      .filter(e -> checkType(e.getKey(), type, node))
-      .map(Map.Entry::getValue)
-      .flatMap(List::stream)
+      .flatMap(Collection::stream)
+      .filter(pair -> pair.getFirst().test(type))
+      .map(pair -> pair.getSecond())
       .map(function -> function.apply(node, type))
       .filter(Objects::nonNull);
   }
 
-  // The first argument type of a static method is used to determine whether the method can act in a context type.
-  public static boolean checkType(final PsiType type, final PsiType nodeType, final PsiClass node) {
-    if (type.equals(nodeType))
-      return true;
-    if (type instanceof PsiClassType) {
-      final PsiClass resolved = ((PsiClassType) type).resolve();
-      if (resolved instanceof PsiTypeParameter) {
-        // e.g. <A extends B | C>
-        for (final PsiClassType bound : resolved.getExtendsListTypes())
-          if (!TypeConversionUtil.isAssignable(bound, nodeType))
-            return false;
-        return true;
-      } else
-        return node.equals(resolved);
-    }
-    if (type instanceof PsiArrayType && nodeType instanceof PsiArrayType) {
-      if (((PsiArrayType) nodeType).getComponentType() instanceof PsiPrimitiveType)
-        return ((PsiArrayType) nodeType).getComponentType().equals(((PsiArrayType) type).getComponentType());
-      final PsiType componentType = type.getDeepComponentType();
-      final int componentDimensions = type.getArrayDimensions();
-      if (nodeType.getArrayDimensions() < componentDimensions)
-        return false;
-      PsiType checkType = nodeType;
-      for (int i = 0; i < componentDimensions; i++)
-        checkType = ((PsiArrayType) checkType).getComponentType();
-      if (componentType instanceof PsiClassType) {
-        final PsiClass resolved = ((PsiClassType) componentType).resolve();
-        if (resolved instanceof PsiTypeParameter) {
-          for (final PsiClassType bound : resolved.getExtendsListTypes())
-            if (!TypeConversionUtil.isAssignable(bound, checkType))
-              return false;
-          return true;
-        }
-      }
-    }
-    return TypeConversionUtil.isAssignable(type, nodeType);
-  }
-
-  public static Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> providerData(final PsiClass node) {
+  public static List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> providerData(final PsiClass node) {
     return CachedValuesManager.getCachedValue(node, () -> CachedValueProvider.Result.create(syncProviderData(node), node));
   }
 
-  private static Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
+  private static List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
     // Improve code completion speed with lazy loading and built-in caching.
-    final Map<PsiType, List<BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ConcurrentHashMap<>();
+    final List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ArrayList<>();
     PsiClassUtil.collectClassStaticMethodsIntern(node).stream()
       // There's no judging by scope here, and I don't know if that's any different from the way lombok works.
       .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.PUBLIC))
@@ -194,9 +154,8 @@ public class ExtensionMethodHandler {
       // Cannot be applied to the primitive type.
       .filter(methodNode -> !(methodNode.getParameterList().getParameters()[0].getType() instanceof PsiPrimitiveType))
       .forEach(methodNode -> {
+        final PsiType type = methodNode.getParameterList().getParameters()[0].getType();
         final BiFunction<PsiClass, PsiType, PsiMethod> function = (injectNode, injectType) -> {
-          // Avoid potentially invalidating the type by not saving it outside of lambda.
-          final PsiType type = methodNode.getParameterList().getParameters()[0].getType();
           // Type parameters are inferred from the actual types(rightTypes) and the original types(leftTypes).
           final PsiSubstitutor substitutor = JavaPsiFacade.getInstance(methodNode.getProject()).getResolveHelper()
             .inferTypeArguments(methodNode.getTypeParameters(), new PsiType[]{ type }, new PsiType[]{ injectType }, PsiUtil.getLanguageLevel(methodNode));
@@ -239,8 +198,9 @@ public class ExtensionMethodHandler {
         // Use weak reference maps for caching to avoid potential memory leaks.
         final MapMaker maker = new MapMaker().weakKeys();
         final Map<PsiType, Map<PsiClass, PsiMethod>> cache = maker.makeMap();
-        result.computeIfAbsent(methodNode.getParameterList().getParameters()[0].getType(), key -> new ArrayList<>())
-          .add((injectNode, injectType) -> cache.computeIfAbsent(injectType, $ -> maker.makeMap()).computeIfAbsent(injectNode, $ -> function.apply(injectNode, injectType)));
+        result.add(Pair.create(injectType -> TypeConversionUtil.isAssignable(JavaPsiFacade.getInstance(methodNode.getProject()).getResolveHelper()
+          .inferTypeArguments(methodNode.getTypeParameters(), new PsiType[]{ type }, new PsiType[]{ injectType }, PsiUtil.getLanguageLevel(methodNode)).substitute(type), injectType),
+          (injectNode, injectType) -> cache.computeIfAbsent(injectType, $ -> maker.makeMap()).computeIfAbsent(injectNode, $ -> function.apply(injectNode, injectType))));
       });
     return result;
   }
