@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.hack.extension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiArrayType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -34,6 +36,8 @@ import com.intellij.psi.PsiResolveHelper;
 import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.PsiTypeVisitor;
+import com.intellij.psi.PsiWildcardType;
 import com.intellij.psi.ResolveState;
 import com.intellij.psi.impl.source.PsiImmediateClassType;
 import com.intellij.psi.scope.ElementClassHint;
@@ -145,6 +149,47 @@ public class ExtensionMethodHandler {
 
   private static final MapMaker maker = new MapMaker().weakKeys();
 
+  public static class TypeParameterSearcher extends PsiTypeVisitor<Set<PsiTypeParameter>> {
+
+    private final Set<PsiClassType> visited = new HashSet<>();
+    private final Set<PsiTypeParameter> result = new HashSet<>();
+
+    @Override
+    public Set<PsiTypeParameter> visitType(final PsiType type) { return result; }
+
+    @Override
+    public Set<PsiTypeParameter> visitArrayType(final PsiArrayType arrayType) { return arrayType.getComponentType().accept(this); }
+
+    @Override
+    public Set<PsiTypeParameter> visitClassType(final PsiClassType classType) {
+      if (visited.add(classType)) {
+        final PsiClassType.ClassResolveResult resolveResult = classType.resolveGenerics();
+        final PsiClass element = resolveResult.getElement();
+        if (element instanceof PsiTypeParameter) {
+          result.add((PsiTypeParameter) element);
+          Stream.of(element.getExtendsListTypes()).forEach(type -> type.accept(this));
+        }
+        if (element != null) {
+          final PsiSubstitutor substitutor = resolveResult.getSubstitutor();
+          for (final PsiTypeParameter parameter : PsiUtil.typeParametersIterable(element)) {
+            PsiType psiType = substitutor.substitute(parameter);
+            if (psiType != null)
+              psiType.accept(this);
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public Set<PsiTypeParameter> visitWildcardType(final PsiWildcardType wildcardType) {
+      final PsiType bound = wildcardType.getBound();
+      if (bound != null)
+        bound.accept(this);
+      return result;
+    }
+  }
+
   private static List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
     // Improve code completion speed with lazy loading and built-in caching.
     final List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ArrayList<>();
@@ -164,11 +209,11 @@ public class ExtensionMethodHandler {
         final PsiTypeParameter typeParameters[] = methodNode.getTypeParameters();
         final PsiType leftTypes[] = { type };
         final BiFunction<PsiClass, PsiType, PsiMethod> function = (injectNode, injectType) -> {
-          // Type parameters are inferred from the actual types(rightTypes) and the original types(leftTypes).
-          final PsiSubstitutor substitutor = resolveHelper.inferTypeArguments(typeParameters, leftTypes, new PsiType[]{ injectType }, languageLevel);
           // Type parameters that are successfully inferred from the first parameter need to be discarded, as the first parameter is eliminated so that no type constraints can be imposed on the caller.
           // Since this leads to potential type safety issues, the type corresponding to these type parameters needs to be replaced with the inferred type.
-          final Set<PsiTypeParameter> dropTypeParameters = substitutor.getSubstitutionMap().keySet();
+          final Set<PsiTypeParameter> dropTypeParameters = type.accept(new TypeParameterSearcher());
+          // Type parameters are inferred from the actual types(rightTypes) and the original types(leftTypes).
+          final PsiSubstitutor substitutor = resolveHelper.inferTypeArguments(dropTypeParameters.toArray(PsiTypeParameter[]::new), leftTypes, new PsiType[]{ injectType }, languageLevel);
           final LombokLightMethodBuilder lightMethod = new LombokLightMethodBuilder(methodNode.getManager(), methodNode.getName()) {
             @Override
             // This override is used for source methods to be able to find expressions that are referenced by extended methods.
