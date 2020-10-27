@@ -45,14 +45,6 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightJavaCo
     LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
-  }
-
   protected PsiFile loadToPsiFile(String fileName) {
     final String sourceFilePath = getBasePath() + "/" + fileName;
     VirtualFile virtualFile = myFixture.copyFileToProject(sourceFilePath, fileName);
