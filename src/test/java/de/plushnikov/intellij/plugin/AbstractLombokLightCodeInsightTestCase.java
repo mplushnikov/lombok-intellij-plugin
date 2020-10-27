@@ -36,9 +36,6 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightJavaCo
     super.setUp();
 
     loadLombokLibrary();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   protected void loadLombokLibrary() {
