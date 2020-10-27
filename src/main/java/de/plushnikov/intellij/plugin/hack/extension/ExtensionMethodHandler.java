@@ -13,8 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.registry.Registry;
+import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -28,11 +30,11 @@ import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiPrimitiveType;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiResolveHelper;
 import com.intellij.psi.PsiSubstitutor;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.ResolveState;
-import com.intellij.psi.impl.light.LightTypeParameterListBuilder;
 import com.intellij.psi.impl.source.PsiImmediateClassType;
 import com.intellij.psi.scope.ElementClassHint;
 import com.intellij.psi.scope.NameHint;
@@ -130,21 +132,25 @@ public class ExtensionMethodHandler {
 
   // Traverse the provider to get the method to inject.
   private static Stream<PsiMethod> injectAugment(final Set<PsiClass> providers, final PsiType type, final PsiClass node) {
-    return providers.stream().map(ExtensionMethodHandler::providerData)
+    return providers.stream()
+      .map(ExtensionMethodHandler::providerData)
       .flatMap(Collection::stream)
       .filter(pair -> pair.getFirst().test(type))
-      .map(pair -> pair.getSecond())
-      .map(function -> function.apply(node, type))
-      .filter(Objects::nonNull);
+      .map(pair -> pair.getSecond().apply(node, type));
   }
 
   public static List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> providerData(final PsiClass node) {
     return CachedValuesManager.getCachedValue(node, () -> CachedValueProvider.Result.create(syncProviderData(node), node));
   }
 
+  private static final MapMaker maker = new MapMaker().weakKeys();
+
   private static List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> syncProviderData(final PsiClass node) {
     // Improve code completion speed with lazy loading and built-in caching.
     final List<Pair<Predicate<PsiType>, BiFunction<PsiClass, PsiType, PsiMethod>>> result = new ArrayList<>();
+    final Project project = node.getProject();
+    final PsiResolveHelper resolveHelper = JavaPsiFacade.getInstance(project).getResolveHelper();
+    final LanguageLevel languageLevel = PsiUtil.getLanguageLevel(project);
     PsiClassUtil.collectClassStaticMethodsIntern(node).stream()
       // There's no judging by scope here, and I don't know if that's any different from the way lombok works.
       .filter(methodNode -> methodNode.hasModifierProperty(PsiModifier.PUBLIC))
@@ -155,10 +161,11 @@ public class ExtensionMethodHandler {
       .filter(methodNode -> !(methodNode.getParameterList().getParameters()[0].getType() instanceof PsiPrimitiveType))
       .forEach(methodNode -> {
         final PsiType type = methodNode.getParameterList().getParameters()[0].getType();
+        final PsiTypeParameter typeParameters[] = methodNode.getTypeParameters();
+        final PsiType leftTypes[] = { type };
         final BiFunction<PsiClass, PsiType, PsiMethod> function = (injectNode, injectType) -> {
           // Type parameters are inferred from the actual types(rightTypes) and the original types(leftTypes).
-          final PsiSubstitutor substitutor = JavaPsiFacade.getInstance(methodNode.getProject()).getResolveHelper()
-            .inferTypeArguments(methodNode.getTypeParameters(), new PsiType[]{ type }, new PsiType[]{ injectType }, PsiUtil.getLanguageLevel(methodNode));
+          final PsiSubstitutor substitutor = resolveHelper.inferTypeArguments(typeParameters, leftTypes, new PsiType[]{ injectType }, languageLevel);
           // Type parameters that are successfully inferred from the first parameter need to be discarded, as the first parameter is eliminated so that no type constraints can be imposed on the caller.
           // Since this leads to potential type safety issues, the type corresponding to these type parameters needs to be replaced with the inferred type.
           final Set<PsiTypeParameter> dropTypeParameters = substitutor.getSubstitutionMap().keySet();
@@ -186,9 +193,9 @@ public class ExtensionMethodHandler {
             .map(substitutor::substitute)
             .map(PsiClassType.class::cast)
             .forEach(lightMethod::addException);
-          Stream.of(methodNode.getTypeParameters())
+          Stream.of(typeParameters)
             .filter(targetTypeParameter -> !dropTypeParameters.contains(targetTypeParameter))
-            .forEach(((LightTypeParameterListBuilder) Objects.requireNonNull(lightMethod.getTypeParameterList()))::addParameter);
+            .forEach(lightMethod::addTypeParameter);
           lightMethod.setNavigationElement(methodNode);
           lightMethod.setContainingClass(injectNode);
           if (injectNode.isInterface())
@@ -196,10 +203,9 @@ public class ExtensionMethodHandler {
           return lightMethod;
         };
         // Use weak reference maps for caching to avoid potential memory leaks.
-        final MapMaker maker = new MapMaker().weakKeys();
         final Map<PsiType, Map<PsiClass, PsiMethod>> cache = maker.makeMap();
-        result.add(Pair.create(injectType -> TypeConversionUtil.isAssignable(JavaPsiFacade.getInstance(methodNode.getProject()).getResolveHelper()
-          .inferTypeArguments(methodNode.getTypeParameters(), new PsiType[]{ type }, new PsiType[]{ injectType }, PsiUtil.getLanguageLevel(methodNode)).substitute(type), injectType),
+        result.add(Pair.create(
+          injectType -> TypeConversionUtil.isAssignable(resolveHelper.inferTypeArguments(typeParameters, leftTypes, new PsiType[]{ injectType }, languageLevel).substitute(type), injectType),
           (injectNode, injectType) -> cache.computeIfAbsent(injectType, $ -> maker.makeMap()).computeIfAbsent(injectNode, $ -> function.apply(injectNode, injectType))));
       });
     return result;
