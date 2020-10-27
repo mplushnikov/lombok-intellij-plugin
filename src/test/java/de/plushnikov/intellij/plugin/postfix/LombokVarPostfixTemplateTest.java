@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.postfix;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 public class LombokVarPostfixTemplateTest extends AbstractLombokLightCodeInsightTestCase {
+
   public void testSimpleVarl() {
     doTest("/postfix/varl/");
   }

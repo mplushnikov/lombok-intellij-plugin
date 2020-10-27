@@ -58,7 +58,7 @@ public class ValProcessor extends AbstractProcessor {
   }
 
   public static boolean isVal(@NotNull PsiLocalVariable psiLocalVariable) {
-    if (psiLocalVariable.getInitializer() != null) {
+    if (psiLocalVariable.hasInitializer()) {
       final PsiTypeElement typeElement = psiLocalVariable.getTypeElement();
       return isPossibleVal(typeElement.getText()) && isVal(resolveQualifiedName(typeElement));
     }
@@ -66,7 +66,7 @@ public class ValProcessor extends AbstractProcessor {
   }
 
   public static boolean isVar(@NotNull PsiLocalVariable psiLocalVariable) {
-    if (psiLocalVariable.getInitializer() != null) {
+    if (psiLocalVariable.hasInitializer()) {
       final PsiTypeElement typeElement = psiLocalVariable.getTypeElement();
       return isPossibleVar(typeElement.getText()) && isVar(resolveQualifiedName(typeElement));
     }
@@ -74,7 +74,7 @@ public class ValProcessor extends AbstractProcessor {
   }
 
   private static boolean isValOrVar(@NotNull PsiLocalVariable psiLocalVariable) {
-    if (psiLocalVariable.getInitializer() != null) {
+    if (psiLocalVariable.hasInitializer()) {
       final PsiTypeElement typeElement = psiLocalVariable.getTypeElement();
       return isPossibleValOrVar(typeElement.getText()) && isValOrVar(resolveQualifiedName(typeElement));
     }
