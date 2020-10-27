@@ -13,11 +13,6 @@ public abstract class LombokIntentionActionTest extends AbstractLombokLightCodeI
     return TEST_DATA_INTENTION_DIRECTORY;
   }
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   public abstract IntentionAction getIntentionAction();
 
   public abstract boolean wasInvocationSuccessful();

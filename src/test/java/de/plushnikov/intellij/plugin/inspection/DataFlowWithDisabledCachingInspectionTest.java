@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInspection.InspectionProfileEntry;
 import com.intellij.codeInspection.dataFlow.DataFlowInspection;
-import com.intellij.openapi.util.RecursionManager;
 
 
 public class DataFlowWithDisabledCachingInspectionTest extends LombokInspectionTest {

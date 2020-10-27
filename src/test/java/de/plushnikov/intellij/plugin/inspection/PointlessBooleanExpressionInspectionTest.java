@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInspection.InspectionProfileEntry;
-import com.intellij.openapi.util.RecursionManager;
 import com.siyeh.ig.controlflow.PointlessBooleanExpressionInspection;
 
 /**
