@@ -36,18 +36,13 @@ public abstract class AbstractLombokLightCodeInsightTestCase extends LightJavaCo
     super.setUp();
 
     loadLombokLibrary();
+
+    //TODO disable assertions for the moment
+    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   protected void loadLombokLibrary() {
     LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
-  }
-
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   protected PsiFile loadToPsiFile(String fileName) {
