@@ -13,7 +13,7 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.32) released on 25.09.2020**
+**Last version (0.33) released on 27.10.2020**
 
 ---
 :collision: **Breaking News: Starting with IntelliJ version 2020.3 lombok plugin will be integrated and included in IntelliJ by default!.** :collision:
@@ -23,7 +23,7 @@ Provides support for lombok annotations to write great Java code with IntelliJ I
 :hammer_and_wrench: Previous InteliJ versions still supported by corresponding plugin version!
 ---
 
-36th version of plugin released.
+37th version of plugin released.
 
 Install it automatically from IntelliJ Idea plugin repository.
 
