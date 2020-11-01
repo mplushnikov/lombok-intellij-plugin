@@ -16,7 +16,6 @@ import de.plushnikov.intellij.plugin.processor.LombokProcessorManager;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.processor.modifier.ModifierProcessor;
-import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -95,9 +94,9 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     if (psiClass.isAnnotationType() || psiClass.isInterface()) {
       return emptyResult;
     }
-    // skip processing if plugin is disabled
+    // skip processing if disabled, or no lombok library is present
     final Project project = element.getProject();
-    if (!ProjectSettings.isLombokEnabledInProject(project) || !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
+    if (!LombokAugmentorKillSwitch.isLombokAugmentorActive() || !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
       return emptyResult;
     }
 

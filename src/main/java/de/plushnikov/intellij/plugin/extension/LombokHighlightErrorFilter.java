@@ -53,8 +53,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
     }
 
     Project project = file.getProject();
-    if (!ProjectSettings.isLombokEnabledInProject(project) ||
-        !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
+    if (!LombokProjectValidatorActivity.hasLombokLibrary(project)) {
       return true;
     }
 
