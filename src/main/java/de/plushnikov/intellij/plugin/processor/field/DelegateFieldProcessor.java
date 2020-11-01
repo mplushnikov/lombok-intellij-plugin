@@ -20,7 +20,6 @@ import java.util.List;
  */
 public class DelegateFieldProcessor extends AbstractFieldProcessor {
 
-  @SuppressWarnings({"deprecation"})
   public DelegateFieldProcessor() {
     super(PsiMethod.class, LombokClassNames.DELEGATE, LombokClassNames.EXPERIMENTAL_DELEGATE);
   }
@@ -35,6 +34,7 @@ public class DelegateFieldProcessor extends AbstractFieldProcessor {
     return getDelegateHandler().validate(psiField, psiFieldType, psiAnnotation, builder);
   }
 
+  @Override
   protected void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     getDelegateHandler().generateElements(psiField, psiField.getType(), psiAnnotation, target);
   }

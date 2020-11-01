@@ -174,6 +174,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
         return description != null && pattern.matcher(description).matches();
       }
 
+      @Override
       public boolean accept(@NotNull PsiElement highlightedElement) {
         return !BuilderHandler.isDefaultBuilderValue(highlightedElement);
       }
