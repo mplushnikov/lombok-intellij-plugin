@@ -13,26 +13,23 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.32) released on 25.09.2020**
+**Last version (0.33) released on 27.10.2020**
 
 ---
-:collision: **Unfortunately the current IntelliJ 2020.2 version has a bug and lombok plugin can't be used normally.** :collision:
+:collision: **Breaking News: Starting with IntelliJ version 2020.3 lombok plugin will be integrated and included in IntelliJ by default!.** :collision:
 
-:hammer_and_wrench: Use previous IntelliJ version 2020.1 or update to IntelliJ IDEA 2020.2.1 or newer
+:collision: Enjoy new kind of experience for lombok support inside of IntelliJ Idea!
+
+:hammer_and_wrench: Previous InteliJ versions still supported by corresponding plugin version!
 ---
 
-:collision: **The latest IntelliJ IDEA versions still contains a BUG :beetle: for several plugins (including plugin for Lombok) were shown as incompatible with the updated version of the IDE.** :collision:
-
-You can find the issue with a detailed explanation here: https://youtrack.jetbrains.com/issue/IDEA-237113 and https://youtrack.jetbrains.com/issue/IDEA-246822
-
-:hammer_and_wrench: As of now, the workaround is to re-install the plugin in the IDE settings.
----
-
-36th version of plugin released.
+37th version of plugin released.
 
 Install it automatically from IntelliJ Idea plugin repository.
 
-Tested and supports IntelliJ versions: 2017.X, 2018.X, 2019.X, 2020.1 and 2020.2.1+, 2020.3 EAP
+Tested and supports IntelliJ versions: 2018.X, 2019.X, 2020.1 and 2020.2.1+, 2020.3 EAP (Build In!)
+
+Last support for IntelliJ 2017.1, 2017.2 and 2017.3 by plugin version 0.32!
 
 Last support for IntelliJ 2016.2 and 2016.3 by plugin version 0.31!
 
@@ -104,11 +101,11 @@ repositories {
 }
 
 dependencies {
-	compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
+	compileOnly 'org.projectlombok:lombok:1.18.16'
+	annotationProcessor 'org.projectlombok:lombok:1.18.16'
 
-	testCompileOnly 'org.projectlombok:lombok:1.18.12'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+	testCompileOnly 'org.projectlombok:lombok:1.18.16'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
 }
 ```
 
@@ -119,7 +116,7 @@ In your `pom.xml`:
 	<dependency>
 		<groupId>org.projectlombok</groupId>
 		<artifactId>lombok</artifactId>
-		<version>1.18.12</version>
+		<version>1.18.16</version>
 		<scope>provided</scope>
 	</dependency>
 </dependencies>
@@ -128,7 +125,7 @@ In your `pom.xml`:
 ##### Ivy
 In your `ivy.xml`:
 ```xml
-<dependency org="org.projectlombok" name="lombok" rev="1.18.12" conf="build" />
+<dependency org="org.projectlombok" name="lombok" rev="1.18.16" conf="build" />
 ```
 
 IntelliJ and Eclipse compiler

@@ -237,7 +237,9 @@
     <codeInsight.template.postfixTemplateProvider language="JAVA"
                                                   implementationClass="de.plushnikov.intellij.plugin.extension.postfix.LombokPostfixTemplateProvider"/>
 
-    <registryKey key="lombok.experimental.ExtensionMethod" defaultValue="true" description="Enable @ExtensionMethod support"/>
+    <buildProcess.parametersProvider implementation="de.plushnikov.intellij.plugin.jps.LombokBuildProcessParametersProvider"/>
+    
+    <registryKey key="lombok.experimental.ExtensionMethod" defaultValue="false" description="Enable @ExtensionMethod support"/>
   </extensions>
 
   <actions>
