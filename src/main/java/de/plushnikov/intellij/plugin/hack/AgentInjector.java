@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.hack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
@@ -11,7 +12,7 @@ import java.util.jar.Manifest;
 
 import static java.nio.file.StandardOpenOption.*;
 
-public interface AgentInjector {
+public class AgentInjector {
 
   static void inject(final String prefix, final Class<?> agent, final Class<?>... resources) throws IOException {
     JNI.Instrument.INSTANCE.attachAgent(generateAgentJar(prefix, agent, resources));
@@ -40,7 +41,7 @@ public interface AgentInjector {
   private static String path(final Class<?> clazz) { return clazz.getName().replace('.', '/') + ".class"; }
 
   private static byte[] getBytesFromClass(final Class<?> clazz) throws IOException {
-    try (final var input = clazz.getClassLoader().getResourceAsStream(path(clazz))) {
+    try (final InputStream input = clazz.getClassLoader().getResourceAsStream(path(clazz))) {
       final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
       int nRead;
       final byte[] data = new byte[1 << 12];

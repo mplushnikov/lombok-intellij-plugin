@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.hack.extension;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
@@ -105,7 +106,7 @@ public class ExtensionMethodSupport {
   }
 
   private static byte[] getBytesFromClass(final Class<?> clazz) throws IOException {
-    try (final var input = clazz.getClassLoader().getResourceAsStream(clazz.getName().replace('.', '/') + ".class")) {
+    try (final InputStream input = clazz.getClassLoader().getResourceAsStream(clazz.getName().replace('.', '/') + ".class")) {
       final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
       int nRead;
       final byte[] data = new byte[1 << 12];
