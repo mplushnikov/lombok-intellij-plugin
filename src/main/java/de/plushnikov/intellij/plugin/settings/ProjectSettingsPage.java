@@ -1,8 +1,11 @@
 package de.plushnikov.intellij.plugin.settings;
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiManager;
+
 import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
@@ -109,8 +112,9 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
 
     LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
     lombokProcessorProvider.initProcessors();
-    
-    
+    // Redo code checking and highlighting.
+    PsiManager.getInstance(myProject).dropResolveCaches();
+    DaemonCodeAnalyzer.getInstance(myProject).restart();
   }
 
   @Override
