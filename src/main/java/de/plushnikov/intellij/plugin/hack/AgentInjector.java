@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.hack;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
@@ -20,7 +21,7 @@ public class AgentInjector {
   static {
     if (Platform.isMac()) {
       final String key = "jna.library.path", home = System.getProperty("java.home"), lib = home + separator + "lib", server = lib + separator + "server";
-      System.setProperty(key, lib + pathSeparator + server + pathSeparator + System.getProperty(key));
+      System.setProperty(key, lib + pathSeparator + server + pathSeparator + System.getProperty(key, ""));
     }
   }
 
