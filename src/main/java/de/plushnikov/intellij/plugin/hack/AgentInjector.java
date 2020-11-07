@@ -10,9 +10,19 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import com.sun.jna.Platform;
+
+import static java.io.File.*;
 import static java.nio.file.StandardOpenOption.*;
 
 public class AgentInjector {
+  
+  static {
+    if (Platform.isMac()) {
+      final String key = "jna.library.path", home = System.getProperty("java.home"), lib = home + separator + "lib", server = lib + separator + "server";
+      System.setProperty(key, lib + pathSeparator + server + pathSeparator + System.getProperty(key));
+    }
+  }
 
   static void inject(final String prefix, final Class<?> agent, final Class<?>... resources) throws IOException {
     JNI.Instrument.INSTANCE.attachAgent(generateAgentJar(prefix, agent, resources));
