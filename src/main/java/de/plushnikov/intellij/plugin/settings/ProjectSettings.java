@@ -12,6 +12,7 @@ public class ProjectSettings {
   public static final String IS_BUILDER_ENABLED = PREFIX + "IS_BUILDER_Enabled";
   public static final String IS_SUPER_BUILDER_ENABLED = PREFIX + "IS_SUPER_BUILDER_Enabled";
   public static final String IS_DELEGATE_ENABLED = PREFIX + "IS_DELEGATE_Enabled";
+  public static final String IS_EXTENSION_METHOD_ENABLED = PREFIX + "IS_EXTSION_METHOD_Enabled";
   public static final String IS_LOG_ENABLED = PREFIX + "IS_LOG_Enabled";
   public static final String IS_CONSTRUCTOR_ENABLED = PREFIX + "IS_CONSTRUCTOR_Enabled";
 

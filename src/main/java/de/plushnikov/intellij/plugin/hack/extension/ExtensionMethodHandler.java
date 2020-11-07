@@ -57,12 +57,17 @@ import com.google.common.collect.MapMaker;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightParameter;
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ExtensionMethodHandler {
+  
+  public static boolean isEnabled(@NotNull Project project) {
+    return ProjectSettings.isEnabled(project, ProjectSettings.IS_EXTENSION_METHOD_ENABLED);
+  }
 
   public static boolean processDeclarations(final boolean result, final PsiClass psiClass, final PsiScopeProcessor processor, final ResolveState state, final PsiElement lastParent, final PsiElement place) {
     if (!result)
@@ -70,7 +75,7 @@ public class ExtensionMethodHandler {
     // lombok does not support extensions for method references.
     if (place instanceof PsiMethodReferenceExpression)
       return result;
-    if (Registry.is("lombok.experimental.ExtensionMethod") && (!(processor instanceof MethodResolverProcessor) || !((MethodResolverProcessor) processor).isConstructor())) {
+    if (isEnabled(place.getProject()) && (!(processor instanceof MethodResolverProcessor) || !((MethodResolverProcessor) processor).isConstructor())) {
       final @Nullable NameHint nameHint = processor.getHint(NameHint.KEY);
       final @Nullable String name = nameHint == null ? null : nameHint.getName(state);
       final ElementClassHint classHint = processor.getHint(ElementClassHint.KEY);
