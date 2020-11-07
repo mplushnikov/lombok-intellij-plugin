@@ -113,7 +113,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
     lombokProcessorProvider.initProcessors();
     // Redo code checking and highlighting.
-    PsiManager.getInstance(myProject).dropResolveCaches();
+    PsiManager.getInstance(myProject).dropPsiCaches();
     DaemonCodeAnalyzer.getInstance(myProject).restart();
   }
 
