@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiManager;
 
 import de.plushnikov.intellij.plugin.Version;
+import de.plushnikov.intellij.plugin.provider.LombokAugmentProvider;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -113,6 +114,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
     lombokProcessorProvider.initProcessors();
     // Redo code checking and highlighting.
+    LombokAugmentProvider.onConfigChange();
     PsiManager.getInstance(myProject).dropPsiCaches();
     DaemonCodeAnalyzer.getInstance(myProject).restart();
   }
