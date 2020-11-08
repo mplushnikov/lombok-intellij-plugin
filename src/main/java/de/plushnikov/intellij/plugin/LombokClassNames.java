@@ -50,4 +50,5 @@ public interface LombokClassNames {
   @NonNls String WITH = "lombok.With";
   @NonNls String WITHER = "lombok.experimental.Wither";
   @NonNls String XSLF_4_J = "lombok.extern.slf4j.XSlf4j";
+  @NonNls String EXTENSION_METHOD = "lombok.experimental.ExtensionMethod";
 }

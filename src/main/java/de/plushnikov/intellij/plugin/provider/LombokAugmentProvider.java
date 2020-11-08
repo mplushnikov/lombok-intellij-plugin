@@ -3,6 +3,7 @@ package de.plushnikov.intellij.plugin.provider;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.openapi.util.RecursionGuard;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
@@ -20,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides support for lombok generated elements
@@ -31,6 +33,17 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 
   private final ValProcessor valProcessor;
   private final Collection<ModifierProcessor> modifierProcessors;
+  
+  private final AtomicLong configChangeCount = new AtomicLong();
+  private final ModificationTracker configChangeTracker = configChangeCount::get;
+  
+  public static void onConfigChange() {
+    for (PsiAugmentProvider provider : EP_NAME.getExtensionList()) {
+      if (provider instanceof LombokAugmentProvider) {
+        ((LombokAugmentProvider) provider).configChangeCount.incrementAndGet();
+      }
+    }
+  }
 
   public LombokAugmentProvider() {
     log.debug("LombokAugmentProvider created");
@@ -96,11 +109,11 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 
     final List<Psi> cachedValue;
     if (type == PsiField.class) {
-      cachedValue = CachedValuesManager.getCachedValue(element, new FieldLombokCachedValueProvider<>(type, psiClass));
+      cachedValue = CachedValuesManager.getCachedValue(element, new FieldLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
     } else if (type == PsiMethod.class) {
-      cachedValue = CachedValuesManager.getCachedValue(element, new MethodLombokCachedValueProvider<>(type, psiClass));
+      cachedValue = CachedValuesManager.getCachedValue(element, new MethodLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
     } else {
-      cachedValue = CachedValuesManager.getCachedValue(element, new ClassLombokCachedValueProvider<>(type, psiClass));
+      cachedValue = CachedValuesManager.getCachedValue(element, new ClassLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
     }
     return null != cachedValue ? cachedValue : emptyResult;
   }
@@ -108,24 +121,24 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   private static class FieldLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.field");
 
-    FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
-      super(type, psiClass, ourGuard);
+    FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
+      super(type, psiClass, ourGuard, configChangeTracker);
     }
   }
 
   private static class MethodLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.method");
 
-    MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
-      super(type, psiClass, ourGuard);
+    MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
+      super(type, psiClass, ourGuard, configChangeTracker);
     }
   }
 
   private static class ClassLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.class");
 
-    ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass) {
-      super(type, psiClass, ourGuard);
+    ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
+      super(type, psiClass, ourGuard, configChangeTracker);
     }
   }
 
@@ -133,11 +146,13 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
     private final Class<Psi> type;
     private final PsiClass psiClass;
     private final RecursionGuard<PsiClass> recursionGuard;
+    private final ModificationTracker configChangeTracker;
 
-    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard) {
+    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard, ModificationTracker configChangeTracker) {
       this.type = type;
       this.psiClass = psiClass;
       this.recursionGuard = recursionGuard;
+      this.configChangeTracker = configChangeTracker;
     }
 
     @Nullable
@@ -152,7 +167,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 //      log.info(">>>" + message);
       final List<Psi> result = getPsis(psiClass, type);
 //      log.info("<<<" + message);
-      return Result.create(result, psiClass);
+      return Result.create(result, psiClass, configChangeTracker);
     }
   }
 

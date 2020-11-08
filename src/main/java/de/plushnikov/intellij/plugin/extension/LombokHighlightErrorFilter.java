@@ -13,6 +13,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.handler.*;
+import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import org.jetbrains.annotations.NotNull;
@@ -236,6 +237,45 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
         return !PsiAnnotationSearchUtil.isAnnotatedWith((PsiField) resolve, LombokClassNames.BUILDER_DEFAULT);
       }
+    },
+
+    /**
+     * Caller of extension methods do not need to perform null pointer checking.
+     * This is a compromise because IntelliJ will only warn of the first possible null pointer call.
+     * See the example code below for details.
+     *
+     * static boolean isNullOrEmpty(String str) { return str == null || str.isEmpty(); }
+     *
+     * {
+     *   String a = null;
+     *   a.isNullOrEmpty(); // Warning is eliminated by filter.
+     *   a.isBlank();       // This call will not be warned.
+     * }
+     */
+    EXTENSION_METHOD_CALLER_NULL_CHECKING(HighlightSeverity.WARNING, CodeInsightColors.WARNINGS_ATTRIBUTES) {
+      private final Pattern patternMayNPE = Pattern.compile("Method invocation '.+' (may|will) produce 'NullPointerException'");
+
+      @Override
+      public boolean descriptionCheck(@Nullable String description) {
+        return description != null && patternMayNPE.matcher(description).matches();
+      }
+
+      @Override
+      public boolean accept(@NotNull PsiElement highlightedElement) {
+        final PsiElement parent = highlightedElement.getParent();
+        if (parent != null) {
+          final PsiElement parentParent = parent.getParent();
+          if (parentParent instanceof PsiMethodCallExpression) {
+            final @Nullable PsiMethod method = ((PsiMethodCallExpression) parentParent).resolveMethod();
+            if (method instanceof LombokLightMethodBuilder) {
+              final PsiElement navigationElement = method.getNavigationElement();
+              return !(navigationElement instanceof PsiMethod && ((PsiMethod) navigationElement).hasModifierProperty(PsiModifier.STATIC));
+            }
+          }
+        }
+        return true;
+      }
+
     };
 
     private final HighlightSeverity severity;

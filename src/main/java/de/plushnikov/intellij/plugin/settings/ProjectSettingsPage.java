@@ -1,9 +1,13 @@
 package de.plushnikov.intellij.plugin.settings;
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiManager;
+
 import de.plushnikov.intellij.plugin.Version;
+import de.plushnikov.intellij.plugin.provider.LombokAugmentProvider;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +26,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
   private JCheckBox myEnableLogSupport;
   private JCheckBox myEnableConstructorSupport;
   private JCheckBox myEnableDelegateSupport;
+  private JCheckBox myEnableExtensionMethodSupport;
   private JPanel mySettingsPanel;
   private JCheckBox myEnableLombokVersionWarning;
   private JCheckBox myMissingLombokWarning;
@@ -55,6 +60,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
       myEnableLogSupport.setEnabled(selected);
       myEnableConstructorSupport.setEnabled(selected);
       myEnableDelegateSupport.setEnabled(selected);
+      myEnableExtensionMethodSupport.setEnabled(selected);
     });
     myEnableConstructorSupport.setVisible(false);
     return myGeneralPanel;
@@ -65,6 +71,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     myEnableValSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_VAL_ENABLED));
     myEnableBuilderSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_BUILDER_ENABLED));
     myEnableDelegateSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_DELEGATE_ENABLED));
+    myEnableExtensionMethodSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED));
 
     myEnableLogSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_LOG_ENABLED));
     myEnableConstructorSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_CONSTRUCTOR_ENABLED));
@@ -80,6 +87,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
       myEnableValSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_VAL_ENABLED) ||
       myEnableBuilderSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_BUILDER_ENABLED) ||
       myEnableDelegateSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_DELEGATE_ENABLED) ||
+      myEnableExtensionMethodSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED) ||
       myEnableLogSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_LOG_ENABLED) ||
       myEnableConstructorSupport.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_CONSTRUCTOR_ENABLED) ||
       myEnableLombokVersionWarning.isSelected() != ProjectSettings.isEnabled(myProject, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false) ||
@@ -94,6 +102,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_VAL_ENABLED, myEnableValSupport.isSelected());
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_BUILDER_ENABLED, myEnableBuilderSupport.isSelected());
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_DELEGATE_ENABLED, myEnableDelegateSupport.isSelected());
+    ProjectSettings.setEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED, myEnableExtensionMethodSupport.isSelected());
 
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_LOG_ENABLED, myEnableLogSupport.isSelected());
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_CONSTRUCTOR_ENABLED, myEnableConstructorSupport.isSelected());
@@ -104,6 +113,10 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
 
     LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
     lombokProcessorProvider.initProcessors();
+    // Redo code checking and highlighting.
+    LombokAugmentProvider.onConfigChange();
+    PsiManager.getInstance(myProject).dropPsiCaches();
+    DaemonCodeAnalyzer.getInstance(myProject).restart();
   }
 
   @Override
