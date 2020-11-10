@@ -5,6 +5,7 @@
   <vendor url="https://github.com/mplushnikov/lombok-intellij-plugin" email="lombokplugin@plushnikov.de">Michail
     Plushnikov
   </vendor>
+  <resource-bundle>messages.LombokBundle</resource-bundle>
   <version>XXX</version>
 
   <idea-version since-build="201.00"/>
