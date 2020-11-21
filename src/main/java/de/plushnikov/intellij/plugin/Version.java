@@ -13,7 +13,7 @@ public interface Version {
   /**
    * Current plugin version.
    */
-  String PLUGIN_VERSION = "0.34";
+  @NonNls String PLUGIN_VERSION = "0.34";
   /**
    * Current version of lombok plugin
    */
