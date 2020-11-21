@@ -17,6 +17,7 @@ import javax.swing.*;
 public class ProjectSettingsPage implements SearchableConfigurable, Configurable.NoScroll {
 
   private JPanel myGeneralPanel;
+  private JPanel myLombokPanel;
 
   private JPanel mySupportPanel;
   private JCheckBox myEnableLombokInProject;
@@ -49,7 +50,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
   private void initFromSettings() {
     myEnableLombokInProject.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.LOMBOK_ENABLED_IN_PROJECT));
 
-    myEnableExtensionMethodSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED));
+    myEnableExtensionMethodSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED, false));
 
     myEnableLombokVersionWarning.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false));
     myMissingLombokWarning.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_MISSING_LOMBOK_CHECK_ENABLED, false));

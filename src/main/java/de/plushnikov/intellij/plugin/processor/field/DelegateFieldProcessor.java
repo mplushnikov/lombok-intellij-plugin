@@ -28,11 +28,6 @@ public class DelegateFieldProcessor extends AbstractFieldProcessor {
   private DelegateHandler getDelegateHandler() {
     return ApplicationManager.getApplication().getService(DelegateHandler.class);
   }
-  
-  @Override
-  public boolean isEnabled(@NotNull Project project) {
-    return ProjectSettings.isEnabled(project, ProjectSettings.IS_DELEGATE_ENABLED);
-  }
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiField psiField, @NotNull ProblemBuilder builder) {
