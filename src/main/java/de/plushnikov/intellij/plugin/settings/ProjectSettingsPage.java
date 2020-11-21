@@ -17,6 +17,7 @@ import javax.swing.*;
 public class ProjectSettingsPage implements SearchableConfigurable, Configurable.NoScroll {
 
   private JPanel myGeneralPanel;
+
   private JPanel myLombokPanel;
 
   private JPanel mySupportPanel;
