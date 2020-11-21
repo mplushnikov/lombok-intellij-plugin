@@ -244,7 +244,7 @@
 
   <actions>
     <group id="LombokActionGroup" text="Lombok" description="Refactor code with lombok annotations"
-           icon="LombokIcons.Lombok" popup="true">
+           icon="/icons/lombok.svg" popup="true">
 
       <action id="defaultLombokData" class="de.plushnikov.intellij.plugin.action.lombok.LombokDataAction"
               text="Default @Data"
@@ -283,7 +283,7 @@
       <add-to-group group-id="RefactoringMenu" anchor="last"/>
     </group>
     <group id="DelombokActionGroup" text="Delombok" description="Refactor code removing lombok annotations"
-           icon="LombokIcons.Lombok" popup="true">
+           icon="/icons/lombok.svg" popup="true">
       <action id="delombokAny" class="de.plushnikov.intellij.plugin.action.delombok.DelombokEverythingAction"
               text="All lombok annotations"
               description="Action to replace all lombok annotations with vanilla java methods">
