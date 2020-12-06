@@ -270,16 +270,6 @@
               text="@Log (and friends)" description="Action to replace logger with lombok @Log annotation">
       </action>
 
-      <!--<separator/>-->
-      <!--<action id="generalLombokGetter" class="de.plushnikov.intellij.plugin.action.lombok.RefactorGetterAction"-->
-      <!--text="Selectable @Getter"-->
-      <!--description="Action to replace some getter methods with lombok @Getter annotation">-->
-      <!--</action>-->
-      <!--<action id="generalLombokSetter" class="de.plushnikov.intellij.plugin.action.lombok.RefactorSetterAction"-->
-      <!--text="Selectable @Setter"-->
-      <!--description="Action to replace some setter methods with lombok @Setter annotation">-->
-      <!--</action>-->
-
       <add-to-group group-id="RefactoringMenu" anchor="last"/>
     </group>
     <group id="DelombokActionGroup" text="Delombok" description="Refactor code removing lombok annotations"
