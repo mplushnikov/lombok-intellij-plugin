@@ -8,6 +8,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightJavaCodeInsightTestCase;
 import com.intellij.testFramework.LightProjectDescriptor;
 
+import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,10 +41,16 @@ public class ExtensionMethodTest extends LightJavaCodeInsightTestCase {
   private PsiMethod createTestMethod(final String body) { return PsiTreeUtil.findChildOfType(createTestFile("static void f() {" + body + "}"), PsiMethod.class); }
 
   private PsiFile createTestFile(final String body) {
+    enableExtensionMethodSupport();
+
     return createFile("test.java", "import java.util.*; import java.util.function.*;" +
                                    "@lombok.experimental.ExtensionMethod({" +
                                    "Objects.class, Arrays.class" +
                                    "}) class TestExtensionMethod { " + body + "}");
+  }
+
+  private void enableExtensionMethodSupport() {
+    ProjectSettings.setEnabled(getProject(), ProjectSettings.IS_EXTENSION_METHOD_ENABLED, true);
   }
 
   @NotNull
