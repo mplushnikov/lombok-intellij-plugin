@@ -10,6 +10,7 @@ import com.intellij.openapi.command.undo.UndoUtil;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import de.plushnikov.intellij.plugin.LombokBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,11 +36,13 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
     myModifiers = Arrays.asList(modifiers);
   }
 
+  @Override
   @NotNull
   public String getText() {
-    return String.format("Create new field '%s'", myName);
+    return LombokBundle.message("intention.name.create.new.field.s", myName);
   }
 
+  @Override
   @NotNull
   public String getFamilyName() {
     return getText();
@@ -89,6 +92,7 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
     }
   }
 
+  @Override
   public boolean startInWriteAction() {
     return false;
   }

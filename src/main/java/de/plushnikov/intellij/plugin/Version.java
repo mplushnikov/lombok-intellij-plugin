@@ -1,6 +1,7 @@
 package de.plushnikov.intellij.plugin;
 
 import com.intellij.openapi.roots.OrderEntry;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,16 +9,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public interface Version {
-  String PLUGIN_NAME = "Lombok plugin";
+  @NonNls String PLUGIN_NAME = "Lombok plugin";
   /**
    * Current plugin version.
    */
-  String PLUGIN_VERSION = "0.33";
+  @NonNls String PLUGIN_VERSION = "0.34";
   /**
    * Current version of lombok plugin
    */
-  String LAST_LOMBOK_VERSION = "1.18.16";
-
+  @NonNls String LAST_LOMBOK_VERSION = "1.18.16";
 
   static boolean isLessThan(@Nullable OrderEntry orderEntry, @NotNull String version) {
     String lombokVersion = parseLombokVersion(orderEntry);
