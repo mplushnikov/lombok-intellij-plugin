@@ -16,6 +16,7 @@ import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightParameter;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +47,7 @@ public class ExtensionMethodHandler {
       if (classHint == null || classHint.shouldProcess(ElementClassHint.DeclarationKind.METHOD)) {
         @Nullable PsiClass context = PsiTreeUtil.getParentOfType(place, PsiClass.class);
         while (context != null) {
-          final @Nullable PsiAnnotation annotation = context.getAnnotation(LombokClassNames.EXTENSION_METHOD);
+          final @Nullable PsiAnnotation annotation = PsiAnnotationSearchUtil.findAnnotation(context, LombokClassNames.EXTENSION_METHOD);
           if (annotation != null) {
             final Set<PsiClass> providers = PsiAnnotationUtil.getAnnotationValues(annotation, "value", PsiType.class).stream()
               .filter(PsiClassType.class::isInstance)

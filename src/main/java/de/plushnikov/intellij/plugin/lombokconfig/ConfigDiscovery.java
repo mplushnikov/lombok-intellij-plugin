@@ -39,7 +39,7 @@ public class ConfigDiscovery {
     return Boolean.parseBoolean(configProperty);
   }
 
-  public String @NotNull [] getMultipleValueLombokConfigProperty(@NotNull ConfigKey configKey, @NotNull PsiClass psiClass) {
+  public String [] getMultipleValueLombokConfigProperty(@NotNull ConfigKey configKey, @NotNull PsiClass psiClass) {
     final Collection<String> result = new HashSet<>();
 
     @Nullable VirtualFile file = calculateDirectory(psiClass);

@@ -36,7 +36,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   private final ModificationTracker configChangeTracker = configChangeCount::get;
 
   public static void onConfigChange() {
-    for (PsiAugmentProvider provider : EP_NAME.getExtensionList()) {
+    for (PsiAugmentProvider provider : EP_NAME.getExtensions()) {
       if (provider instanceof LombokAugmentProvider) {
         ((LombokAugmentProvider) provider).configChangeCount.incrementAndGet();
       }
