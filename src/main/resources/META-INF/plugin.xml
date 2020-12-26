@@ -169,50 +169,57 @@
     <canBeFinal implementation="de.plushnikov.intellij.plugin.extension.LombokCanBeFinalHandler"/>
 
     <localInspection
-      displayName="Lombok annotations"
-      groupName="Lombok"
+      groupKey="inspection.lombok.group.name.lombok"
+      groupBundle="messages.LombokBundle"
       shortName="Lombok"
       enabledByDefault="true"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.LombokInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.LombokInspection"
+      key="inspection.lombok.display.name"
+      bundle="messages.LombokBundle"/>
 
     <localInspection
-      displayName="Deprecated Lombok annotations"
-      groupName="Lombok"
+      groupKey="inspection.lombok.group.name.lombok"
+      groupBundle="messages.LombokBundle"
       shortName="DeprecatedLombok"
       enabledByDefault="true"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.DeprecatedLombokAnnotationInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.DeprecatedLombokAnnotationInspection"
+      key="inspection.deprecated.lombok.display.name" bundle="messages.LombokBundle"/>
 
     <localInspection
-      displayName="@Value modifiers"
       groupPath="Lombok"
-      groupName="Redundant modifiers"
+      groupKey="inspection.lombok.group.name.redundant.modifiers"
+      groupBundle="messages.LombokBundle"
       shortName="RedundantModifiersValueLombok"
       enabledByDefault="true"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnValueLombokAnnotationInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnValueLombokAnnotationInspection"
+      key="inspection.redundant.modifiers.value.lombok.display.name" bundle="messages.LombokBundle"/>
 
     <localInspection
-      displayName="@UtilityClass modifiers"
       groupPath="Lombok"
-      groupName="Redundant modifiers"
+      groupKey="inspection.lombok.group.name.redundant.modifiers"
+      groupBundle="messages.LombokBundle"
       shortName="RedundantModifiersUtilityClassLombok"
       enabledByDefault="false"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnUtilityClassLombokAnnotationInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnUtilityClassLombokAnnotationInspection"
+      key="inspection.redundant.modifiers.utility.class.lombok.display.name" bundle="messages.LombokBundle"/>
 
     <localInspection
-      displayName="@Slf4j"
       groupPath="Lombok"
-      groupName="Redundant definitions"
+      groupKey="inspection.lombok.group.name.redundant.definitions"
+      groupBundle="messages.LombokBundle"
       shortName="RedundantSlf4jDefinition"
       enabledByDefault="true"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.RedundantSlf4jDefinitionInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.RedundantSlf4jDefinitionInspection"
+      key="inspection.redundant.slf.4.j.definition.display.name" bundle="messages.LombokBundle"/>
 
     <localInspection
-      displayName="Unnecessary final before 'val'"
       groupPath="Lombok"
-      groupName="Redundant modifiers"
+      groupKey="inspection.lombok.group.name.redundant.modifiers"
+      groupBundle="messages.LombokBundle"
       shortName="RedundantModifiersValLombok"
       enabledByDefault="true"
-      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnValLombokAnnotationInspection"/>
+      implementationClass="de.plushnikov.intellij.plugin.inspection.modifiers.RedundantModifiersOnValLombokAnnotationInspection"
+      key="inspection.redundant.modifiers.val.lombok.display.name" bundle="messages.LombokBundle"/>
 
     <intentionAction>
       <className>de.plushnikov.intellij.plugin.intention.valvar.to.ReplaceExplicitTypeWithValIntentionAction</className>
