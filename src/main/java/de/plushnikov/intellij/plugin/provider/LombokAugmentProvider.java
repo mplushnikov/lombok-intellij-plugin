@@ -32,10 +32,10 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 
   private final ValProcessor valProcessor;
   private final Collection<ModifierProcessor> modifierProcessors;
-  
+
   private final AtomicLong configChangeCount = new AtomicLong();
   private final ModificationTracker configChangeTracker = configChangeCount::get;
-  
+
   public static void onConfigChange() {
     for (PsiAugmentProvider provider : EP_NAME.getExtensionList()) {
       if (provider instanceof LombokAugmentProvider) {
@@ -95,8 +95,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       return emptyResult;
     }
     // skip processing if disabled, or no lombok library is present
-    final Project project = element.getProject();
-    if (!LombokProjectValidatorActivity.hasLombokLibrary(project)) {
+    if (!LombokProjectValidatorActivity.hasLombokLibrary(element.getProject())) {
       return emptyResult;
     }
 
