@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 /**
  * @author Plushnikov Michail
  */
-public class ReflectionUtil {
+public final class ReflectionUtil {
   private static final Logger LOG = Logger.getInstance(ReflectionUtil.class.getName());
 
   public static <T, R> R getFinalFieldPerReflection(Class<T> clazz, T instance, Class<R> fieldClass) {

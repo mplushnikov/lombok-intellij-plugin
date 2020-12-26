@@ -1,10 +1,10 @@
 package de.plushnikov.intellij.plugin.action.delombok;
 
+import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -12,12 +12,13 @@ import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilBase;
+import com.intellij.util.containers.ContainerUtil;
+import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.stream.Stream;
 
 public abstract class AbstractDelombokAction extends AnAction {
   private DelombokHandler myHandler;
@@ -42,13 +43,13 @@ public abstract class AbstractDelombokAction extends AnAction {
       return;
     }
 
-    PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
+    final PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
     if (psiDocumentManager.hasUncommitedDocuments()) {
       psiDocumentManager.commitAllDocuments();
     }
 
     final DataContext dataContext = event.getDataContext();
-    final Editor editor = PlatformDataKeys.EDITOR.getData(dataContext);
+    final Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
 
     if (null != editor) {
       final PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);
@@ -59,7 +60,7 @@ public abstract class AbstractDelombokAction extends AnAction {
         }
       }
     } else {
-      final VirtualFile[] files = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
+      final VirtualFile[] files = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
       if (null != files) {
         for (VirtualFile file : files) {
           if (file.isDirectory()) {
@@ -85,7 +86,7 @@ public abstract class AbstractDelombokAction extends AnAction {
   }
 
   private void processFile(Project project, VirtualFile file) {
-    if (StdFileTypes.JAVA.equals(file.getFileType())) {
+    if (JavaFileType.INSTANCE.equals(file.getFileType())) {
       final PsiManager psiManager = PsiManager.getInstance(project);
       PsiJavaFile psiFile = (PsiJavaFile) psiManager.findFile(file);
       if (psiFile != null) {
@@ -113,12 +114,12 @@ public abstract class AbstractDelombokAction extends AnAction {
     final DataContext dataContext = event.getDataContext();
 
     final Project project = event.getProject();
-    if (project == null) {
+    if (project == null || !LombokProjectValidatorActivity.hasLombokLibrary(project)) {
       presentation.setEnabled(false);
       return;
     }
 
-    final Editor editor = PlatformDataKeys.EDITOR.getData(dataContext);
+    final Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
     if (null != editor) {
       final PsiFile file = PsiUtilBase.getPsiFileInEditor(editor, project);
       presentation.setEnabled(file != null && isValidForFile(editor, file));
@@ -126,7 +127,7 @@ public abstract class AbstractDelombokAction extends AnAction {
     }
 
     boolean isValid = false;
-    final VirtualFile[] files = PlatformDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
+    final VirtualFile[] files = CommonDataKeys.VIRTUAL_FILE_ARRAY.getData(dataContext);
     if (null != files) {
       PsiManager psiManager = PsiManager.getInstance(project);
       for (VirtualFile file : files) {
@@ -135,10 +136,10 @@ public abstract class AbstractDelombokAction extends AnAction {
           isValid = true;
           break;
         }
-        if (StdFileTypes.JAVA.equals(file.getFileType())) {
+        if (JavaFileType.INSTANCE.equals(file.getFileType())) {
           PsiJavaFile psiFile = (PsiJavaFile) psiManager.findFile(file);
           if (psiFile != null) {
-            isValid = Stream.of(psiFile.getClasses()).anyMatch(this::isValidForClass);
+            isValid = ContainerUtil.or(psiFile.getClasses(), this::isValidForClass);
           }
         }
         if (isValid) {

@@ -25,7 +25,7 @@ public abstract class AbstractReplaceVariableWithExplicitTypeIntentionAction ext
   @NotNull
   @Override
   public String getFamilyName() {
-    return "Replace '" + StringUtil.getShortName(variableClassName) + "' with explicixt type (Lombok)";
+    return LombokBundle.message("replace.0.with.explicit.type.lombok", StringUtil.getShortName(variableClassName));
   }
 
   @Override

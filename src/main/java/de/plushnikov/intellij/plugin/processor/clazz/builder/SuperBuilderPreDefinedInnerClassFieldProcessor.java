@@ -27,6 +27,7 @@ public class SuperBuilderPreDefinedInnerClassFieldProcessor extends AbstractSupe
     super(PsiField.class, LombokClassNames.SUPER_BUILDER);
   }
 
+  @Override
   protected SuperBuilderHandler getBuilderHandler() {
     return ServiceManager.getService(SuperBuilderHandler.class);
   }

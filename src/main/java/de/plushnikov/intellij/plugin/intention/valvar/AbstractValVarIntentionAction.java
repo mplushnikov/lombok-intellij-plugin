@@ -11,7 +11,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
 import com.siyeh.ig.psiutils.CommentTracker;
 import de.plushnikov.intellij.plugin.intention.AbstractLombokIntentionAction;
-import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractValVarIntentionAction extends AbstractLombokIntentionAction implements LowPriorityAction {
@@ -19,9 +18,6 @@ public abstract class AbstractValVarIntentionAction extends AbstractLombokIntent
   @Override
   public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
     if (!super.isAvailable(project, editor, element)) {
-      return false;
-    }
-    if (!ProjectSettings.isEnabled(project, ProjectSettings.IS_VAL_ENABLED)) {
       return false;
     }
     if (element instanceof PsiCompiledElement || !canModifyBP(element) || !element.getLanguage().is(JavaLanguage.INSTANCE)) {
