@@ -142,9 +142,8 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
   private void compareType(PsiType beforeType, PsiType afterType, PomNamedTarget whereTarget) {
     if (null != beforeType && null != afterType) {
-      //TODO fix me ?
-      final String afterText = stripJavaLang(afterType.toString());
-      final String beforeText = stripJavaLang(beforeType.toString());
+      final String afterText = stripJavaLang(afterType.getCanonicalText());
+      final String beforeText = stripJavaLang(beforeType.getCanonicalText());
       assertEquals(String.format("Types are not equal for element: %s", whereTarget.getName()), afterText, beforeText);
     }
   }

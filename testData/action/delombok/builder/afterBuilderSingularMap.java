@@ -20,7 +20,7 @@ public class BuilderSingularMap {
     BuilderSingularMapBuilder() {
     }
 
-    public BuilderSingularMap.BuilderSingularMapBuilder myMap(String myMapKey, String myMapValue) {
+    public BuilderSingularMapBuilder myMap(String myMapKey, String myMapValue) {
       if (this.myMap$key == null) {
         this.myMap$key = new ArrayList<String>();
         this.myMap$value = new ArrayList<String>();
@@ -30,7 +30,7 @@ public class BuilderSingularMap {
       return this;
     }
 
-    public BuilderSingularMap.BuilderSingularMapBuilder myMap(Map<? extends String, ? extends String> myMap) {
+    public BuilderSingularMapBuilder myMap(Map<? extends String, ? extends String> myMap) {
       if (this.myMap$key == null) {
         this.myMap$key = new ArrayList<String>();
         this.myMap$value = new ArrayList<String>();
@@ -42,7 +42,7 @@ public class BuilderSingularMap {
       return this;
     }
 
-    public BuilderSingularMap.BuilderSingularMapBuilder clearMyMap() {
+    public BuilderSingularMapBuilder clearMyMap() {
       if (this.myMap$key != null) {
         this.myMap$key.clear();
         this.myMap$value.clear();

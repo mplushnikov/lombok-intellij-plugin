@@ -14,11 +14,16 @@ import java.util.*;
  */
 public final class LombokProcessorUtil {
 
-  @NonNls private static final String ACCESS_LEVEL_PRIVATE = "PRIVATE";
-  @NonNls private static final String ACCESS_LEVEL_PROTECTED = "PROTECTED";
-  @NonNls private static final String ACCESS_LEVEL_PACKAGE_LOCAL = "PACKAGE";
-  @NonNls private static final String ACCESS_LEVEL_PUBLIC = "PUBLIC";
-  @NonNls private static final String ACCESS_LEVEL_NONE = "NONE";
+  @NonNls
+  private static final String ACCESS_LEVEL_PRIVATE = "PRIVATE";
+  @NonNls
+  private static final String ACCESS_LEVEL_PROTECTED = "PROTECTED";
+  @NonNls
+  private static final String ACCESS_LEVEL_PACKAGE_LOCAL = "PACKAGE";
+  @NonNls
+  private static final String ACCESS_LEVEL_PUBLIC = "PUBLIC";
+  @NonNls
+  private static final String ACCESS_LEVEL_NONE = "NONE";
 
   private static final Map<Integer, String> ACCESS_LEVEL_MAP = new HashMap<>() {{
     put(PsiUtil.ACCESS_LEVEL_PUBLIC, ACCESS_LEVEL_PUBLIC);
@@ -33,6 +38,8 @@ public final class LombokProcessorUtil {
     put(ACCESS_LEVEL_PROTECTED, PsiModifier.PROTECTED);
     put(ACCESS_LEVEL_PRIVATE, PsiModifier.PRIVATE);
   }};
+
+  private static final String NULL_DEFAULT = "@@@NULL@@@";
 
   @Nullable
   @PsiModifier.ModifierConstant
@@ -58,10 +65,10 @@ public final class LombokProcessorUtil {
     return convertAccessLevelToJavaModifier(PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, ACCESS_LEVEL_PUBLIC));
   }
 
-  @NotNull
+  @Nullable
   public static String getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    final String annotationValue = PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, ACCESS_LEVEL_NONE);
-    return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> ACCESS_LEVEL_NONE);
+    final String annotationValue = PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, NULL_DEFAULT);
+    return NULL_DEFAULT.equals(annotationValue) ? null : VALUE_ACCESS_LEVEL_MAP.get(annotationValue);
   }
 
   public static boolean isLevelVisible(@NotNull PsiAnnotation psiAnnotation) {

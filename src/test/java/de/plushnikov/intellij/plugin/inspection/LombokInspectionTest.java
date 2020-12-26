@@ -17,9 +17,6 @@ public abstract class LombokInspectionTest extends LightJavaInspectionTestCase {
     LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
 
     Registry.get("platform.random.idempotence.check.rate").setValue(1, getTestRootDisposable());
-
-    //TODO disable assertions for the moment
-    RecursionManager.disableMissedCacheAssertions(myFixture.getProjectDisposable());
   }
 
   @NotNull
