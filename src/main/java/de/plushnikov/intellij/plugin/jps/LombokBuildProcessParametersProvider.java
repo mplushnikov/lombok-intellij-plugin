@@ -3,10 +3,8 @@ package de.plushnikov.intellij.plugin.jps;
 
 import com.intellij.compiler.server.BuildProcessParametersProvider;
 import com.intellij.openapi.project.Project;
-import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 /**

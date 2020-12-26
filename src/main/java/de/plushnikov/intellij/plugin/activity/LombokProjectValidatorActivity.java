@@ -25,16 +25,13 @@ import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jps.model.java.compiler.AnnotationProcessingConfiguration;
-
-import javax.swing.event.HyperlinkEvent;
 
 /**
  * Shows notifications about project setup issues, that make the plugin not working.
  *
  * @author Alexej Kubarev
  */
-public class LombokProjectValidatorActivity implements StartupActivity.DumbAware {
+public class LombokProjectValidatorActivity implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {

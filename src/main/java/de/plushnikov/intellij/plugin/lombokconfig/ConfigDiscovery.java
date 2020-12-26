@@ -5,7 +5,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
@@ -113,7 +112,7 @@ public class ConfigDiscovery {
 
   @VisibleForTesting
   protected FileBasedIndex getFileBasedIndex() {
-    return ApplicationManager.getApplication().getComponent(FileBasedIndex.class);
+    return FileBasedIndex.getInstance();
   }
 
   @Nullable

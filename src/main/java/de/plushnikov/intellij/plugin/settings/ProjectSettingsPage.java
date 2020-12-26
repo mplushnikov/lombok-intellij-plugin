@@ -5,10 +5,8 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiManager;
-
-import de.plushnikov.intellij.plugin.Version;
-import de.plushnikov.intellij.plugin.provider.LombokAugmentProvider;
 import de.plushnikov.intellij.plugin.LombokBundle;
+import de.plushnikov.intellij.plugin.provider.LombokAugmentProvider;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
