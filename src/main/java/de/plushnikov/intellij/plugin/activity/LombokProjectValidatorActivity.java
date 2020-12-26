@@ -60,7 +60,7 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
           if (null != lombokVersion && Version.compareVersionString(lombokVersion, Version.LAST_LOMBOK_VERSION) < 0) {
             return getNotificationGroup().createNotification(LombokBundle.message("config.warn.dependency.outdated.title"),
               LombokBundle.message("config.warn.dependency.outdated.message", project.getName(),
-                  module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
+                module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
               NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER);
           }
         }
@@ -89,29 +89,31 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
   }
 
   public static boolean isVersionLessThan1_18_16(Project project) {
-    return CachedValuesManager.getManager(project)
-      .getCachedValue(project, () -> {
-        Boolean isVersionLessThan;
-        try {
-          isVersionLessThan = ReadAction.nonBlocking(() -> isVersionLessThan1_18_16_Internal(project)).executeSynchronously();
-        } catch (ProcessCanceledException e) {
-          throw e;
-        } catch (Throwable e) {
-          isVersionLessThan = false;
-          LOG.error(e);
-        }
-        return new CachedValueProvider.Result<>(isVersionLessThan, ProjectRootManager.getInstance(project));
-      });
+    return CachedValuesManager.getManager(project).getCachedValue(project, () -> {
+      Boolean isVersionLessThan;
+      try {
+        isVersionLessThan = ReadAction.nonBlocking(
+          () -> isVersionLessThanInternal(project, Version.LAST_LOMBOK_VERSION_WITH_JPS_FIX))
+          .executeSynchronously();
+      } catch (ProcessCanceledException e) {
+        throw e;
+      } catch (Throwable e) {
+        isVersionLessThan = false;
+        LOG.error(e);
+      }
+      return new CachedValueProvider.Result<>(isVersionLessThan, ProjectRootManager.getInstance(project));
+    });
   }
 
-  private static boolean isVersionLessThan1_18_16_Internal(@NotNull Project project) {
+  private static boolean isVersionLessThanInternal(@NotNull Project project, @NotNull String version) {
     PsiPackage aPackage = JavaPsiFacade.getInstance(project).findPackage("lombok.experimental");
     if (aPackage != null) {
       PsiDirectory[] directories = aPackage.getDirectories();
       if (directories.length > 0) {
-        List<OrderEntry> entries = ProjectRootManager.getInstance(project).getFileIndex().getOrderEntriesForFile(directories[0].getVirtualFile());
+        List<OrderEntry> entries =
+          ProjectRootManager.getInstance(project).getFileIndex().getOrderEntriesForFile(directories[0].getVirtualFile());
         if (!entries.isEmpty()) {
-          return Version.isLessThan(entries.get(0), "1.18.16");
+          return Version.isLessThan(entries.get(0), version);
         }
       }
     }
