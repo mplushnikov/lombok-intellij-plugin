@@ -18,11 +18,6 @@ public final class LombokProcessorUtil {
   @NonNls private static final String ACCESS_LEVEL_PROTECTED = "PROTECTED";
   @NonNls private static final String ACCESS_LEVEL_PACKAGE_LOCAL = "PACKAGE";
   @NonNls private static final String ACCESS_LEVEL_PUBLIC = "PUBLIC";
-
-  @NonNls private static final String ACCESS_LEVEL_PRIVATE = "PRIVATE";
-  @NonNls private static final String ACCESS_LEVEL_PROTECTED = "PROTECTED";
-  @NonNls private static final String ACCESS_LEVEL_PACKAGE_LOCAL = "PACKAGE";
-  @NonNls private static final String ACCESS_LEVEL_PUBLIC = "PUBLIC";
   @NonNls private static final String ACCESS_LEVEL_NONE = "NONE";
 
   private static final Map<Integer, String> ACCESS_LEVEL_MAP = new HashMap<>() {{
@@ -64,9 +59,9 @@ public final class LombokProcessorUtil {
   }
 
   @NotNull
-  public static AccessLevel getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    final String annotationValue = PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, AccessLevel.NONE);
-    return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> AccessLevel.NONE);
+  public static String getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+    final String annotationValue = PsiAnnotationUtil.getEnumAnnotationValue(psiAnnotation, parameter, ACCESS_LEVEL_NONE);
+    return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> ACCESS_LEVEL_NONE);
   }
 
   public static boolean isLevelVisible(@NotNull PsiAnnotation psiAnnotation) {
