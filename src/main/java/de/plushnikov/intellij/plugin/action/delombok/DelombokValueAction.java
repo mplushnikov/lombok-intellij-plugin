@@ -5,6 +5,7 @@ import de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor;
 import org.jetbrains.annotations.NotNull;
 
 public class DelombokValueAction extends AbstractDelombokAction {
+  @Override
   @NotNull
   protected DelombokHandler createHandler() {
     return new DelombokHandler(ServiceManager.getService(ValueProcessor.class));

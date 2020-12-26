@@ -9,6 +9,7 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.util.PsiTreeUtil;
+import de.plushnikov.intellij.plugin.LombokBundle;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -46,13 +47,14 @@ public class DeprecatedLombokAnnotationInspection extends AbstractBaseJavaLocalI
         if (null != listOwner) {
 
           holder.registerProblem(psiAnnotation,
-            "Lombok annotation '" + deprecatedAnnotationFQN + "' is deprecated and " +
-              "not supported by lombok-plugin any more. Use '" + newAnnotationFQN + "' instead.",
-            ProblemHighlightType.ERROR,
-            new AddAnnotationFix(newAnnotationFQN,
-              listOwner,
-              psiAnnotation.getParameterList().getAttributes(),
-              deprecatedAnnotationFQN));
+                                 LombokBundle
+                                   .message("inspection.message.lombok.annotation.deprecated.not.supported", deprecatedAnnotationFQN,
+                                            newAnnotationFQN),
+                                 ProblemHighlightType.ERROR,
+                                 new AddAnnotationFix(newAnnotationFQN,
+                                                      listOwner,
+                                                      psiAnnotation.getParameterList().getAttributes(),
+                                                      deprecatedAnnotationFQN));
         }
       }
     }

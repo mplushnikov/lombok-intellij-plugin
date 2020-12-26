@@ -29,35 +29,41 @@ public class LombokConfigParserDefinition implements ParserDefinition {
     return new LombokConfigLexerAdapter();
   }
 
+  @Override
   @NotNull
   public TokenSet getWhitespaceTokens() {
     return WHITE_SPACES;
   }
 
+  @Override
   @NotNull
   public TokenSet getCommentTokens() {
     return COMMENTS;
   }
 
+  @Override
   @NotNull
   public TokenSet getStringLiteralElements() {
     return TokenSet.EMPTY;
   }
 
+  @Override
   @NotNull
   public PsiParser createParser(final Project project) {
     return new LombokConfigParser();
   }
 
   @Override
-  public IFileElementType getFileNodeType() {
+  public @NotNull IFileElementType getFileNodeType() {
     return FILE;
   }
 
-  public PsiFile createFile(FileViewProvider viewProvider) {
+  @Override
+  public @NotNull PsiFile createFile(@NotNull FileViewProvider viewProvider) {
     return new LombokConfigFile(viewProvider);
   }
 
+  @Override
   @NotNull
   public PsiElement createElement(ASTNode node) {
     return LombokConfigTypes.Factory.createElement(node);
