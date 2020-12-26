@@ -4,7 +4,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.testFramework.TestApplicationManager;
 import com.intellij.util.indexing.FileBasedIndex;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -52,7 +51,6 @@ public class ConfigDiscoveryTest {
 
   @Before
   public void setUp() {
-    TestApplicationManager.getInstance();
     discovery = new ConfigDiscovery(){
       @Override
       protected FileBasedIndex getFileBasedIndex() {
