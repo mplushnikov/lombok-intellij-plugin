@@ -3,7 +3,6 @@ package de.plushnikov.intellij.plugin.quickfix;
 import com.intellij.codeInsight.CodeInsightUtil;
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInspection.LocalQuickFixOnPsiElement;
-import com.intellij.codeInspection.util.IntentionName;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.command.undo.UndoUtil;
 import com.intellij.openapi.editor.Editor;
@@ -31,7 +30,6 @@ public class ChangeAnnotationParameterQuickFix extends LocalQuickFixOnPsiElement
 
   @Override
   @NotNull
-  @IntentionName
   public String getText() {
     if (null == myNewValue) {
       return LombokBundle.message("intention.name.remove.annotation.parameter.s", myName);

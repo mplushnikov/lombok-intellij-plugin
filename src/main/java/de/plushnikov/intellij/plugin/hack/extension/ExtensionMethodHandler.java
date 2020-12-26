@@ -64,7 +64,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ExtensionMethodHandler {
-  
+
   public static boolean isEnabled(@NotNull Project project) {
     return ProjectSettings.isEnabled(project, ProjectSettings.IS_EXTENSION_METHOD_ENABLED);
   }
@@ -218,7 +218,7 @@ public class ExtensionMethodHandler {
           // Since this leads to potential type safety issues, the type corresponding to these type parameters needs to be replaced with the inferred type.
           final Set<PsiTypeParameter> dropTypeParameters = type.accept(new TypeParameterSearcher());
           // Type parameters are inferred from the actual types(rightTypes) and the original types(leftTypes).
-          final PsiSubstitutor substitutor = resolveHelper.inferTypeArguments(dropTypeParameters.toArray(PsiTypeParameter[]::new), leftTypes, new PsiType[]{ injectType }, languageLevel);
+          final PsiSubstitutor substitutor = resolveHelper.inferTypeArguments(dropTypeParameters.toArray(new PsiTypeParameter[0]), leftTypes, new PsiType[]{ injectType }, languageLevel);
           final LombokLightMethodBuilder lightMethod = new LombokLightMethodBuilder(methodNode.getManager(), methodNode.getName()) {
             @Override
             // This override is used for source methods to be able to find expressions that are referenced by extended methods.

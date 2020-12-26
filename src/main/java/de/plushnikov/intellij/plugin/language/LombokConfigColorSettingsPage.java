@@ -5,7 +5,6 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter;
 import com.intellij.openapi.options.colors.AttributesDescriptor;
 import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
-import com.intellij.openapi.util.NlsContexts;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.icon.LombokIcons;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +67,6 @@ public class LombokConfigColorSettingsPage implements ColorSettingsPage {
 
   @NotNull
   @Override
-  @NlsContexts.ConfigurableName
   public String getDisplayName() {
     return LombokBundle.message("configurable.name.lombok.config");
   }

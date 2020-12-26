@@ -65,6 +65,7 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
 
     LombokProcessorProvider lombokProcessorProvider = myProject.getService(LombokProcessorProvider.class);
     lombokProcessorProvider.initProcessors();
+
     // Redo code checking and highlighting.
     LombokAugmentProvider.onConfigChange();
     PsiManager.getInstance(myProject).dropPsiCaches();

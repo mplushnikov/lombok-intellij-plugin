@@ -9,6 +9,8 @@ import de.plushnikov.intellij.plugin.Version;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -25,7 +27,7 @@ public class LombokExternalLibraryResolver extends ExternalLibraryResolver {
                                                                                         null, null, Version.LAST_LOMBOK_VERSION);
 
   public LombokExternalLibraryResolver() {
-    allLombokPackages = MAIN_LOMBOK_CLASSES.stream().map(StringUtil::getPackageName).collect(Collectors.toUnmodifiableSet());
+    allLombokPackages = Collections.unmodifiableSet(MAIN_LOMBOK_CLASSES.stream().map(StringUtil::getPackageName).collect(Collectors.toSet()));
     simpleNameToFQNameMap = MAIN_LOMBOK_CLASSES.stream().collect(Collectors.toMap(StringUtil::getShortName, Function.identity()));
   }
 

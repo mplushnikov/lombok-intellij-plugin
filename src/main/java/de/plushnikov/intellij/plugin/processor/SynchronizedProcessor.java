@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.processor;
 
-import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -45,7 +44,7 @@ public class SynchronizedProcessor extends AbstractProcessor {
         );
       }
 
-      @NlsSafe final String lockFieldName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "value");
+      final String lockFieldName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "value");
       if (StringUtil.isNotEmpty(lockFieldName)) {
         final PsiClass containingClass = psiMethod.getContainingClass();
 

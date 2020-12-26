@@ -35,7 +35,7 @@ public class LombokConfigIndex extends FileBasedIndexExtension<ConfigKey, Config
   @NotNull
   @Override
   public DataIndexer<ConfigKey, ConfigValue, FileContent> getIndexer() {
-    return new DataIndexer<>() {
+    return new DataIndexer<ConfigKey, ConfigValue, FileContent>() {
       @NotNull
       @Override
       public Map<ConfigKey, ConfigValue> map(@NotNull FileContent inputData) {
@@ -99,10 +99,10 @@ public class LombokConfigIndex extends FileBasedIndexExtension<ConfigKey, Config
   @NotNull
   @Override
   public DataExternalizer<ConfigValue> getValueExternalizer() {
-    return new DataExternalizer<>() {
+    return new DataExternalizer<ConfigValue>() {
       @Override
       public void save(@NotNull DataOutput out, ConfigValue configValue) throws IOException {
-        var isNotNullValue = configValue.getValue() != null;
+        boolean isNotNullValue = configValue.getValue() != null;
         out.writeBoolean(isNotNullValue);
         if (isNotNullValue) {
           EnumeratorStringDescriptor.INSTANCE.save(out, configValue.getValue());
@@ -112,7 +112,7 @@ public class LombokConfigIndex extends FileBasedIndexExtension<ConfigKey, Config
 
       @Override
       public ConfigValue read(@NotNull DataInput in) throws IOException {
-        var isNotNullValue = in.readBoolean();
+        boolean isNotNullValue = in.readBoolean();
         return new ConfigValue(isNotNullValue ? EnumeratorStringDescriptor.INSTANCE.read(in) : null, in.readBoolean());
       }
     };
