@@ -21,7 +21,7 @@ import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.util.messages.SimpleMessageBusConnection;
+import com.intellij.util.messages.MessageBusConnection;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
@@ -42,7 +42,7 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
   @Override
   public void runActivity(@NotNull Project project) {
     // enable annotationProcessing check
-    final SimpleMessageBusConnection connection = project.getMessageBus().simpleConnect();
+    final MessageBusConnection connection = project.getMessageBus().connect();
     connection.subscribe(BuildManagerListener.TOPIC, new LombokBuildManagerListener());
 
     LombokProcessorProvider lombokProcessorProvider = LombokProcessorProvider.getInstance(project);
@@ -59,10 +59,9 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
 
           if (null != lombokVersion && Version.compareVersionString(lombokVersion, Version.LAST_LOMBOK_VERSION) < 0) {
             return getNotificationGroup().createNotification(LombokBundle.message("config.warn.dependency.outdated.title"),
-                                                             LombokBundle
-                                                               .message("config.warn.dependency.outdated.message", project.getName(),
-                                                                        module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
-                                                             NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER);
+              LombokBundle.message("config.warn.dependency.outdated.message", project.getName(),
+                  module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
+              NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER);
           }
         }
       }
@@ -71,7 +70,7 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
       .finishOnUiThread(ModalityState.NON_MODAL, notification -> {
         if (notification != null) {
           Notifications.Bus.notify(notification, project);
-          Disposer.register(lombokProcessorProvider, () -> notification.expire());
+          Disposer.register(lombokProcessorProvider, notification::expire);
         }
       }).submit(AppExecutorUtil.getAppExecutorService());
   }
@@ -95,11 +94,9 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
         Boolean isVersionLessThan;
         try {
           isVersionLessThan = ReadAction.nonBlocking(() -> isVersionLessThan1_18_16_Internal(project)).executeSynchronously();
-        }
-        catch (ProcessCanceledException e) {
+        } catch (ProcessCanceledException e) {
           throw e;
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
           isVersionLessThan = false;
           LOG.error(e);
         }
