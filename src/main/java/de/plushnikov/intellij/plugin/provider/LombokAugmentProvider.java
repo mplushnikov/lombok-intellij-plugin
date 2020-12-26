@@ -5,11 +5,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.*;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
-import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.processor.LombokProcessorManager;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.processor.modifier.ModifierProcessor;
+import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +86,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       return emptyResult;
     }
     // skip processing if disabled, or no lombok library is present
-    if (!LombokProjectValidatorActivity.hasLombokLibrary(element.getProject())) {
+    if (!LombokLibraryUtil.hasLombokLibrary(element.getProject())) {
       return emptyResult;
     }
 

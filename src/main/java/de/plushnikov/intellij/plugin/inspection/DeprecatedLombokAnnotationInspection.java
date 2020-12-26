@@ -1,7 +1,6 @@
 package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInsight.intention.AddAnnotationFix;
-import com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
@@ -17,16 +16,15 @@ import java.util.Objects;
 /**
  * @author Plushnikov Michail
  */
-public class DeprecatedLombokAnnotationInspection extends AbstractBaseJavaLocalInspectionTool {
+public class DeprecatedLombokAnnotationInspection extends LombokJavaInspectionBase {
 
   @NotNull
   @Override
-  public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, final boolean isOnTheFly) {
+  protected PsiElementVisitor createVisitor(@NotNull final ProblemsHolder holder, final boolean isOnTheFly) {
     return new LombokElementVisitor(holder);
   }
 
   private static class LombokElementVisitor extends JavaElementVisitor {
-
     private final ProblemsHolder holder;
 
     LombokElementVisitor(ProblemsHolder holder) {
@@ -58,6 +56,5 @@ public class DeprecatedLombokAnnotationInspection extends AbstractBaseJavaLocalI
         }
       }
     }
-
   }
 }
