@@ -17,11 +17,12 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.modules.java</depends>
 
-  <project-components>
-    <component>
-      <implementation-class>de.plushnikov.intellij.plugin.hack.extension.ExtensionMethodSupport</implementation-class>
-    </component>
-  </project-components>
+
+<!--  <project-components>-->
+<!--    <component>-->
+<!--      <implementation-class>de.plushnikov.intellij.plugin.hack.extension.ExtensionMethodSupport</implementation-class>-->
+<!--    </component>-->
+<!--  </project-components>-->
 
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="de.plushnikov.intellij.plugin.activity.LombokPluginUpdateActivity"/>

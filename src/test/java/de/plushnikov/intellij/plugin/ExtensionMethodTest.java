@@ -1,13 +1,14 @@
 package de.plushnikov.intellij.plugin;
 
+import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiMethodReferenceExpression;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.LightJavaCodeInsightTestCase;
 import com.intellij.testFramework.LightProjectDescriptor;
 
+import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import junit.framework.AssertionFailedError;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * TODO looks like not functional at this version
  */
-public class ExtensionMethodTest extends LightJavaCodeInsightTestCase {
+public class ExtensionMethodTest extends LightCodeInsightFixtureTestCase {
 
   public void _testBaseTypeExtensionMethod() {
     checkMethod(createTestMethod("\"\".requireNonNull();"), true);
@@ -46,7 +47,7 @@ public class ExtensionMethodTest extends LightJavaCodeInsightTestCase {
   private PsiFile createTestFile(final String body) {
     enableExtensionMethodSupport();
 
-    return createFile("test.java", "import java.util.*; import java.util.function.*;" +
+    return createLightFile("test.java", JavaLanguage.INSTANCE, "import java.util.*; import java.util.function.*;" +
                                    "@lombok.experimental.ExtensionMethod({" +
                                    "Objects.class, Arrays.class" +
                                    "}) class TestExtensionMethod { " + body + "}");

@@ -1,5 +1,8 @@
 package de.plushnikov.intellij.plugin.hack;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
 
 import com.sun.jna.Callback;
@@ -15,149 +18,194 @@ import org.jetbrains.annotations.Nullable;
 
 public interface JNI extends Library {
 
-  JNI INSTANCE = Native.load("jvm", JNI.class);
+  JNI INSTANCE = Native.loadLibrary("jvm", JNI.class);
 
   /* JNI Result code */
   int
     // @formatter:off
-            JNI_OK        = 0,      /* success */
-            JNI_ERR       = -1,     /* unknown error */
-            JNI_EDETACHED = -2,     /* thread detached from the VM */
-            JNI_EVERSION  = -3,     /* JNI version error */
-            JNI_ENOMEM    = -4,     /* not enough memory */
-            JNI_EEXIST    = -5,     /* VM already created */
-            JNI_EINVAL    = -6;     /* invalid arguments */
-            // @formatter:on
+    JNI_OK = 0,      /* success */
+    JNI_ERR = -1,     /* unknown error */
+    JNI_EDETACHED = -2,     /* thread detached from the VM */
+    JNI_EVERSION = -3,     /* JNI version error */
+    JNI_ENOMEM = -4,     /* not enough memory */
+    JNI_EEXIST = -5,     /* VM already created */
+    JNI_EINVAL = -6;     /* invalid arguments */
+  // @formatter:on
 
   /* JNI VersionInfo */
   int
     // @formatter:off
-            JNI_VERSION_1_1 = 0x00010001,
-            JNI_VERSION_1_2 = 0x00010002,
-            JNI_VERSION_1_4 = 0x00010004,
-            JNI_VERSION_1_6 = 0x00010006,
-            JNI_VERSION_1_8 = 0x00010008,
-            JNI_VERSION_9   = 0x00090000,
-            JNI_VERSION_10  = 0x000a0000;
-            // @formatter:on
+    JNI_VERSION_1_1 = 0x00010001,
+    JNI_VERSION_1_2 = 0x00010002,
+    JNI_VERSION_1_4 = 0x00010004,
+    JNI_VERSION_1_6 = 0x00010006,
+    JNI_VERSION_1_8 = 0x00010008,
+    JNI_VERSION_9 = 0x00090000,
+    JNI_VERSION_10 = 0x000a0000;
+  // @formatter:on
 
-  @Structure.FieldOrder("reserved")
   class NativeInterface extends Structure {
 
-    public static class ByReference extends NativeInterface implements Structure.ByReference { }
+    public static class ByReference extends NativeInterface implements Structure.ByReference {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
-    public static class ByValue extends NativeInterface implements Structure.ByValue { }
+    public static class ByValue extends NativeInterface implements Structure.ByValue {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
     public long reserved;
 
-    public NativeInterface() { }
+    public NativeInterface() {
+    }
 
     public NativeInterface(final Pointer pointer) {
       super(pointer);
       autoRead();
     }
 
+    @Override
+    protected List<String> getFieldOrder() {
+      return Collections.singletonList("reserved");
+    }
   }
 
-  @Structure.FieldOrder("functions")
   class Env extends Structure {
 
-    public static class ByReference extends NativeInterface implements Structure.ByReference { }
+    public static class ByReference extends NativeInterface implements Structure.ByReference {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
-    public static class ByValue extends NativeInterface implements Structure.ByValue { }
+    public static class ByValue extends NativeInterface implements Structure.ByValue {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
     public @Nullable NativeInterface.ByReference functions;
 
-    public Env() { }
+    public Env() {
+    }
 
     public Env(final Pointer pointer) {
       super(pointer);
       autoRead();
     }
 
+    @Override
+    protected List<String> getFieldOrder() {
+      return Collections.singletonList("functions");
+    }
   }
 
   @SuppressWarnings("ConstantConditions")
-  @Structure.FieldOrder("functions")
   class JavaVM extends Structure {
 
-    public static class ByReference extends JavaVM implements Structure.ByReference { }
+    public static class ByReference extends JavaVM implements Structure.ByReference {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
-    public static class ByValue extends JavaVM implements Structure.ByValue { }
+    public static class ByValue extends JavaVM implements Structure.ByValue {
+      @Override
+      protected List<String> getFieldOrder() {
+        return Collections.emptyList();
+      }
+    }
 
-    @Structure.FieldOrder({
-      "reserved0",
-      "reserved1",
-      "reserved2",
-      "DestroyJavaVM",
-      "AttachCurrentThread",
-      "DetachCurrentThread",
-      "GetEnv",
-      "AttachCurrentThreadAsDaemon"
-    })
     public static class InvokeInterface extends Structure {
 
-      public static class ByReference extends InvokeInterface implements Structure.ByReference { }
+      public static class ByReference extends InvokeInterface implements Structure.ByReference {
+        @Override
+        protected List<String> getFieldOrder() {
+          return Collections.emptyList();
+        }
+      }
 
-      public static class ByValue extends InvokeInterface implements Structure.ByValue { }
+      public static class ByValue extends InvokeInterface implements Structure.ByValue {
+        @Override
+        protected List<String> getFieldOrder() {
+          return Collections.emptyList();
+        }
+      }
 
       public @Nullable Pointer reserved0, reserved1, reserved2;
 
       public interface DestroyJavaVM extends Callback {
-
         int invoke(Pointer p_javaVM);
-
       }
 
       public @Nullable DestroyJavaVM DestroyJavaVM;
 
       public interface AttachCurrentThread extends Callback {
-
         int invoke(Pointer p_javaVM, PointerByReference p_penv, Pointer p_args);
-
       }
 
       public @Nullable AttachCurrentThread AttachCurrentThread;
 
       public interface DetachCurrentThread extends Callback {
-
         int invoke(Pointer p_javaVM);
-
       }
 
       public @Nullable DetachCurrentThread DetachCurrentThread;
 
       public interface GetEnv extends Callback {
-
         int invoke(Pointer p_javaVM, PointerByReference p_penv, int version);
-
       }
 
       public @Nullable GetEnv GetEnv;
 
       public interface AttachCurrentThreadAsDaemon extends Callback {
-
         int invoke(Pointer p_javaVM, PointerByReference p_penv, Pointer p_args);
-
       }
 
       public @Nullable AttachCurrentThreadAsDaemon AttachCurrentThreadAsDaemon;
 
-      public InvokeInterface() { }
+      public InvokeInterface() {
+      }
 
       public InvokeInterface(final Pointer pointer) {
         super(pointer);
       }
 
+      @Override
+      protected List<String> getFieldOrder() {
+        return Arrays.asList("reserved0",
+          "reserved1",
+          "reserved2",
+          "DestroyJavaVM",
+          "AttachCurrentThread",
+          "DetachCurrentThread",
+          "GetEnv",
+          "AttachCurrentThreadAsDaemon");
+      }
     }
 
     public @Nullable InvokeInterface.ByReference functions;
 
-    public JavaVM() { }
+    public JavaVM() {
+    }
 
     public JavaVM(final Pointer pointer) {
       super(pointer);
       autoRead();
+    }
+
+    @Override
+    protected List<String> getFieldOrder() {
+      return Collections.singletonList("functions");
     }
 
     public void destroyJavaVM() throws LastErrorException {
@@ -186,13 +234,14 @@ public interface JNI extends Library {
       return getEnv(JNI.Env::new, version);
     }
 
-    public static JavaVM contextVM() { return new JavaVM(INSTANCE.contextVM()); }
-
+    public static JavaVM contextVM() {
+      return new JavaVM(INSTANCE.contextVM());
+    }
   }
 
   interface Instrument extends Library {
 
-    Instrument INSTANCE = Native.load("instrument", Instrument.class);
+    Instrument INSTANCE = Native.loadLibrary("instrument", Instrument.class);
 
     int Agent_OnAttach(Pointer p_vm, String path, @Nullable Pointer p_reserved);
 
@@ -200,8 +249,9 @@ public interface JNI extends Library {
       checkJNIError(Agent_OnAttach(JNI.INSTANCE.contextVM(), path, p_reserved));
     }
 
-    default void attachAgent(final String path) { attachAgent(path, null); }
-
+    default void attachAgent(final String path) {
+      attachAgent(path, null);
+    }
   }
 
   static void checkJNIError(final int jniReturnCode) throws LastErrorException {
@@ -221,5 +271,4 @@ public interface JNI extends Library {
     checkJNIError(JNI.INSTANCE.JNI_GetCreatedJavaVMs(p_vms, 1, p_found));
     return p_vms.getValue();
   }
-
 }

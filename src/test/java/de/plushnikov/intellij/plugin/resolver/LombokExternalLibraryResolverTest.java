@@ -5,6 +5,8 @@ import com.intellij.util.ThreeState;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 
+import static com.intellij.testFramework.LightPlatformTestCase.getModule;
+
 public class LombokExternalLibraryResolverTest extends AbstractLombokLightCodeInsightTestCase {
 
   public void testResolverConstruction() {
