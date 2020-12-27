@@ -4,21 +4,13 @@ import com.intellij.compiler.server.BuildManagerListener;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiPackage;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import de.plushnikov.intellij.plugin.LombokBundle;
@@ -29,15 +21,12 @@ import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 /**
  * Shows notifications about project setup issues, that make the plugin not working.
  *
  * @author Alexej Kubarev
  */
 public class LombokProjectValidatorActivity implements StartupActivity.DumbAware {
-  private static final Logger LOG = Logger.getInstance(LombokProjectValidatorActivity.class);
 
   @Override
   public void runActivity(@NotNull Project project) {
@@ -78,38 +67,6 @@ public class LombokProjectValidatorActivity implements StartupActivity.DumbAware
   @NotNull
   private static NotificationGroup getNotificationGroup() {
     return NotificationGroupManager.getInstance().getNotificationGroup(Version.PLUGIN_NAME);
-  }
-
-  public static boolean isVersionLessThan1_18_16(Project project) {
-    return CachedValuesManager.getManager(project).getCachedValue(project, () -> {
-      Boolean isVersionLessThan;
-      try {
-        isVersionLessThan = ReadAction.nonBlocking(
-          () -> isVersionLessThanInternal(project, Version.LAST_LOMBOK_VERSION_WITH_JPS_FIX))
-          .executeSynchronously();
-      } catch (ProcessCanceledException e) {
-        throw e;
-      } catch (Throwable e) {
-        isVersionLessThan = false;
-        LOG.error(e);
-      }
-      return new CachedValueProvider.Result<>(isVersionLessThan, ProjectRootManager.getInstance(project));
-    });
-  }
-
-  private static boolean isVersionLessThanInternal(@NotNull Project project, @NotNull String version) {
-    PsiPackage aPackage = JavaPsiFacade.getInstance(project).findPackage("lombok.experimental");
-    if (aPackage != null) {
-      PsiDirectory[] directories = aPackage.getDirectories();
-      if (directories.length > 0) {
-        List<OrderEntry> entries =
-          ProjectRootManager.getInstance(project).getFileIndex().getOrderEntriesForFile(directories[0].getVirtualFile());
-        if (!entries.isEmpty()) {
-          return Version.isLessThan(entries.get(0), version);
-        }
-      }
-    }
-    return false;
   }
 
   @Nullable

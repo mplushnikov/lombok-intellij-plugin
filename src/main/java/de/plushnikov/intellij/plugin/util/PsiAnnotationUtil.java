@@ -69,8 +69,6 @@ public final class PsiAnnotationUtil {
 
   public static String getStringAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, @NotNull String defaultValue) {
     final String result = AnnotationUtil.getDeclaredStringAttributeValue(psiAnnotation, parameter);
-//    PsiAnnotationMemberValue attrValue = getAnnotationAttribute(psiAnnotation, parameter);
-//    return null != attrValue ? AnnotationUtil.getStringAttributeValue(attrValue) : null;
     return result != null ? result : defaultValue;
   }
 
@@ -78,10 +76,6 @@ public final class PsiAnnotationUtil {
     PsiAnnotationMemberValue attrValue = psiAnnotation.findDeclaredAttributeValue(attributeName);
     String result = attrValue != null ? resolveElementValue(attrValue, String.class) : null;
     return result != null ? result : defaultValue;
-    // doesn't work for definition using static import for Enum.value for example
-//    PsiConstantEvaluationHelper evaluationHelper = JavaPsiFacade.getInstance(psiAnnotation.getProject()).getConstantEvaluationHelper();
-//    Object result = evaluationHelper.computeConstantExpression(attrValue);
-//    return result instanceof Enum ? ((Enum<?>) result).name() : defaultValue.name();
   }
 
   public static int getIntAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String attributeName, int defaultValue) {
@@ -89,11 +83,6 @@ public final class PsiAnnotationUtil {
     PsiConstantEvaluationHelper evaluationHelper = JavaPsiFacade.getInstance(psiAnnotation.getProject()).getConstantEvaluationHelper();
     Object result = evaluationHelper.computeConstantExpression(attrValue);
     return result instanceof Number ? ((Number) result).intValue() : defaultValue;
-  }
-
-  @Nullable
-  private static PsiAnnotationMemberValue getAnnotationAttribute(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
-    return psiAnnotation.hasAttribute(parameter) ? psiAnnotation.findAttributeValue(parameter) : null;
   }
 
   @Nullable
