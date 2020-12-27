@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.util.PsiTreeUtil;
 import de.plushnikov.intellij.plugin.LombokBundle;
+import de.plushnikov.intellij.plugin.LombokClassNames;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -33,9 +34,9 @@ public class DeprecatedLombokAnnotationInspection extends LombokJavaInspectionBa
 
     @Override
     public void visitAnnotation(final PsiAnnotation annotation) {
-      checkFor("lombok.experimental.Builder", "lombok.Builder", annotation);
-      checkFor("lombok.experimental.Value", "lombok.Value", annotation);
-      checkFor("lombok.experimental.Wither", "lombok.With", annotation);
+      checkFor("lombok.experimental.Builder", LombokClassNames.BUILDER, annotation);
+      checkFor("lombok.experimental.Value", LombokClassNames.VALUE, annotation);
+      checkFor("lombok.experimental.Wither", LombokClassNames.WITH, annotation);
     }
 
     private void checkFor(String deprecatedAnnotationFQN, String newAnnotationFQN, PsiAnnotation psiAnnotation) {

@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.inspection;
 
-import com.intellij.openapi.util.RecursionManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.siyeh.ig.LightJavaInspectionTestCase;
