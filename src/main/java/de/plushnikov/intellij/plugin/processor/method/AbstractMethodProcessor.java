@@ -59,7 +59,6 @@ public abstract class AbstractMethodProcessor extends AbstractProcessor implemen
     if (null == nameHint) {
       return true;
     }
-    //TODO: implement handling
     return true;
   }
 

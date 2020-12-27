@@ -64,8 +64,6 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
       return true;
     }
 
-    //TODO: implement handling
-
     return true;
   }
 

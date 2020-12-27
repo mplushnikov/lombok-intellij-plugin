@@ -60,8 +60,6 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
       return true;
     }
 
-    //TODO: implement handling
-
     return true;
   }
 

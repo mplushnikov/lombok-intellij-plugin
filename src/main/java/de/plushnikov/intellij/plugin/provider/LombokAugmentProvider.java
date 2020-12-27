@@ -71,7 +71,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   @NotNull
-//  @Override available from 2020.2
+  @Override
   public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element,
                                                         @NotNull final Class<Psi> type,
                                                         @Nullable String nameHint) {
