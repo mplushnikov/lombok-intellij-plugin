@@ -1,8 +1,15 @@
 package de.plushnikov.intellij.plugin.inspection;
 
 import com.intellij.codeInspection.InspectionProfileEntry;
+import de.plushnikov.intellij.plugin.LombokTestUtil;
 
 public class OnXAnnotationInspectionTest extends LombokInspectionTest {
+
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    LombokTestUtil.loadJsr305Library(myFixture.getProjectDisposable(), getModule());
+  }
 
   @Override
   protected String getTestDataPath() {

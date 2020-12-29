@@ -20,8 +20,9 @@ import java.io.File;
 public class LombokTestUtil {
   private static final String THIRD_PARTY_LIB_DIRECTORY = "lib";
   private static final String OLD_LOMBOK_JAR_NAME = "lombok-1.18.2.jar";
-  private static final String LOMBOK_JAR_NAME = "lombok-1.18.16.jar";
+  private static final String LOMBOK_JAR_NAME = "lombok-1.18.18.jar";
   private static final String SLF4J_JAR_NAME = "slf4j-api-1.7.30.jar";
+  private static final String JSR305_JAR_NAME = "jsr305-3.0.2.jar";
 
   public static void loadLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
     loadLibrary(projectDisposable, module, "Lombok Library", LOMBOK_JAR_NAME);
@@ -33,6 +34,10 @@ public class LombokTestUtil {
 
   public static void loadSlf4jLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
     loadLibrary(projectDisposable, module, "Slf4j Library", SLF4J_JAR_NAME);
+  }
+
+  public static void loadJsr305Library(@NotNull Disposable projectDisposable, @NotNull Module module) {
+    loadLibrary(projectDisposable, module, "JSR-305 Library", JSR305_JAR_NAME);
   }
 
   private static void loadLibrary(@NotNull Disposable projectDisposable, @NotNull Module module, String libraryName,
