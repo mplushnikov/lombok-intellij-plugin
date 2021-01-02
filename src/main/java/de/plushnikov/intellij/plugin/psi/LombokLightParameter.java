@@ -18,8 +18,9 @@ public class LombokLightParameter extends LightParameter implements SyntheticEle
   private final LombokLightIdentifier myNameIdentifier;
 
   public LombokLightParameter(@NotNull String name, @NotNull PsiType type, PsiElement declarationScope, Language language) {
-    super(name, type, declarationScope, language, new LombokLightModifierList(declarationScope.getManager(), language));
+    super(name, type, declarationScope, language);
     myNameIdentifier = new LombokLightIdentifier(declarationScope.getManager(), name);
+    setModifierList(new LombokLightModifierList(declarationScope.getManager(), language));
   }
 
   @NotNull

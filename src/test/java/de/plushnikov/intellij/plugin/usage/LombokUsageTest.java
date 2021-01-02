@@ -48,7 +48,7 @@ public class LombokUsageTest extends AbstractLombokLightCodeInsightTestCase {
   }
 
   public void testFieldUsages() {
-    myFixture.configureByFile(getTestName(false) + ".java");
+    myFixture.configureByFile(getBasePath() + getTestName(false) + ".java");
     PsiClass aClass = myFixture.findClass("Apple");
     JavaClassFindUsagesOptions options = new JavaClassFindUsagesOptions(getProject());
     options.isFieldsUsages=true;
