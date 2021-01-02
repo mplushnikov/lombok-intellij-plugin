@@ -1,6 +1,9 @@
 package de.plushnikov.intellij.plugin.activity;
 
 import com.intellij.compiler.server.BuildManagerListener;
+import com.intellij.notification.*;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.notification.NotificationDisplayType;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationListener;
@@ -10,8 +13,9 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiPackage;
 import com.intellij.psi.util.CachedValueProvider;
@@ -20,6 +24,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,8 +41,7 @@ public class LombokProjectValidatorActivity implements StartupActivity {
     final MessageBusConnection connection = project.getMessageBus().connect();
     connection.subscribe(BuildManagerListener.TOPIC, new LombokBuildManagerListener());
 
-    final boolean hasLombokLibrary = hasLombokLibrary(project);
-
+    final boolean hasLombokLibrary = LombokLibraryUtil.hasLombokLibrary(project);
     // If dependency is present and out of date notification setting is enabled (defaults to disabled)
     if (hasLombokLibrary && ProjectSettings.isEnabled(project, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false)) {
       final ModuleManager moduleManager = ModuleManager.getInstance(project);
@@ -62,13 +66,6 @@ public class LombokProjectValidatorActivity implements StartupActivity {
       group = new NotificationGroup(Version.PLUGIN_NAME, NotificationDisplayType.BALLOON, true);
     }
     return group;
-  }
-
-  public static boolean hasLombokLibrary(Project project) {
-    return CachedValuesManager.getManager(project).getCachedValue(project, () -> {
-      PsiPackage aPackage = JavaPsiFacade.getInstance(project).findPackage("lombok.experimental");
-      return new CachedValueProvider.Result<>(aPackage, ProjectRootManager.getInstance(project));
-    }) != null;
   }
 
   @Nullable

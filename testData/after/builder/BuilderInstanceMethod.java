@@ -60,8 +60,9 @@ class BuilderInstanceMethod<T> {
 	}
 
 	@java.lang.SuppressWarnings("all")
+  // removed '<T>' from original file
   // added 'BuilderInstanceMethod.' because Builder-class is not static
-	public StringBuilder builder() {
+	public BuilderInstanceMethod.StringBuilder builder() {
 		return new BuilderInstanceMethod.StringBuilder();
 	}
 }

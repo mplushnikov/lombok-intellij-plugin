@@ -43,7 +43,6 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
 
   private void initFromSettings() {
     myEnableExtensionMethodSupport.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED, false));
-
     myEnableLombokVersionWarning.setSelected(ProjectSettings.isEnabled(myProject, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false));
   }
 
@@ -58,14 +57,9 @@ public class ProjectSettingsPage implements SearchableConfigurable, Configurable
   @Override
   public void apply() {
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_EXTENSION_METHOD_ENABLED, myEnableExtensionMethodSupport.isSelected());
-
     ProjectSettings.setEnabled(myProject, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, myEnableLombokVersionWarning.isSelected());
 
-    LombokProcessorProvider lombokProcessorProvider = LombokProcessorProvider.getInstance(myProject);
-    lombokProcessorProvider.initProcessors();
-
     // Redo code checking and highlighting.
-    LombokAugmentProvider.onConfigChange();
     PsiManager.getInstance(myProject).dropPsiCaches();
     DaemonCodeAnalyzer.getInstance(myProject).restart();
   }

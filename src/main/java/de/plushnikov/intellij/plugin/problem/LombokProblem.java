@@ -3,6 +3,8 @@ package de.plushnikov.intellij.plugin.problem;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemHighlightType;
 
+import java.util.Objects;
+
 /**
  * @author Plushnikov Michail
  */
@@ -54,11 +56,11 @@ public class LombokProblem {
 
     LombokProblem that = (LombokProblem) o;
 
-    return !(message != null ? !message.equals(that.message) : that.message != null);
+    return Objects.equals(message, that.message);
   }
 
   @Override
   public int hashCode() {
-    return message != null ? message.hashCode() : 0;
+    return Objects.hashCode(message);
   }
 }
