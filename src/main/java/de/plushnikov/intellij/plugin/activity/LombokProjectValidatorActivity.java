@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.activity;
 
 import com.intellij.compiler.server.BuildManagerListener;
 import com.intellij.notification.*;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
@@ -10,19 +9,15 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiPackage;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.util.messages.MessageBusConnection;
 import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.Version;
 import de.plushnikov.intellij.plugin.provider.LombokProcessorProvider;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
+import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +38,7 @@ public class LombokProjectValidatorActivity implements StartupActivity {
     ReadAction.nonBlocking(() -> {
       if (project.isDisposed()) return null;
 
-      final boolean hasLombokLibrary = hasLombokLibrary(project);
+      final boolean hasLombokLibrary = LombokLibraryUtil.hasLombokLibrary(project);
 
       // If dependency is present and out of date notification setting is enabled (defaults to disabled)
       if (hasLombokLibrary && ProjectSettings.isEnabled(project, ProjectSettings.IS_LOMBOK_VERSION_CHECK_ENABLED, false)) {
@@ -53,9 +48,8 @@ public class LombokProjectValidatorActivity implements StartupActivity {
 
           if (null != lombokVersion && Version.compareVersionString(lombokVersion, Version.LAST_LOMBOK_VERSION) < 0) {
             return getNotificationGroup().createNotification(LombokBundle.message("config.warn.dependency.outdated.title"),
-              LombokBundle
-                .message("config.warn.dependency.outdated.message", project.getName(),
-                  module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
+              LombokBundle.message("config.warn.dependency.outdated.message", project.getName(),
+                module.getName(), lombokVersion, Version.LAST_LOMBOK_VERSION),
               NotificationType.WARNING, NotificationListener.URL_OPENING_LISTENER);
           }
         }
@@ -77,14 +71,6 @@ public class LombokProjectValidatorActivity implements StartupActivity {
       group = new NotificationGroup(Version.PLUGIN_NAME, NotificationDisplayType.BALLOON, true);
     }
     return group;
-  }
-
-  public static boolean hasLombokLibrary(Project project) {
-    ApplicationManager.getApplication().assertReadAccessAllowed();
-    return CachedValuesManager.getManager(project).getCachedValue(project, () -> {
-      PsiPackage aPackage = JavaPsiFacade.getInstance(project).findPackage("lombok.experimental");
-      return new CachedValueProvider.Result<>(aPackage, ProjectRootManager.getInstance(project));
-    }) != null;
   }
 
   @Nullable

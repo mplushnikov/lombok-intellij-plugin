@@ -40,11 +40,11 @@ public class SynchronizedProcessor extends AbstractProcessor {
     if (null != psiMethod) {
       if (psiMethod.hasModifierProperty(PsiModifier.ABSTRACT)) {
         problemNewBuilder.addError(LombokBundle.message("inspection.message.synchronized.legal.only.on.concrete.methods"),
-                                   PsiQuickFixFactory.createModifierListFix(psiMethod, PsiModifier.ABSTRACT, false, false)
+          PsiQuickFixFactory.createModifierListFix(psiMethod, PsiModifier.ABSTRACT, false, false)
         );
       }
 
-      final String lockFieldName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "value");
+      final String lockFieldName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "value", "");
       if (StringUtil.isNotEmpty(lockFieldName)) {
         final PsiClass containingClass = psiMethod.getContainingClass();
 

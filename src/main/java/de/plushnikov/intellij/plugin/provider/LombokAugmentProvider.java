@@ -8,18 +8,15 @@ import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import de.plushnikov.intellij.plugin.activity.LombokProjectValidatorActivity;
 import de.plushnikov.intellij.plugin.processor.LombokProcessorManager;
 import de.plushnikov.intellij.plugin.processor.Processor;
 import de.plushnikov.intellij.plugin.processor.ValProcessor;
 import de.plushnikov.intellij.plugin.processor.modifier.ModifierProcessor;
+import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Provides support for lombok generated elements
@@ -31,17 +28,6 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 
   private final ValProcessor valProcessor;
   private final Collection<ModifierProcessor> modifierProcessors;
-
-  private final AtomicLong configChangeCount = new AtomicLong();
-  private final ModificationTracker configChangeTracker = configChangeCount::get;
-
-  public static void onConfigChange() {
-    for (PsiAugmentProvider provider : EP_NAME.getExtensionList()) {
-      if (provider instanceof LombokAugmentProvider) {
-        ((LombokAugmentProvider) provider).configChangeCount.incrementAndGet();
-      }
-    }
-  }
 
   public LombokAugmentProvider() {
     log.debug("LombokAugmentProvider created");
@@ -74,7 +60,16 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
 
   @NotNull
   @Override
-  public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element, @NotNull final Class<Psi> type) {
+  public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element,
+                                                        @NotNull final Class<Psi> type) {
+    return getAugments(element, type, null);
+  }
+
+  @NotNull
+//  @Override
+  public <Psi extends PsiElement> List<Psi> getAugments(@NotNull PsiElement element,
+                                                        @NotNull final Class<Psi> type,
+                                                        @Nullable String nameHint) {
     final List<Psi> emptyResult = Collections.emptyList();
     if ((type != PsiClass.class && type != PsiField.class && type != PsiMethod.class) || !(element instanceof PsiExtensibleClass)) {
       return emptyResult;
@@ -86,82 +81,79 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
       return emptyResult;
     }
     // skip processing if disabled, or no lombok library is present
-    if (!LombokProjectValidatorActivity.hasLombokLibrary(element.getProject())) {
+    if (!LombokLibraryUtil.hasLombokLibrary(element.getProject())) {
       return emptyResult;
     }
 
-    final List<Psi> cachedValue;
+    final LombokValueProvider<Psi> result;
     if (type == PsiField.class) {
-      cachedValue = CachedValuesManager.getCachedValue(element, new FieldLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
+      result = new FieldLombokProvider<>(type, psiClass, nameHint);
     } else if (type == PsiMethod.class) {
-      cachedValue = CachedValuesManager.getCachedValue(element, new MethodLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
+      result = new MethodLombokProvider<>(type, psiClass, nameHint);
     } else {
-      cachedValue = CachedValuesManager.getCachedValue(element, new ClassLombokCachedValueProvider<>(type, psiClass, configChangeTracker));
+      result = new ClassLombokProvider<>(type, psiClass, nameHint);
     }
-    return null != cachedValue ? cachedValue : emptyResult;
+
+    final List<Psi> computed = result.compute();
+    return null != computed ? computed : emptyResult;
   }
 
-  private static class FieldLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
+  private static class FieldLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.field");
 
-    FieldLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
-      super(type, psiClass, ourGuard, configChangeTracker);
+    FieldLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
+      super(type, psiClass, ourGuard, nameHint);
     }
   }
 
-  private static class MethodLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
+  private static class MethodLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.method");
 
-    MethodLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
-      super(type, psiClass, ourGuard, configChangeTracker);
+    MethodLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
+      super(type, psiClass, ourGuard, nameHint);
     }
   }
 
-  private static class ClassLombokCachedValueProvider<Psi extends PsiElement> extends LombokCachedValueProvider<Psi> {
+  private static class ClassLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
     private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.class");
 
-    ClassLombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, ModificationTracker configChangeTracker) {
-      super(type, psiClass, ourGuard, configChangeTracker);
+    ClassLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
+      super(type, psiClass, ourGuard, nameHint);
     }
   }
 
-  private abstract static class LombokCachedValueProvider<Psi extends PsiElement> implements CachedValueProvider<List<Psi>> {
+  private abstract static class LombokValueProvider<Psi extends PsiElement> {
     private final Class<Psi> type;
     private final PsiClass psiClass;
     private final RecursionGuard<PsiClass> recursionGuard;
-    private final ModificationTracker configChangeTracker;
+    private final String nameHint;
 
-    LombokCachedValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard, ModificationTracker configChangeTracker) {
+    LombokValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard, String nameHint) {
       this.type = type;
       this.psiClass = psiClass;
       this.recursionGuard = recursionGuard;
-      this.configChangeTracker = configChangeTracker;
+      this.nameHint = nameHint;
     }
 
-    @Nullable
-    @Override
-    public Result<List<Psi>> compute() {
-//      return computeIntern();
+    public List<Psi> compute() {
       return recursionGuard.doPreventingRecursion(psiClass, true, this::computeIntern);
     }
 
-    private Result<List<Psi>> computeIntern() {
-//      final String message = String.format("Process call for type: %s class: %s", type.getSimpleName(), psiClass.getQualifiedName());
-//      log.info(">>>" + message);
-      final List<Psi> result = getPsis(psiClass, type);
-//      log.info("<<<" + message);
-      return Result.create(result, psiClass, configChangeTracker);
+    private List<Psi> computeIntern() {
+      return getPsis(psiClass, type, nameHint);
     }
   }
 
   @NotNull
-  private static <Psi extends PsiElement> List<Psi> getPsis(PsiClass psiClass, Class<Psi> type) {
+  private static <Psi extends PsiElement> List<Psi> getPsis(PsiClass psiClass, Class<Psi> type, String nameHint) {
     final List<Psi> result = new ArrayList<>();
     final Collection<Processor> lombokProcessors = LombokProcessorProvider.getInstance(psiClass.getProject()).getLombokProcessors(type);
     for (Processor processor : lombokProcessors) {
-      final List<? super PsiElement> generatedElements = processor.process(psiClass);
-      for (Object psiElement : generatedElements) {
-        result.add((Psi) psiElement);
+      if (processor.notNameHintIsEqualToSupportedAnnotation(nameHint)) {
+        final List<? super PsiElement> generatedElements = processor.process(psiClass, nameHint);
+        for (Object psiElement : generatedElements) {
+          result.add((Psi) psiElement);
+        }
       }
     }
     return result;

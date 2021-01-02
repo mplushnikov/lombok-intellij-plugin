@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.util;
 
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.SourceJavaCodeReference;
@@ -12,7 +11,6 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 public final class PsiAnnotationSearchUtil {
-  private static final Key<String> LOMBOK_ANNOTATION_FQN_KEY = Key.create("LOMBOK_ANNOTATION_FQN");
 
   @Nullable
   public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationFQN) {
@@ -50,7 +48,7 @@ public final class PsiAnnotationSearchUtil {
             }
           }
 
-          final String annotationQualifiedName = getAndCacheFQN(annotation, referenceName);
+          final String annotationQualifiedName = annotation.getQualifiedName();
           if (null != annotationQualifiedName && qualifiedName.endsWith(annotationQualifiedName)) {
             return annotation;
           }
@@ -91,7 +89,7 @@ public final class PsiAnnotationSearchUtil {
             }
           }
 
-          final String annotationQualifiedName = getAndCacheFQN(annotation, referenceName);
+          final String annotationQualifiedName = annotation.getQualifiedName();
           if (ArrayUtil.find(qualifiedNames, annotationQualifiedName) > -1) {
             return annotation;
           }
@@ -100,19 +98,6 @@ public final class PsiAnnotationSearchUtil {
     }
 
     return null;
-  }
-
-  @Nullable
-  private static String getAndCacheFQN(@NotNull PsiAnnotation annotation, @Nullable String referenceName) {
-    String annotationQualifiedName = annotation.getCopyableUserData(LOMBOK_ANNOTATION_FQN_KEY);
-    // if not cached or cache is not up to date (because existing annotation was renamed for example)
-    if (null == annotationQualifiedName || (null != referenceName && !annotationQualifiedName.endsWith(".".concat(referenceName)))) {
-      annotationQualifiedName = annotation.getQualifiedName();
-      if (null != annotationQualifiedName && annotationQualifiedName.indexOf('.') > -1) {
-        annotation.putCopyableUserData(LOMBOK_ANNOTATION_FQN_KEY, annotationQualifiedName);
-      }
-    }
-    return annotationQualifiedName;
   }
 
   public static boolean isAnnotatedWith(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull String annotationTypeName) {
