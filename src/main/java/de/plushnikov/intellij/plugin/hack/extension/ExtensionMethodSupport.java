@@ -1,5 +1,15 @@
 package de.plushnikov.intellij.plugin.hack.extension;
 
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.ResolveState;
+import com.intellij.psi.impl.PsiClassImplUtil;
+import com.intellij.psi.scope.PsiScopeProcessor;
+import de.plushnikov.intellij.plugin.hack.Injector;
+import org.jetbrains.org.objectweb.asm.ClassReader;
+import org.jetbrains.org.objectweb.asm.ClassWriter;
+import org.jetbrains.org.objectweb.asm.tree.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,24 +25,6 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.ResolveState;
-import com.intellij.psi.impl.PsiClassImplUtil;
-import com.intellij.psi.scope.PsiScopeProcessor;
-
-import de.plushnikov.intellij.plugin.hack.Injector;
-import org.jetbrains.org.objectweb.asm.ClassReader;
-import org.jetbrains.org.objectweb.asm.ClassWriter;
-import org.jetbrains.org.objectweb.asm.tree.AbstractInsnNode;
-import org.jetbrains.org.objectweb.asm.tree.ClassNode;
-import org.jetbrains.org.objectweb.asm.tree.FieldInsnNode;
-import org.jetbrains.org.objectweb.asm.tree.InsnList;
-import org.jetbrains.org.objectweb.asm.tree.InsnNode;
-import org.jetbrains.org.objectweb.asm.tree.MethodInsnNode;
-import org.jetbrains.org.objectweb.asm.tree.MethodNode;
-import org.jetbrains.org.objectweb.asm.tree.VarInsnNode;
 
 import static org.jetbrains.org.objectweb.asm.Opcodes.*;
 

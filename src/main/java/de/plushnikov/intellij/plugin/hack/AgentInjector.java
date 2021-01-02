@@ -1,9 +1,10 @@
 package de.plushnikov.intellij.plugin.hack;
 
+import com.sun.jna.Platform;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
@@ -11,13 +12,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
-import com.sun.jna.Platform;
-
-import static java.io.File.*;
-import static java.nio.file.StandardOpenOption.*;
+import static java.io.File.pathSeparator;
+import static java.io.File.separator;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 public class AgentInjector {
-  
+
   static {
     if (Platform.isMac()) {
       final String key = "jna.library.path", home = System.getProperty("java.home"), lib = home + separator + "lib", server = lib + separator + "server";
