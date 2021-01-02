@@ -25,14 +25,14 @@ public final class LombokProcessorUtil {
   @NonNls
   private static final String ACCESS_LEVEL_NONE = "NONE";
 
-  private static final Map<Integer, String> ACCESS_LEVEL_MAP = new HashMap<>() {{
+  private static final Map<Integer, String> ACCESS_LEVEL_MAP = new HashMap<Integer, String>() {{
     put(PsiUtil.ACCESS_LEVEL_PUBLIC, ACCESS_LEVEL_PUBLIC);
     put(PsiUtil.ACCESS_LEVEL_PACKAGE_LOCAL, ACCESS_LEVEL_PACKAGE_LOCAL);
     put(PsiUtil.ACCESS_LEVEL_PROTECTED, ACCESS_LEVEL_PROTECTED);
     put(PsiUtil.ACCESS_LEVEL_PRIVATE, ACCESS_LEVEL_PRIVATE);
   }};
 
-  private static final Map<String, String> VALUE_ACCESS_LEVEL_MAP = new HashMap<>() {{
+  private static final Map<String, String> VALUE_ACCESS_LEVEL_MAP = new HashMap<String, String>() {{
     put(ACCESS_LEVEL_PUBLIC, PsiModifier.PUBLIC);
     put(ACCESS_LEVEL_PACKAGE_LOCAL, PsiModifier.PACKAGE_LOCAL);
     put(ACCESS_LEVEL_PROTECTED, PsiModifier.PROTECTED);
