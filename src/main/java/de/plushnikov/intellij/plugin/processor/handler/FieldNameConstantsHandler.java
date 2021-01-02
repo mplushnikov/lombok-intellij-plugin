@@ -15,7 +15,6 @@ import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -75,33 +74,6 @@ public final class FieldNameConstantsHandler {
       .withModifier(accessLevel)
       .withImplicitModifier(PsiModifier.STATIC)
       .withImplicitModifier(PsiModifier.FINAL);
-
-    lazyClassBuilder.withMethodSupplier(()-> {
-      //add enum methods like here:  ClassInnerStuffCache.calcMethods
-      final PsiManager psiManager = containingClass.getManager();
-      final PsiClassType enumClassType = PsiClassUtil.getTypeWithGenerics(lazyClassBuilder);
-//    "public static " + myClass.getName() + "[] values() { }"
-      final LombokLightMethodBuilder valuesEnumMethod = new LombokLightMethodBuilder(psiManager, "values")
-        .withModifier(PsiModifier.PUBLIC)
-        .withModifier(PsiModifier.STATIC)
-        .withContainingClass(containingClass)
-        .withNavigationElement(navigationElement)
-        .withMethodReturnType(new PsiArrayType(enumClassType));
-      valuesEnumMethod.withBody(PsiMethodUtil.createCodeBlockFromText("", valuesEnumMethod));
-
-      //     "public static " + myClass.getName() + " valueOf(java.lang.String name) throws java.lang.IllegalArgumentException { }"
-      final LombokLightMethodBuilder valueOfEnumMethod = new LombokLightMethodBuilder(psiManager, "valueOf")
-        .withModifier(PsiModifier.PUBLIC)
-        .withModifier(PsiModifier.STATIC)
-        .withContainingClass(containingClass)
-        .withNavigationElement(navigationElement)
-        .withParameter("name", PsiType.getJavaLangString(psiManager, containingClass.getResolveScope()))
-        .withException(PsiType.getTypeByName("java.lang.IllegalArgumentException", containingClass.getProject(), containingClass.getResolveScope()))
-        .withMethodReturnType(enumClassType);
-      valueOfEnumMethod.withBody(PsiMethodUtil.createCodeBlockFromText("", valueOfEnumMethod));
-
-      return Arrays.asList(valuesEnumMethod, valueOfEnumMethod);
-    });
 
     return lazyClassBuilder;
   }
