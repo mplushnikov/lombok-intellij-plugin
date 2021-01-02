@@ -6,6 +6,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.SyntheticElement;
+import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.psi.impl.light.LightParameter;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,8 +20,8 @@ public class LombokLightParameter extends LightParameter implements SyntheticEle
 
   public LombokLightParameter(@NotNull String name, @NotNull PsiType type, PsiElement declarationScope, Language language) {
     super(name, type, declarationScope, language);
+    super.setModifierList(new LombokLightModifierList(declarationScope.getManager(), language));
     myNameIdentifier = new LombokLightIdentifier(declarationScope.getManager(), name);
-    setModifierList(new LombokLightModifierList(declarationScope.getManager(), language));
   }
 
   @NotNull
@@ -51,6 +52,12 @@ public class LombokLightParameter extends LightParameter implements SyntheticEle
     final LombokLightModifierList lombokLightModifierList = (LombokLightModifierList)getModifierList();
     lombokLightModifierList.clearModifiers();
     Stream.of(modifiers).forEach(lombokLightModifierList::addModifier);
+    return this;
+  }
+
+  @Override
+  public LombokLightParameter setModifierList(LightModifierList modifierList) {
+    setModifiers(modifierList.getModifiers());
     return this;
   }
 
