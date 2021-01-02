@@ -1,6 +1,5 @@
 package de.plushnikov.intellij.plugin.inspection;
 
-import com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.application.ApplicationManager;
@@ -20,7 +19,7 @@ import java.util.HashSet;
 /**
  * @author Plushnikov Michail
  */
-public class LombokInspection extends AbstractBaseJavaLocalInspectionTool {
+public class LombokInspection extends LombokJavaInspectionBase {
 
   private final ValProcessor valProcessor;
 
@@ -30,7 +29,7 @@ public class LombokInspection extends AbstractBaseJavaLocalInspectionTool {
 
   @NotNull
   @Override
-  public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, final boolean isOnTheFly) {
+  protected PsiElementVisitor createVisitor(@NotNull final ProblemsHolder holder, final boolean isOnTheFly) {
     return new LombokElementVisitor(holder);
   }
 
@@ -43,7 +42,7 @@ public class LombokInspection extends AbstractBaseJavaLocalInspectionTool {
 
     private final ProblemsHolder holder;
 
-    public LombokElementVisitor(ProblemsHolder holder) {
+    LombokElementVisitor(ProblemsHolder holder) {
       this.holder = holder;
     }
 

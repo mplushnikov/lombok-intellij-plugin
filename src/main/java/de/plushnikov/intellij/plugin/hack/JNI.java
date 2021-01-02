@@ -1,17 +1,11 @@
 package de.plushnikov.intellij.plugin.hack;
 
-import java.util.function.Function;
-
-import com.sun.jna.Callback;
-import com.sun.jna.LastErrorException;
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.Structure;
+import com.sun.jna.*;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
-
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Function;
 
 public interface JNI extends Library {
 

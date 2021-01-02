@@ -1,9 +1,9 @@
 package de.plushnikov.intellij.plugin.hack;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
-
-import org.jetbrains.annotations.Nullable;
 
 public class Injector {
 
