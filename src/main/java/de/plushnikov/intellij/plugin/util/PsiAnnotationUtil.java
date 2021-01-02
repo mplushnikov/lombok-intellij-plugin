@@ -63,7 +63,7 @@ public final class PsiAnnotationUtil {
   }
 
   public static boolean getBooleanAnnotationValue(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter, boolean defaultValue) {
-    final Boolean result = psiAnnotation.hasAttribute(parameter) ? AnnotationUtil.getBooleanAttributeValue(psiAnnotation, parameter) : null;
+    final Boolean result = AnnotationUtil.getBooleanAttributeValue(psiAnnotation, parameter);
     return result == null ? defaultValue : result;
   }
 

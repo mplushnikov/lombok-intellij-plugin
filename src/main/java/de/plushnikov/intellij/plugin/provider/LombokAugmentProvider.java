@@ -2,7 +2,6 @@ package de.plushnikov.intellij.plugin.provider;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.openapi.util.RecursionGuard;
 import com.intellij.openapi.util.RecursionManager;
 import com.intellij.psi.*;
@@ -99,7 +98,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class FieldLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.field");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.field");
 
     FieldLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
       super(type, psiClass, ourGuard, nameHint);
@@ -107,7 +106,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class MethodLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.method");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.method");
 
     MethodLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
       super(type, psiClass, ourGuard, nameHint);
@@ -115,7 +114,7 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   }
 
   private static class ClassLombokProvider<Psi extends PsiElement> extends LombokValueProvider<Psi> {
-    private static final RecursionGuard<PsiClass> ourGuard = RecursionManager.createGuard("lombok.augment.class");
+    private static final RecursionGuard ourGuard = RecursionManager.createGuard("lombok.augment.class");
 
     ClassLombokProvider(Class<Psi> type, PsiClass psiClass, String nameHint) {
       super(type, psiClass, ourGuard, nameHint);
@@ -125,10 +124,10 @@ public class LombokAugmentProvider extends PsiAugmentProvider {
   private abstract static class LombokValueProvider<Psi extends PsiElement> {
     private final Class<Psi> type;
     private final PsiClass psiClass;
-    private final RecursionGuard<PsiClass> recursionGuard;
+    private final RecursionGuard recursionGuard;
     private final String nameHint;
 
-    LombokValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard<PsiClass> recursionGuard, String nameHint) {
+    LombokValueProvider(Class<Psi> type, PsiClass psiClass, RecursionGuard recursionGuard, String nameHint) {
       this.type = type;
       this.psiClass = psiClass;
       this.recursionGuard = recursionGuard;

@@ -3,7 +3,6 @@ package de.plushnikov.intellij.plugin.psi;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.PsiClassImplUtil;
-import com.intellij.psi.impl.light.LightFieldBuilder;
 import com.intellij.psi.impl.light.LightPsiClassBuilder;
 import com.intellij.psi.impl.source.ClassInnerStuffCache;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
@@ -93,7 +92,8 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   }
 
   @Override
-  public PsiField @NotNull [] getFields() {
+  @NotNull
+  public PsiField [] getFields() {
     if (null == myFields) {
       Collection<PsiField> generatedFields = fieldSupplier.get();
       myFields = generatedFields.toArray(PsiField.EMPTY_ARRAY);
@@ -103,7 +103,8 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   }
 
   @Override
-  public PsiMethod @NotNull [] getMethods() {
+  @NotNull
+  public PsiMethod [] getMethods() {
     if (null == myMethods) {
       Collection<PsiMethod> generatedMethods = methodSupplier.get();
       myMethods = generatedMethods.toArray(PsiMethod.EMPTY_ARRAY);

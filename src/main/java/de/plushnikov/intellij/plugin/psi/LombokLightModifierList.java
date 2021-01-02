@@ -96,7 +96,8 @@ public class LombokLightModifierList extends LightModifierList implements Synthe
   }
 
   @Override
-  public PsiAnnotation @NotNull [] getAnnotations() {
+  @NotNull
+  public PsiAnnotation [] getAnnotations() {
     PsiAnnotation[] result = PsiAnnotation.EMPTY_ARRAY;
     if (!myAnnotations.isEmpty()) {
       Collection<PsiAnnotation> annotations = myAnnotations.values();
