@@ -13,7 +13,7 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
-**Last version (0.33) released on 27.10.2020**
+**Last version (0.34) released on 17.01.2021**
 
 ---
 :collision: **Breaking News: Starting with IntelliJ version 2020.3 lombok plugin will be integrated and included in IntelliJ by default!.** :collision:
@@ -27,7 +27,7 @@ Provides support for lombok annotations to write great Java code with IntelliJ I
 
 Install it automatically from IntelliJ Idea plugin repository.
 
-Tested and supports IntelliJ versions: 2018.X, 2019.X, 2020.1 and 2020.2.1+, 2020.3 EAP (Build In!)
+Tested and supports IntelliJ versions: 2018.X, 2019.X, 2020.1 and 2020.2.1+, 2020.3 (Build In!)
 
 Last support for IntelliJ 2017.1, 2017.2 and 2017.3 by plugin version 0.32!
 
@@ -61,7 +61,7 @@ Features / Supports
 - [@SneakyThrows](https://projectlombok.org/features/SneakyThrows.html)
 - [@val](https://projectlombok.org/features/val.html) available from IntelliJ 14.1 (improved in 2016.2)
 - [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass.html) available from IntelliJ 2016.2
-- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html)
+- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html) experimental in IntelliJ 2019.2-2020.2
 - [lombok config files syntax highlighting](https://projectlombok.org/features/configuration.html)
 - code inspections
 - refactoring actions (lombok and delombok)
