@@ -251,7 +251,7 @@
   </extensions>
 
   <actions>
-    <group id="LombokActionGroup" icon="icons/lombok.svg" popup="true">
+    <group id="LombokActionGroup" icon="/icons/lombok.svg" popup="true">
 
       <action id="defaultLombokData" class="de.plushnikov.intellij.plugin.action.lombok.LombokDataAction"/>
       <separator/>
