@@ -1,8 +1,11 @@
 package de.plushnikov.intellij.plugin;
 
 import com.google.common.base.Objects;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.pom.PomNamedTarget;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.util.PsiElementUtil;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +16,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Base test case for testing that the Lombok plugin parses the Lombok annotations correctly.
@@ -64,7 +64,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     if (!(psiFile instanceof PsiJavaFile)) {
       fail("The test file type is not supported");
     }
-    return (PsiJavaFile) psiFile;
+    return (PsiJavaFile)psiFile;
   }
 
   protected void compareFiles(PsiJavaFile beforeLombokFile, PsiJavaFile afterDelombokFile) {
@@ -115,7 +115,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     LOG.debug("Theirs fields for class " + afterClass.getName() + ": " + Arrays.toString(afterClassFields));
 
     assertEquals("Field are different for Class: " + beforeClass.getName(),
-      Arrays.toString(toList(afterClassFields)), Arrays.toString(toList(beforeClassFields)));
+                 Arrays.toString(toList(afterClassFields)), Arrays.toString(toList(beforeClassFields)));
 
     for (PsiField afterField : afterClassFields) {
       boolean compared = false;
@@ -149,11 +149,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
   }
 
   private String stripJavaLang(String canonicalText) {
-    final String prefix = "java.lang.";
-    if (canonicalText.startsWith(prefix)) {
-      canonicalText = canonicalText.substring(prefix.length());
-    }
-    return canonicalText;
+    return StringUtil.trimStart(canonicalText, "java.lang.");
   }
 
   private void compareModifiers(PsiModifierList beforeModifierList, PsiModifierList afterModifierList, String elementName) {
@@ -162,13 +158,17 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
     for (String modifier : PsiModifier.MODIFIERS) {
       boolean haveSameModifiers = afterModifierList.hasModifierProperty(modifier) == beforeModifierList.hasModifierProperty(modifier);
-      assertTrue("'" + modifier + "' Modifier is not equal for: " + elementName, haveSameModifiers);
+      final PsiMethod afterModifierListParentMethod = PsiTreeUtil.getParentOfType(afterModifierList, PsiMethod.class);
+      final PsiClass afterModifierListParentClass = PsiTreeUtil.getParentOfType(afterModifierList, PsiClass.class);
+      assertTrue("'" + modifier + "' Modifier is not equal for " +
+                 (null == afterModifierListParentMethod ? afterModifierListParentClass.getName() : afterModifierListParentMethod.getText()),
+                 haveSameModifiers);
     }
 
     if (shouldCompareAnnotations()) {
       Collection<String> beforeAnnotations = Arrays.stream(beforeModifierList.getAnnotations())
         .map(PsiAnnotation::getQualifiedName)
-        .filter(Pattern.compile("lombok.*").asPredicate().negate())
+        .filter(Pattern.compile("lombok.*").asPredicate().negate().or(LombokClassNames.NON_NULL::equals))
         .filter(Pattern.compile(annotationToComparePattern()).asPredicate())
         .collect(Collectors.toList());
       Collection<String> afterAnnotations = Arrays.stream(afterModifierList.getAnnotations())
@@ -176,7 +176,10 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
         .filter(Pattern.compile(annotationToComparePattern()).asPredicate())
         .collect(Collectors.toList());
 
-      assertThat("Annotations are different", beforeAnnotations, equalTo(afterAnnotations));
+      assertTrue("Annotations are different for " + afterModifierList.getParent(),
+                 beforeAnnotations.size() == afterAnnotations.size()
+                 && beforeAnnotations.containsAll(afterAnnotations)
+                 && afterAnnotations.containsAll(beforeAnnotations));
     }
   }
 
@@ -185,7 +188,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     PsiMethod[] afterMethods = afterClass.getMethods();
 
     assertEquals("Methods are different for Class: " + beforeClass.getName(),
-      Arrays.toString(toList(afterMethods)), Arrays.toString(toList(beforeMethods)));
+                 Arrays.toString(toList(afterMethods)), Arrays.toString(toList(beforeMethods)));
 
     for (PsiMethod afterMethod : afterMethods) {
 
@@ -220,7 +223,8 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
           String text2 = afterMethodBody.getText().replaceAll("java\\.lang\\.", "").replaceAll("\\s+", "");
           assertEquals("Method: (" + afterMethod.getName() + ") in Class:" + afterClass.getName() + " different", text2, text1);
         }
-      } else {
+      }
+      else {
         if (null != afterMethodBody) {
           fail("MethodCodeBlocks is null: Method: (" + beforeMethod.getName() + ") Class:" + beforeClass.getName());
         }
@@ -234,7 +238,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
       final PsiParameterList compareMethodParameterList = compareMethod.getParameterList();
       final PsiParameterList psiMethodParameterList = psiMethod.getParameterList();
       if (compareMethod.getName().equals(psiMethod.getName()) &&
-        compareMethodParameterList.getParametersCount() == psiMethodParameterList.getParametersCount()) {
+          compareMethodParameterList.getParametersCount() == psiMethodParameterList.getParametersCount()) {
         final Collection<String> typesOfCompareMethod = mapToTypeString(compareMethodParameterList);
         final Collection<String> typesOfPsiMethod = mapToTypeString(psiMethodParameterList);
         if (typesOfCompareMethod.equals(typesOfPsiMethod)) {
@@ -284,12 +288,14 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     LOG.debug("IntelliJ constructors for class " + beforeClass.getName() + ": " + Arrays.toString(beforeConstructors));
     LOG.debug("Theirs constructors for class " + afterClass.getName() + ": " + Arrays.toString(afterConstructors));
 
-    assertEquals("Constructor counts are different for Class: " + beforeClass.getName(), afterConstructors.length, beforeConstructors.length);
+    assertEquals("Constructor counts are different for Class: " + beforeClass.getName(), afterConstructors.length,
+                 beforeConstructors.length);
 
     for (PsiMethod afterConstructor : afterConstructors) {
       boolean compared = false;
       final PsiModifierList theirsFieldModifierList = afterConstructor.getModifierList();
-      final List<PsiType> afterConstructorParameterTypes = Arrays.stream(afterConstructor.getParameterList().getParameters()).map(PsiParameter::getType).collect(Collectors.toList());
+      final List<PsiType> afterConstructorParameterTypes =
+        ContainerUtil.map(afterConstructor.getParameterList().getParameters(), PsiParameter::getType);
 
       for (PsiMethod beforeConstructor : beforeConstructors) {
         if (PsiElementUtil.methodMatches(beforeConstructor, null, null, afterConstructor.getName(), afterConstructorParameterTypes)) {
@@ -300,7 +306,10 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
           break;
         }
       }
-      assertTrue("Constructors are not equal, Constructor: '" + afterConstructor.getName() + "' (with same parameters) not found in class : " + beforeClass.getName(), compared);
+      assertTrue("Constructors are not equal, Constructor: '" +
+                 afterConstructor.getName() +
+                 "' (with same parameters) not found in class : " +
+                 beforeClass.getName(), compared);
     }
   }
 
