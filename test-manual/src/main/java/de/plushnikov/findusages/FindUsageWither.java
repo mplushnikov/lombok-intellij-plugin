@@ -1,9 +1,10 @@
 package de.plushnikov.findusages;
 
 import lombok.Value;
+import lombok.With;
 import lombok.experimental.Wither;
 
-@Wither
+@With
 @Value
 public class FindUsageWither {
   private int foo;
