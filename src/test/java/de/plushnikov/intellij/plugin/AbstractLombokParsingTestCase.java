@@ -165,6 +165,10 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
                  haveSameModifiers);
     }
 
+    compareAnnotations(beforeModifierList, afterModifierList);
+  }
+
+  private void compareAnnotations(PsiModifierList beforeModifierList, PsiModifierList afterModifierList) {
     if (shouldCompareAnnotations()) {
       Collection<String> beforeAnnotations = Arrays.stream(beforeModifierList.getAnnotations())
         .map(PsiAnnotation::getQualifiedName)
@@ -346,6 +350,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
       PsiParameter theirsParameter = theirsParameters[i];
 
       compareType(intellijParameter.getType(), theirsParameter.getType(), theirsParameter);
+      compareAnnotations(intellijParameter.getModifierList(), theirsParameter.getModifierList());
     }
   }
 }
