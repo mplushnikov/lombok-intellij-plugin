@@ -1,10 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.modifier;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
@@ -21,9 +17,17 @@ public class ValueModifierTest extends LightJavaCodeInsightFixtureTestCase {
     return "testData/augment/modifier";
   }
 
+  @NotNull
   @Override
-  protected @NotNull LightProjectDescriptor getProjectDescriptor() {
-    return LombokTestUtil.LOMBOK_DESCRIPTOR;
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return LombokTestUtil.getProjectDescriptor();
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+
+    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
   }
 
   public void testValueModifiers() {

@@ -17,9 +17,17 @@ public class ValModifierTest extends LightJavaCodeInsightFixtureTestCase {
     return "testData/augment/modifier";
   }
 
+  @NotNull
   @Override
-  protected @NotNull LightProjectDescriptor getProjectDescriptor() {
-    return LombokTestUtil.LOMBOK_DESCRIPTOR;
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return LombokTestUtil.getProjectDescriptor();
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+
+    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
   }
 
   public void testValModifiers() {

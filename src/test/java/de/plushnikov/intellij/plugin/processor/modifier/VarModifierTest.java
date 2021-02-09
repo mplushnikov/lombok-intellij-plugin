@@ -2,7 +2,10 @@ package de.plushnikov.intellij.plugin.processor.modifier;
 
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import de.plushnikov.intellij.plugin.LombokTestUtil;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Alexej Kubarev
@@ -14,10 +17,17 @@ public class VarModifierTest extends LightJavaCodeInsightFixtureTestCase {
     return "testData/augment/modifier";
   }
 
+  @NotNull
+  @Override
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return LombokTestUtil.getProjectDescriptor();
+  }
+
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    myFixture.addClass("package lombok.experimental;\npublic @interface var { }");
+
+    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
   }
 
   public void testVarModifiers() {
