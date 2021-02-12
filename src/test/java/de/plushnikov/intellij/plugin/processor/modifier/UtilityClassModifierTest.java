@@ -1,13 +1,11 @@
 package de.plushnikov.intellij.plugin.processor.modifier;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import de.plushnikov.intellij.plugin.LombokTestUtil;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Florian Böhm
@@ -19,10 +17,17 @@ public class UtilityClassModifierTest extends LightJavaCodeInsightFixtureTestCas
     return "testData/augment/modifier";
   }
 
+  @NotNull
+  @Override
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return LombokTestUtil.getProjectDescriptor();
+  }
+
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    myFixture.addClass("package lombok.experimental;\npublic @interface UtilityClass { }");
+
+    LombokTestUtil.loadLombokLibrary(myFixture.getProjectDisposable(), getModule());
   }
 
   public void testUtilityClassModifiersField() {
