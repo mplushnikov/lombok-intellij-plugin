@@ -8,10 +8,10 @@ import de.plushnikov.intellij.plugin.AbstractLombokParsingTestCase;
 public class TolerateTest extends AbstractLombokParsingTestCase {
 
   public void testTolerate$TolerateTest() {
-    doTest();
+    doTest(true);
   }
 
   public void testTolerate$WitherTolerateTest() {
-    doTest();
+    doTest(true);
   }
 }
