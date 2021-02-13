@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk11
+  - openjdk14
 git:
   submodules: false
 
@@ -16,6 +16,7 @@ before_cache:
 
 env:
   - IDEA_VERSION=LATEST-EAP-SNAPSHOT
+  - IDEA_VERSION=2020.3.2
   - IDEA_VERSION=2020.3
 
 before_install:
