@@ -149,6 +149,7 @@ Developed By
 - [**@AlexejK** Alexej Kubarev](https://github.com/AlexejK)
 - [**@bulgakovalexander** Alexander Bulgakov](https://github.com/bulgakovalexander)
 - [**@GingerGeek** Zed Spencer-Milnes](https://github.com/GingerGeek)
+- [**@iProdigy** Sidd](https://github.com/iProdigy)
 - [**@jeromewaibel** Jérôme Waibel](https://github.com/jeromewaibel)
 - [**@Jessevanbekkum** Jesse van Bekkum](https://github.com/Jessevanbekkum)
 - [**@juriad** Adam Juraszek](https://github.com/juriad)
