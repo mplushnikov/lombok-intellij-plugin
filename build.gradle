@@ -5,6 +5,10 @@ plugins {
 }
 
 allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.fork = true
+    }
+
   repositories {
     jcenter()
     maven { url "https://www.jitpack.io" }
