@@ -15,11 +15,13 @@ import de.plushnikov.intellij.plugin.handler.*;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.LombokLibraryUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class LombokHighlightErrorFilter implements HighlightInfoFilter {
@@ -100,6 +102,7 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
     UNHANDLED_EXCEPTION(HighlightSeverity.ERROR, CodeInsightColors.ERRORS_ATTRIBUTES) {
       private final Pattern pattern = Pattern.compile("Unhandled exceptions?: .+");
+      private final String prefixOfExceptionLine = ": ";
 
       @Override
       public boolean descriptionCheck(@Nullable String description) {
@@ -114,9 +117,37 @@ public class LombokHighlightErrorFilter implements HighlightInfoFilter {
 
         // applicable only for methods
         if (importantParent instanceof PsiMethod) {
-          AddAnnotationFix fix = new AddAnnotationFix(LombokClassNames.SNEAKY_THROWS, (PsiModifierListOwner) importantParent);
-          highlightInfo.registerFix(fix, null, null, null, null);
+          PsiModifierListOwner psiModifierListOwner = (PsiModifierListOwner) importantParent;
+          registerWithoutValue(highlightInfo, psiModifierListOwner);
+          registerWithValue(highlightInfo, psiModifierListOwner);
         }
+      }
+
+      /**
+       * {@code @SneakyThrows}
+       */
+      private void registerWithoutValue(HighlightInfo highlightInfo, PsiModifierListOwner psiModifierListOwner) {
+        AddAnnotationFix fix = new AddAnnotationFix(LombokClassNames.SNEAKY_THROWS, psiModifierListOwner);
+        highlightInfo.registerFix(fix, null, null, null, null);
+      }
+
+      /**
+       * {@code @SneakyThrows(SpecificException.class)} or {@code @SneakyThrows({SpecificException.class, AnotherSpecificException.class})}
+       */
+      private void registerWithValue(HighlightInfo highlightInfo, PsiModifierListOwner psiModifierListOwner) {
+        String description = highlightInfo.getDescription();
+        String exceptionLine = description.substring(description.indexOf(prefixOfExceptionLine) + prefixOfExceptionLine.length());
+        String[] exceptions = exceptionLine.split(", ");
+        String value;
+        if (exceptions.length == 1) {
+          value = exceptions[0];
+        } else {
+          value = Arrays.stream(exceptions).map(s -> s + ".class").collect(Collectors.joining(", ", "{", "}"));
+        }
+        PsiAnnotation psiAnnotation = PsiAnnotationUtil.createPsiAnnotation(psiModifierListOwner, LombokClassNames.SNEAKY_THROWS, value);
+        PsiNameValuePair[] attributes = psiAnnotation.getParameterList().getAttributes();
+        AddAnnotationFix fix = new AddAnnotationFix(LombokClassNames.SNEAKY_THROWS, psiModifierListOwner, attributes);
+        highlightInfo.registerFix(fix, null, null, null, null);
       }
     };
 
