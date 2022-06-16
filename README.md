@@ -63,3 +63,4 @@ Many features of the plugin (including warnings) could be disabled through per-p
 - [**@wyhasany** Michał Rowicki](https://github.com/wyhasany)
 - [**@ocadaruma** Haruki Okada](https://github.com/ocadaruma)
 - [**@mackatozis** Alexandros Efthymiadis](https://github.com/mackatozis)
+- [**@pbi-qfs** Pascal Bihler](https://github.com/pbi-qfs)

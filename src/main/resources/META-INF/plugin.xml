@@ -282,6 +282,11 @@
 
     <dependencySupport coordinate="org.projectlombok:lombok" kind="java" displayName="Lombok"/>
   </extensions>
+  <extensionPoints>
+    <extensionPoint
+      name="processorProvider"
+      interface="de.plushnikov.intellij.plugin.processor.LombokProcessorProvider"/>
+  </extensionPoints>
   <applicationListeners>
     <listener class="de.plushnikov.intellij.plugin.lombokconfig.LombokConfigChangeListener"
               topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
