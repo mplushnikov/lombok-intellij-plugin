@@ -46,26 +46,29 @@ With this plugin your IntelliJ can recognize all of generated getters, setters a
 
 Features / Supports
 --------
-- [@Getter and @Setter](http://projectlombok.org/features/GetterSetter.html)
-- [@ToString](http://projectlombok.org/features/ToString.html)
-- [@EqualsAndHashCode](http://projectlombok.org/features/EqualsAndHashCode.html)
-- [@AllArgsConstructor, @RequiredArgsConstructor and @NoArgsConstructor](http://projectlombok.org/features/Constructor.html)
-- [@Log, @Log4j, @Log4j2, @Slf4j, @XSlf4j, @CommonsLog, @JBossLog, @Flogger, @CustomLog](http://projectlombok.org/features/Log.html)
-- [@Data](https://projectlombok.org/features/Data.html)
-- [@Builder](https://projectlombok.org/features/Builder.html)
-- [@Singular](https://projectlombok.org/features/Builder.html#singular)
-- [@Delegate](https://projectlombok.org/features/Delegate.html)
-- [@Value](https://projectlombok.org/features/Value.html)
-- [@Accessors](https://projectlombok.org/features/experimental/Accessors.html)
-- [@With](https://projectlombok.org/features/With.html)
-- [@SneakyThrows](https://projectlombok.org/features/SneakyThrows.html)
-- [@val](https://projectlombok.org/features/val.html) available from IntelliJ 14.1 (improved in 2016.2)
-- [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass.html) available from IntelliJ 2016.2
-- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html) experimental in IntelliJ 2019.2-2020.2
-- [lombok config files syntax highlighting](https://projectlombok.org/features/configuration.html)
-- code inspections
-- refactoring actions (lombok and delombok)
-- project configuration inspection (missing/out-of-date Lombok dependency, annotation processing disabled)
+- [@Getter and @Setter](https://projectlombok.org/features/GetterSetter)
+- [@FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants)
+- [@ToString](https://projectlombok.org/features/ToString)
+- [@EqualsAndHashCode](https://projectlombok.org/features/EqualsAndHashCode)
+- [@AllArgsConstructor, @RequiredArgsConstructor and @NoArgsConstructor](https://projectlombok.org/features/constructor)
+- [@Log, @Log4j, @Log4j2, @Slf4j, @XSlf4j, @CommonsLog, @JBossLog, @Flogger, @CustomLog](https://projectlombok.org/features/log)
+- [@Data](https://projectlombok.org/features/Data)
+- [@Builder](https://projectlombok.org/features/Builder)
+- [@SuperBuilder](https://projectlombok.org/features/experimental/SuperBuilder)
+- [@Singular](https://projectlombok.org/features/Builder#singular)
+- [@Delegate](https://projectlombok.org/features/experimental/Delegate)
+- [@Value](https://projectlombok.org/features/Value)
+- [@Accessors](https://projectlombok.org/features/experimental/Accessors)
+- [@With](https://projectlombok.org/features/With)
+- [@SneakyThrows](https://projectlombok.org/features/SneakyThrows)
+- [@val](https://projectlombok.org/features/val) available from IntelliJ 14.1 (improved in 2016.2)
+- [@var](https://projectlombok.org/features/var)
+- [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass) available from IntelliJ 2016.2
+- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod) experimental in IntelliJ 2019.2-2020.2
+- [Lombok config system](https://projectlombok.org/features/configuration)
+- Code inspections
+- Refactoring actions (lombok and delombok)
+- Project configuration inspection (missing/out-of-date Lombok dependency, annotation processing disabled)
 
 Many features of the plugin (including warnings) could be disabled through per-project settings.
 
