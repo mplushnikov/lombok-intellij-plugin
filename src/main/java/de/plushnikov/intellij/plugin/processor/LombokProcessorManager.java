@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.processor;
 
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 public final class LombokProcessorManager {
 
   private static final Map<String, Collection<Processor>> PROCESSOR_CACHE = new ConcurrentHashMap<>();
+  private static final ExtensionPointName<LombokProcessorProvider> PROVIDER_EP_NAME =
+    ExtensionPointName.create("Lombook Plugin.processorProvider");
 
   private static Collection<Processor> getWithCache(String key, Supplier<Collection<Processor>> function) {
     return PROCESSOR_CACHE.computeIfAbsent(key, s -> function.get());
@@ -44,7 +47,7 @@ public final class LombokProcessorManager {
   @NotNull
   private static Collection<Processor> getAllProcessors() {
     Application application = ApplicationManager.getApplication();
-    return Arrays.asList(
+    final List<Processor> allProcessors = Arrays.asList(
       application.getService(AllArgsConstructorProcessor.class),
       application.getService(NoArgsConstructorProcessor.class),
       application.getService(RequiredArgsConstructorProcessor.class),
@@ -100,14 +103,18 @@ public final class LombokProcessorManager {
       application.getService(SynchronizedProcessor.class),
       application.getService(JacksonizedProcessor.class)
     );
+    PROVIDER_EP_NAME.forEachExtensionSafe(provider -> provider.addAllProcessors(allProcessors));
+    return allProcessors;
   }
 
   @NotNull
   public static Collection<ModifierProcessor> getLombokModifierProcessors() {
-    return Arrays.asList(new FieldDefaultsModifierProcessor(),
-                         new UtilityClassModifierProcessor(),
-                         new ValModifierProcessor(),
-                         new ValueModifierProcessor());
+    final List<ModifierProcessor> modifierProcessors = Arrays.asList(new FieldDefaultsModifierProcessor(),
+      new UtilityClassModifierProcessor(),
+      new ValModifierProcessor(),
+      new ValueModifierProcessor());
+    PROVIDER_EP_NAME.forEachExtensionSafe(provider -> provider.addModifierProcessors(modifierProcessors));
+    return modifierProcessors;
   }
 
   @NotNull
