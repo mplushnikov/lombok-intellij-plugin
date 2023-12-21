@@ -7,8 +7,8 @@ import com.intellij.openapi.util.BuildNumber;
 public class SuperBuilderInspectionTest extends LombokInspectionTest {
 
   @Override
-  protected String getTestDataPath() {
-    return TEST_DATA_INSPECTION_DIRECTORY + "/superbuilder";
+  protected String getBasePath() {
+    return super.getBasePath() + "/" + TEST_DATA_INSPECTION_DIRECTORY + "/superbuilder";
   }
 
   @Override

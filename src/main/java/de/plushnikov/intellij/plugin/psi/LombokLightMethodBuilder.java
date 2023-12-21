@@ -1,20 +1,27 @@
 package de.plushnikov.intellij.plugin.psi;
 
+import com.intellij.codeInspection.dataFlow.JavaMethodContractUtil;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.ModificationTracker;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.psi.impl.light.LightTypeParameterListBuilder;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.IncorrectOperationException;
-import de.plushnikov.intellij.plugin.icon.LombokIcons;
+import de.plushnikov.intellij.plugin.extension.LombokInferredAnnotationProvider;
+import icons.LombokIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * @author Plushnikov Michail
@@ -22,17 +29,21 @@ import java.util.Objects;
 public class LombokLightMethodBuilder extends LightMethodBuilder implements SyntheticElement {
   private PsiMethod myMethod;
   private ASTNode myASTNode;
+  private String myBodyAsText;
   private PsiCodeBlock myBodyCodeBlock;
   // used to simplify comparing of returnType in equal method
   private String myReturnTypeAsText;
+  private Function<LombokLightMethodBuilder, String> myBuilderBodyFunction;
+
+  private boolean myReadWriteAccess = false;
 
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, JavaLanguage.INSTANCE, name,
-      new LombokLightParameterListBuilder(manager, JavaLanguage.INSTANCE),
-      new LombokLightModifierList(manager),
-      new LombokLightReferenceListBuilder(manager, JavaLanguage.INSTANCE, PsiReferenceList.Role.THROWS_LIST),
-      new LightTypeParameterListBuilder(manager, JavaLanguage.INSTANCE));
-    setBaseIcon(LombokIcons.METHOD_ICON);
+          new LombokLightParameterListBuilder(manager, JavaLanguage.INSTANCE),
+          new LombokLightModifierList(manager),
+          new LombokLightReferenceListBuilder(manager, JavaLanguage.INSTANCE, PsiReferenceList.Role.THROWS_LIST),
+          new LightTypeParameterListBuilder(manager, JavaLanguage.INSTANCE));
+    setBaseIcon(LombokIcons.Nodes.LombokMethod);
   }
 
   public LombokLightMethodBuilder withNavigationElement(PsiElement navigationElement) {
@@ -78,7 +89,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
     return new LombokLightParameter(name, type, this, JavaLanguage.INSTANCE);
   }
 
-  public LombokLightMethodBuilder withParameter(@NotNull PsiParameter psiParameter) {
+  public LombokLightMethodBuilder withParameter(@NotNull LombokLightParameter psiParameter) {
     addParameter(psiParameter);
     return this;
   }
@@ -103,8 +114,35 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
     return this;
   }
 
-  public LombokLightMethodBuilder withBody(@NotNull PsiCodeBlock codeBlock) {
-    myBodyCodeBlock = codeBlock;
+  public LombokLightMethodBuilder withBodyText(@NotNull String codeBlockText) {
+    myBodyAsText = codeBlockText;
+    myBodyCodeBlock = null;
+    return this;
+  }
+
+  public LombokLightMethodBuilder withBodyText(@NotNull Function<LombokLightMethodBuilder, String> builderStringFunction) {
+    myBuilderBodyFunction = builderStringFunction;
+    myBodyCodeBlock = null;
+    return this;
+  }
+
+  public LombokLightMethodBuilder withPureContract() {
+    Project project = myManager.getProject();
+    PsiAnnotation annotation = CachedValuesManager.getManager(project).getCachedValue(project, () ->
+      CachedValueProvider.Result.create(JavaPsiFacade.getElementFactory(project).
+          createAnnotationFromText('@' + JavaMethodContractUtil.ORG_JETBRAINS_ANNOTATIONS_CONTRACT + "(pure=true)", null),
+        ModificationTracker.NEVER_CHANGED));
+    putUserData(LombokInferredAnnotationProvider.CONTRACT_ANNOTATION, annotation);
+    return this;
+  }
+
+  public LombokLightMethodBuilder withMutatesThisContract() {
+    Project project = myManager.getProject();
+    PsiAnnotation annotation = CachedValuesManager.getManager(project).getCachedValue(project, () ->
+      CachedValueProvider.Result.create(JavaPsiFacade.getElementFactory(project).
+          createAnnotationFromText('@' + JavaMethodContractUtil.ORG_JETBRAINS_ANNOTATIONS_CONTRACT + "(mutates=\"this\")", null),
+        ModificationTracker.NEVER_CHANGED));
+    putUserData(LombokInferredAnnotationProvider.CONTRACT_ANNOTATION, annotation);
     return this;
   }
 
@@ -119,15 +157,45 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
     return this;
   }
 
+  public LombokLightMethodBuilder withWriteAccess() {
+    myReadWriteAccess = true;
+    return this;
+  }
+
+  public boolean hasWriteAccess() {
+    return myReadWriteAccess;
+  }
+
   // add Parameter as is, without wrapping with LightTypeParameter
   @Override
   public LightMethodBuilder addTypeParameter(PsiTypeParameter parameter) {
-    ((LightTypeParameterListBuilder) getTypeParameterList()).addParameter(parameter);
+    ((LightTypeParameterListBuilder)getTypeParameterList()).addParameter(parameter);
     return this;
   }
 
   @Override
+  public @NotNull LombokLightModifierList getModifierList() {
+    return (LombokLightModifierList)super.getModifierList();
+  }
+
+  @Override
+  public @NotNull LombokLightParameterListBuilder getParameterList() {
+    return (LombokLightParameterListBuilder)super.getParameterList();
+  }
+
+  @Override
   public PsiCodeBlock getBody() {
+    String bodyAsText = myBodyAsText;
+    Function<LombokLightMethodBuilder, String> builderBodyFunction = myBuilderBodyFunction;
+    if (null == myBodyCodeBlock && (bodyAsText != null || builderBodyFunction != null)) {
+      if (bodyAsText == null) {
+        bodyAsText = builderBodyFunction.apply(this);
+      }
+      final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(getProject());
+      myBodyCodeBlock = elementFactory.createCodeBlockFromText("{" + bodyAsText + "}", this);
+      myBodyAsText = null;
+      myBuilderBodyFunction = null;
+    }
     return myBodyCodeBlock;
   }
 
@@ -174,7 +242,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
     return r == null ? TextRange.EMPTY_RANGE : r;
   }
 
-  private String getAllModifierProperties(LightModifierList modifierList) {
+  private static String getAllModifierProperties(LightModifierList modifierList) {
     final StringBuilder builder = new StringBuilder();
     for (String modifier : modifierList.getModifiers()) {
       if (!PsiModifier.PACKAGE_LOCAL.equals(modifier)) {
@@ -188,7 +256,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
     PsiMethod result;
     try {
       final StringBuilder methodTextDeclaration = new StringBuilder();
-      methodTextDeclaration.append(getAllModifierProperties((LightModifierList) getModifierList()));
+      methodTextDeclaration.append(getAllModifierProperties(getModifierList()));
       PsiType returnType = getReturnType();
       if (null != returnType && returnType.isValid()) {
         methodTextDeclaration.append(returnType.getCanonicalText()).append(' ');
@@ -210,7 +278,8 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
       if (null != getBody()) {
         result.getBody().replace(getBody());
       }
-    } catch (Exception ex) {
+    }
+    catch (Exception ex) {
       result = null;
     }
     return result;
@@ -265,7 +334,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder implements Synt
       return false;
     }
 
-    LombokLightMethodBuilder that = (LombokLightMethodBuilder) o;
+    LombokLightMethodBuilder that = (LombokLightMethodBuilder)o;
 
     if (!getName().equals(that.getName())) {
       return false;

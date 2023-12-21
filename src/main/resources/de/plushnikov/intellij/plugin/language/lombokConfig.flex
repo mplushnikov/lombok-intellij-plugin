@@ -20,10 +20,10 @@ CRLF= \n | \r | \r\n
 WHITE_SPACE_CHAR=[\ \n\r\t\f]
 END_OF_LINE_COMMENT=("#")[^\r\n]*
 CLEAR="clear"
-KEY_CHARACTER=[^:=\ \n\r\t\f\\] | "\\"{CRLF} | "\\".
+KEY_CHARACTER=([:letter:] | [:digit:] | ".")+
 SEPARATOR=[\ \t]* [=] [\ \t]*
-SIGN=[\ \t]* [\-\+]
-VALUE_CHARACTER=[^:=\n\r\f\\] | "\\"{CRLF} | "\\".
+SIGN=[\ \t]*[\-\+]
+VALUE_CHARACTER=[^:=\n\r\f\\] | "\\"{CRLF} | "\\". | :
 
 %state IN_VALUE
 %state IN_KEY_VALUE_SEPARATOR

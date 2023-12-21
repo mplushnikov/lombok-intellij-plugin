@@ -4,17 +4,16 @@ import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl;
+import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 import java.util.List;
-
-import static de.plushnikov.intellij.plugin.inspection.LombokInspectionTest.TEST_DATA_INSPECTION_DIRECTORY;
 
 public class RedundantModifiersQuickFixTest extends AbstractLombokLightCodeInsightTestCase {
 
   @Override
   protected String getBasePath() {
-    return TEST_DATA_INSPECTION_DIRECTORY + "/redundantModifierInspection";
+    return super.getBasePath() + "/inspection/redundantModifierInspection";
   }
 
   public void testUtilityClassClassWithStaticField() {
@@ -38,11 +37,12 @@ public class RedundantModifiersQuickFixTest extends AbstractLombokLightCodeInsig
   }
 
   private void findAccessModifierActions(String message) {
-    myFixture.configureByFile(getBasePath() + '/' + getTestName(false) + ".java");
+    myFixture.configureByFile(getTestName(false) + ".java");
 
     final List<IntentionAction> availableActions = getAvailableActions();
     assertTrue(message,
-      availableActions.stream().anyMatch(action -> action.getText().contains("Change access modifier")));
+               ContainerUtil.exists(availableActions,
+                                    action -> action.getText().contains("Change access modifier")));
   }
 
   protected List<IntentionAction> getAvailableActions() {

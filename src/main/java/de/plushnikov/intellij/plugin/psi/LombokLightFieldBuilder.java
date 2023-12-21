@@ -1,44 +1,67 @@
 package de.plushnikov.intellij.plugin.psi;
 
+import com.intellij.navigation.ItemPresentation;
+import com.intellij.navigation.ItemPresentationProviders;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.CheckUtil;
+import com.intellij.psi.impl.PsiVariableEx;
 import com.intellij.psi.impl.light.LightFieldBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
 import com.intellij.util.IncorrectOperationException;
-import de.plushnikov.intellij.plugin.icon.LombokIcons;
+import icons.LombokIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
  * @author Plushnikov Michail
  */
-public class LombokLightFieldBuilder extends LightFieldBuilder implements SyntheticElement {
+public class LombokLightFieldBuilder extends LightFieldBuilder implements SyntheticElement, PsiVariableEx {
+  private String myName;
   private final LombokLightIdentifier myNameIdentifier;
+  private final LombokLightModifierList myModifierList;
+  private String myConstantValue;
 
   public LombokLightFieldBuilder(@NotNull PsiManager manager, @NotNull String name, @NotNull PsiType type) {
     super(manager, name, type);
-    super.setModifierList(new LombokLightModifierList(manager));
+    myName = name;
     myNameIdentifier = new LombokLightIdentifier(manager, name);
-    setBaseIcon(LombokIcons.FIELD_ICON);
+    myModifierList = new LombokLightModifierList(manager);
+    setBaseIcon(LombokIcons.Nodes.LombokField);
   }
 
   @Override
-  public LombokLightFieldBuilder setModifiers(String... modifiers) {
-    final LombokLightModifierList lombokLightModifierList = (LombokLightModifierList)getModifierList();
-    lombokLightModifierList.clearModifiers();
-    Stream.of(modifiers).forEach(lombokLightModifierList::addModifier);
+  public ItemPresentation getPresentation() {
+    return ItemPresentationProviders.getItemPresentation(this);
+  }
+
+  @Override
+  @NotNull
+  public LombokLightModifierList getModifierList() {
+    return myModifierList;
+  }
+
+  @Override
+  public @NotNull LombokLightFieldBuilder setModifiers(@NotNull String @NotNull ... modifiers) {
+    myModifierList.clearModifiers();
+    Stream.of(modifiers).forEach(myModifierList::addModifier);
     return this;
   }
 
   @Override
-  public LombokLightFieldBuilder setModifierList(LightModifierList modifierList) {
+  public @NotNull LombokLightFieldBuilder setModifierList(LightModifierList modifierList) {
     setModifiers(modifierList.getModifiers());
     return this;
+  }
+
+  @Override
+  public boolean hasModifierProperty(@NonNls @NotNull String name) {
+    return myModifierList.hasModifierProperty(name);
   }
 
   @Nullable
@@ -54,12 +77,17 @@ public class LombokLightFieldBuilder extends LightFieldBuilder implements Synthe
   }
 
   public LombokLightFieldBuilder withImplicitModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String modifier) {
-    ((LombokLightModifierList)getModifierList()).addImplicitModifierProperty(modifier);
+    myModifierList.addImplicitModifierProperty(modifier);
     return this;
   }
 
   public LombokLightFieldBuilder withModifier(@PsiModifier.ModifierConstant @NotNull @NonNls String modifier) {
-    ((LombokLightModifierList)getModifierList()).addModifier(modifier);
+    myModifierList.addModifier(modifier);
+    return this;
+  }
+
+  public LombokLightFieldBuilder withAnnotation(@NotNull String annotation) {
+    myModifierList.addAnnotation(annotation);
     return this;
   }
 
@@ -71,12 +99,13 @@ public class LombokLightFieldBuilder extends LightFieldBuilder implements Synthe
   @NotNull
   @Override
   public String getName() {
-    return myNameIdentifier.getText();
+    return myName;
   }
 
   @Override
   public PsiElement setName(@NotNull String name) {
-    myNameIdentifier.setText(name);
+    myName = name;
+    myNameIdentifier.setText(myName);
     return this;
   }
 
@@ -84,6 +113,17 @@ public class LombokLightFieldBuilder extends LightFieldBuilder implements Synthe
   @Override
   public PsiIdentifier getNameIdentifier() {
     return myNameIdentifier;
+  }
+
+  public LombokLightFieldBuilder withConstantValue(String value) {
+    myConstantValue = value;
+    return this;
+  }
+
+  @Override
+  public @Nullable Object computeConstantValue(Set<PsiVariable> visitedVars) {
+    if (!hasModifierProperty(PsiModifier.FINAL)) return null;
+    return myConstantValue;
   }
 
   public String toString() {
@@ -119,9 +159,7 @@ public class LombokLightFieldBuilder extends LightFieldBuilder implements Synthe
 
   @Override
   public boolean isEquivalentTo(PsiElement another) {
-    if (another instanceof LombokLightFieldBuilder) {
-      final LombokLightFieldBuilder anotherLightField = (LombokLightFieldBuilder) another;
-
+    if (another instanceof LombokLightFieldBuilder anotherLightField) {
       boolean stillEquivalent = getName().equals(anotherLightField.getName()) &&
         getType().equals(anotherLightField.getType());
 
@@ -145,13 +183,14 @@ public class LombokLightFieldBuilder extends LightFieldBuilder implements Synthe
     if (o == null || getClass() != o.getClass()) return false;
     LombokLightFieldBuilder that = (LombokLightFieldBuilder) o;
     return
+      Objects.equals(myName, that.myName) &&
       Objects.equals(myNameIdentifier, that.myNameIdentifier) &&
-      Objects.equals(getModifierList(), that.getModifierList()) &&
+      Objects.equals(myModifierList, that.myModifierList) &&
       Objects.equals(getContainingClass(), that.getContainingClass());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(myNameIdentifier, getModifierList(), getContainingClass());
+    return Objects.hash(myName, myNameIdentifier, myModifierList, getContainingClass());
   }
 }

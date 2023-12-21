@@ -1,13 +1,18 @@
 package de.plushnikov.intellij.plugin.highlights;
 
-/**
- * @author Lekanich
- */
+import com.intellij.codeInspection.InspectionProfileEntry;
+import de.plushnikov.intellij.plugin.inspection.LombokInspection;
+
 public class SneakyThrowsHighlightTest extends AbstractLombokHighlightsTest {
 
   @Override
-  protected String getTestDataPath() {
-    return TEST_DATA_INSPECTION_DIRECTORY + "/sneakyThrows";
+  protected String getBasePath() {
+    return super.getBasePath() + "/sneakyThrows";
+  }
+
+  @Override
+  protected InspectionProfileEntry getInspection() {
+    return new LombokInspection();
   }
 
   public void testSneakThrowsDoesntCatchCaughtException() {
@@ -15,6 +20,14 @@ public class SneakyThrowsHighlightTest extends AbstractLombokHighlightsTest {
   }
 
   public void testSneakThrowsDoesntCatchCaughtExceptionNested() {
+    doTest();
+  }
+
+  public void testSneakThrowsDoesntCatchExceptionFromSuperConstructor() {
+    doTest();
+  }
+
+  public void testSneakThrowsDoesntCatchExceptionFromThisConstructor() {
     doTest();
   }
 }

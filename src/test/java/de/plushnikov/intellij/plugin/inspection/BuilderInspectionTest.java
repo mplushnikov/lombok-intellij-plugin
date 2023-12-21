@@ -7,8 +7,8 @@ import com.intellij.openapi.util.BuildNumber;
 public class BuilderInspectionTest extends LombokInspectionTest {
 
   @Override
-  protected String getTestDataPath() {
-    return TEST_DATA_INSPECTION_DIRECTORY + "/builder";
+  protected String getBasePath() {
+    return super.getBasePath() + "/"  + TEST_DATA_INSPECTION_DIRECTORY + "/builder";
   }
 
   @Override
@@ -42,6 +42,14 @@ public class BuilderInspectionTest extends LombokInspectionTest {
   }
 
   public void testBuilderObtainVia() {
+    doTest();
+  }
+
+  public void testBuilderConstructorAnnotations() {
+    doTest();
+  }
+
+  public void testBuilderSingularInvalidOnArray() {
     doTest();
   }
 }

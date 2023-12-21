@@ -1,20 +1,20 @@
 package de.plushnikov.intellij.plugin.processor.clazz.builder;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiModifier;
 import de.plushnikov.intellij.plugin.LombokClassNames;
-import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
+import de.plushnikov.intellij.plugin.problem.ProblemSink;
 import de.plushnikov.intellij.plugin.processor.clazz.AbstractClassProcessor;
 import de.plushnikov.intellij.plugin.processor.handler.SuperBuilderHandler;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -23,40 +23,48 @@ import java.util.Optional;
  *
  * @author Michail Plushnikov
  */
-public class SuperBuilderClassProcessor extends AbstractClassProcessor {
+public final class SuperBuilderClassProcessor extends AbstractClassProcessor {
 
   public SuperBuilderClassProcessor() {
     super(PsiClass.class, LombokClassNames.SUPER_BUILDER);
   }
 
-  protected SuperBuilderHandler getBuilderHandler() {
-    return ApplicationManager.getApplication().getService(SuperBuilderHandler.class);
+  private static SuperBuilderHandler getBuilderHandler() {
+    return new SuperBuilderHandler();
   }
 
   @Override
-  protected boolean possibleToGenerateElementNamed(@Nullable String nameHint, @NotNull PsiClass psiClass,
+  protected boolean possibleToGenerateElementNamed(@NotNull String nameHint,
+                                                   @NotNull PsiClass psiClass,
                                                    @NotNull PsiAnnotation psiAnnotation) {
-    if (null == nameHint) {
-      return true;
-    }
+    final SuperBuilderHandler builderHandler = getBuilderHandler();
+    final String builderClassName = builderHandler.getBuilderClassName(psiClass);
+    return nameHint.equals(builderClassName) ||
+           !psiClass.hasModifierProperty(PsiModifier.ABSTRACT) && nameHint.equals(builderHandler.getBuilderImplClassName(psiClass));
+  }
+
+  @Override
+  protected Collection<String> getNamesOfPossibleGeneratedElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
     final SuperBuilderHandler builderHandler = getBuilderHandler();
 
     final String builderClassName = builderHandler.getBuilderClassName(psiClass);
-    boolean foundPossibleMath = Objects.equals(nameHint, builderClassName);
-    if (!foundPossibleMath && !psiClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
+
+    if (!psiClass.hasModifierProperty(PsiModifier.ABSTRACT)) {
       final String builderImplClassName = builderHandler.getBuilderImplClassName(psiClass);
-      return Objects.equals(nameHint, builderImplClassName);
+      return List.of(builderClassName, builderImplClassName);
     }
-    return foundPossibleMath;
+    return Collections.singleton(builderClassName);
   }
 
   @Override
-  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemSink builder) {
     return getBuilderHandler().validate(psiClass, psiAnnotation, builder);
   }
 
   @Override
-  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull PsiClass psiClass,
+                                     @NotNull PsiAnnotation psiAnnotation,
+                                     @NotNull List<? super PsiElement> target, @Nullable String nameHint) {
     SuperBuilderHandler builderHandler = getBuilderHandler();
     final String builderClassName = builderHandler.getBuilderClassName(psiClass);
 

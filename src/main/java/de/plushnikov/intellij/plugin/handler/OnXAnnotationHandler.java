@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.handler;
 
+import com.intellij.codeInsight.daemon.JavaErrorBundle;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
@@ -11,12 +12,11 @@ import java.util.regex.Pattern;
 
 
 public final class OnXAnnotationHandler {
-  private static final Pattern UNDERSCORES = Pattern.compile("__*");
-  private static final Pattern CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE = Pattern.compile("Cannot resolve symbol '__*'");
-  private static final Pattern CANNOT_RESOLVE_METHOD_UNDERSCORES_MESSAGE = Pattern.compile("Cannot resolve method '(onMethod|onConstructor|onParam)_+'");
-
-  private static final String ANNOTATION_TYPE_EXPECTED = "Annotation type expected";
-  private static final String CANNOT_FIND_METHOD_VALUE_MESSAGE = "Cannot find method 'value'";
+  private static final Pattern LOMBOK_ANY_ANNOTATION_REQUIRED =
+    Pattern.compile(JavaErrorBundle.message("incompatible.types", "lombok.*AnyAnnotation\\[\\]", "__*"));
+  private static final Pattern CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE =
+    Pattern.compile(JavaErrorBundle.message("cannot.resolve.symbol", "__*"));
+  private static final String ANNOTATION_TYPE_EXPECTED = JavaErrorBundle.message("annotation.annotation.type.expected");
 
   private static final Collection<String> ONXABLE_ANNOTATIONS = Arrays.asList(
     LombokClassNames.GETTER,
@@ -37,8 +37,8 @@ public final class OnXAnnotationHandler {
   public static boolean isOnXParameterAnnotation(HighlightInfo highlightInfo, PsiFile file) {
     final String description = StringUtil.notNullize(highlightInfo.getDescription());
     if (!(ANNOTATION_TYPE_EXPECTED.equals(description)
-      || CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE.matcher(description).matches()
-      || CANNOT_RESOLVE_METHOD_UNDERSCORES_MESSAGE.matcher(description).matches())) {
+          || CANNOT_RESOLVE_SYMBOL_UNDERSCORES_MESSAGE.matcher(description).matches()
+          || LOMBOK_ANY_ANNOTATION_REQUIRED.matcher(description).matches())) {
       return false;
     }
 
@@ -58,22 +58,8 @@ public final class OnXAnnotationHandler {
     }
 
     PsiElement containingAnnotation = nameValuePair.getContext().getContext();
-    return containingAnnotation instanceof PsiAnnotation && ONXABLE_ANNOTATIONS.contains(((PsiAnnotation) containingAnnotation).getQualifiedName());
-  }
-
-  public static boolean isOnXParameterValue(HighlightInfo highlightInfo, PsiFile file) {
-    if (!CANNOT_FIND_METHOD_VALUE_MESSAGE.equals(highlightInfo.getDescription())) {
-      return false;
-    }
-
-    PsiElement highlightedElement = file.findElementAt(highlightInfo.getStartOffset());
-    PsiNameValuePair nameValuePair = findContainingNameValuePair(highlightedElement);
-    if (nameValuePair == null || !(nameValuePair.getContext() instanceof PsiAnnotationParameterList)) {
-      return false;
-    }
-
-    PsiElement leftSibling = nameValuePair.getContext().getPrevSibling();
-    return (leftSibling != null && UNDERSCORES.matcher(StringUtil.notNullize(leftSibling.getText())).matches());
+    return containingAnnotation instanceof PsiAnnotation &&
+           ONXABLE_ANNOTATIONS.contains(((PsiAnnotation)containingAnnotation).getQualifiedName());
   }
 
   private static PsiNameValuePair findContainingNameValuePair(PsiElement highlightedElement) {
@@ -82,6 +68,6 @@ public final class OnXAnnotationHandler {
       nameValuePair = nameValuePair.getContext();
     }
 
-    return (PsiNameValuePair) nameValuePair;
+    return (PsiNameValuePair)nameValuePair;
   }
 }

@@ -1,19 +1,19 @@
 package de.plushnikov.intellij.plugin.intention;
 
-import com.intellij.codeInsight.intention.IntentionAction;
+import com.intellij.modcommand.ModCommandAction;
 import com.intellij.psi.PsiFile;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 public abstract class LombokIntentionActionTest extends AbstractLombokLightCodeInsightTestCase {
 
-  public static final String TEST_DATA_INTENTION_DIRECTORY = "testData/intention";
+  public static final String TEST_DATA_INTENTION_DIRECTORY = "/plugins/lombok/testData/intention";
 
   @Override
   protected String getBasePath() {
     return TEST_DATA_INTENTION_DIRECTORY;
   }
 
-  public abstract IntentionAction getIntentionAction();
+  public abstract ModCommandAction getAction();
 
   public abstract boolean wasInvocationSuccessful();
 
@@ -22,13 +22,16 @@ public abstract class LombokIntentionActionTest extends AbstractLombokLightCodeI
   }
 
   public void doTest(boolean intentionAvailable) {
-    PsiFile psiFile = loadToPsiFile(getTestName(false) + ".java");
-    IntentionAction intentionAction = getIntentionAction();
+    loadToPsiFile(getTestName(false) + ".java");
+    ModCommandAction intentionAction = getAction();
 
+    boolean isActuallyAvailable = intentionAction.getPresentation(myFixture.getActionContext()) != null;
     assertEquals("Intention \"" + intentionAction.getFamilyName() + "\" was not available at caret",
-                 intentionAvailable, intentionAction.isAvailable(myFixture.getProject(), myFixture.getEditor(), psiFile));
+                 intentionAvailable, isActuallyAvailable);
 
-    myFixture.launchAction(intentionAction);
+    if (isActuallyAvailable) {
+      myFixture.launchAction(intentionAction.asIntention());
+    }
 
     assertTrue("Intention \"" + intentionAction.getFamilyName() + "\" was not properly invoked",
       wasInvocationSuccessful());

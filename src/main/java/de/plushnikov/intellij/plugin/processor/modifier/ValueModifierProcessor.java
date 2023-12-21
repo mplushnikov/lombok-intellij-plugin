@@ -30,7 +30,7 @@ public class ValueModifierProcessor implements ModifierProcessor {
 
   @Override
   public void transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
-    if (modifiers.contains(PsiModifier.STATIC)) {
+    if (modifiers.contains(PsiModifier.STATIC) && modifierList.getParent() instanceof PsiField) {
       return; // skip static fields
     }
 
@@ -56,7 +56,7 @@ public class ValueModifierProcessor implements ModifierProcessor {
     }
   }
 
-  private boolean hasPackagePrivateModifier(@NotNull PsiModifierList modifierList) {
+  private static boolean hasPackagePrivateModifier(@NotNull PsiModifierList modifierList) {
     return !(modifierList.hasExplicitModifier(PsiModifier.PUBLIC) || modifierList.hasExplicitModifier(PsiModifier.PRIVATE) ||
       modifierList.hasExplicitModifier(PsiModifier.PROTECTED));
   }

@@ -11,6 +11,7 @@ import de.plushnikov.intellij.plugin.util.PsiTypeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 class SingularGuavaCollectionHandler extends SingularCollectionHandler {
 
@@ -21,7 +22,19 @@ class SingularGuavaCollectionHandler extends SingularCollectionHandler {
     super(collectionQualifiedName);
     this.sortedCollection = sortedCollection;
     this.typeCollectionQualifiedName = SingularCollectionClassNames.GUAVA_IMMUTABLE_COLLECTION.equals(collectionQualifiedName)
-      ? SingularCollectionClassNames.GUAVA_IMMUTABLE_LIST : collectionQualifiedName;
+                                       ? SingularCollectionClassNames.GUAVA_IMMUTABLE_LIST : collectionQualifiedName;
+  }
+
+  @NotNull
+  private static PsiType getCollectionType(@NotNull PsiType psiFieldType, PsiManager psiManager) {
+    final PsiType elementType = PsiTypeUtil.extractAllElementType(psiFieldType, psiManager);
+    return PsiTypeUtil.createCollectionType(psiManager, CommonClassNames.JAVA_LANG_ITERABLE, elementType);
+  }
+
+  @Override
+  protected List<PsiType> getAllMethodParameterTypes(@NotNull BuilderInfo info) {
+    final PsiType collectionType = getCollectionType(info.getFieldType(), info.getManager());
+    return List.of(collectionType);
   }
 
   @Override
@@ -34,10 +47,11 @@ class SingularGuavaCollectionHandler extends SingularCollectionHandler {
   }
 
   @Override
-  protected void addAllMethodParameter(@NotNull LombokLightMethodBuilder methodBuilder, @NotNull PsiType psiFieldType, @NotNull String singularName) {
+  protected void addAllMethodParameter(@NotNull LombokLightMethodBuilder methodBuilder,
+                                       @NotNull PsiType psiFieldType,
+                                       @NotNull String singularName) {
     final PsiManager psiManager = methodBuilder.getManager();
-    final PsiType elementType = PsiTypeUtil.extractAllElementType(psiFieldType, psiManager);
-    final PsiType collectionType = PsiTypeUtil.createCollectionType(psiManager, CommonClassNames.JAVA_LANG_ITERABLE, elementType);
+    final PsiType collectionType = getCollectionType(psiFieldType, psiManager);
 
     methodBuilder.withParameter(singularName, collectionType);
   }
@@ -45,28 +59,31 @@ class SingularGuavaCollectionHandler extends SingularCollectionHandler {
   @Override
   protected String getClearMethodBody(@NotNull BuilderInfo info) {
     final String codeBlockFormat = "this.{0} = null;\n" +
-      "return {1};";
+                                   "return {1};";
     return MessageFormat.format(codeBlockFormat, info.getFieldName(), info.getBuilderChainResult());
   }
 
   @Override
   protected String getOneMethodBody(@NotNull String singularName, @NotNull BuilderInfo info) {
-    final String codeBlockTemplate = "if (this.{0} == null) this.{0} = {2}.{3}; \n" +
-      "this.{0}.add({1});\n" +
-      "return {4};";
+    final String codeBlockTemplate = """
+      if (this.{0} == null) this.{0} = {2}.{3};\s
+      this.{0}.add({1});
+      return {4};""";
 
     return MessageFormat.format(codeBlockTemplate, info.getFieldName(), singularName, typeCollectionQualifiedName,
-      sortedCollection ? "naturalOrder()" : "builder()", info.getBuilderChainResult());
+                                sortedCollection ? "naturalOrder()" : "builder()", info.getBuilderChainResult());
   }
 
   @Override
   protected String getAllMethodBody(@NotNull String singularName, @NotNull BuilderInfo info) {
-    final String codeBlockTemplate = "if (this.{0} == null) this.{0} = {1}.{2}; \n"
-      + "this.{0}.addAll({0});\n" +
-      "return {3};";
+    final String codeBlockTemplate = """
+      if({0}==null)'{'throw new NullPointerException("{0} cannot be null");'}'
+      if (this.{0} == null) this.{0} = {1}.{2};\s
+      this.{0}.addAll({0});
+      return {3};""";
 
     return MessageFormat.format(codeBlockTemplate, singularName, typeCollectionQualifiedName,
-      sortedCollection ? "naturalOrder()" : "builder()", info.getBuilderChainResult());
+                                sortedCollection ? "naturalOrder()" : "builder()", info.getBuilderChainResult());
   }
 
   @Override
@@ -77,14 +94,14 @@ class SingularGuavaCollectionHandler extends SingularCollectionHandler {
     final PsiType elementType = PsiTypeUtil.extractOneElementType(psiFieldType, psiManager);
     return MessageFormat.format(
       "{2}<{1}> {0} = " +
-        "{4}.{0} == null ? " +
-        "{3}.<{1}>of() : " +
-        "{4}.{0}.build();\n",
+      "{4}.{0} == null ? " +
+      "{3}.<{1}>of() : " +
+      "{4}.{0}.build();\n",
       fieldName, elementType.getCanonicalText(false), collectionQualifiedName, typeCollectionQualifiedName, builderVariable);
   }
 
   @Override
-  protected String getEmptyCollectionCall() {
+  protected String getEmptyCollectionCall(@NotNull BuilderInfo info) {
     return typeCollectionQualifiedName + '.' + "builder()";
   }
 }

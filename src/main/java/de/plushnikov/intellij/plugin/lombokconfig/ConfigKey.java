@@ -4,7 +4,7 @@ public enum ConfigKey {
 
   CONFIG_STOP_BUBBLING("config.stopBubbling", "false"),
 
-  COPYABLE_ANNOTATIONS("lombok.copyableAnnotations", ""),
+  COPYABLE_ANNOTATIONS("lombok.copyableAnnotations", "", false),
 
   LOG_FIELDNAME("lombok.log.fieldName", "log"),
   LOG_FIELD_IS_STATIC("lombok.log.fieldIsStatic", "true"),
@@ -18,10 +18,13 @@ public enum ConfigKey {
   TOSTRING_CALL_SUPER("lombok.toString.callSuper", "skip"),
   TOSTRING_DO_NOT_USE_GETTERS("lombok.toString.doNotUseGetters", "false"),
   TOSTRING_INCLUDE_FIELD_NAMES("lombok.toString.includeFieldNames", "true"),
+  TOSTRING_ONLY_EXPLICITLY_INCLUDED("lombok.toString.onlyExplicitlyIncluded", "false"),
 
-  ACCESSORS_PREFIX("lombok.accessors.prefix", ""),
+  ACCESSORS_PREFIX("lombok.accessors.prefix", "", false),
   ACCESSORS_CHAIN("lombok.accessors.chain", "false"),
   ACCESSORS_FLUENT("lombok.accessors.fluent", "false"),
+  ACCESSORS_MAKE_FINAL("lombok.accessors.makeFinal", "false"),
+  ACCESSORS_JAVA_BEANS_SPEC_CAPITALIZATION("lombok.accessors.capitalization", "BASIC"),
   GETTER_NO_IS_PREFIX("lombok.getter.noIsPrefix", "false"),
 
   SINGULAR_USE_GUAVA("lombok.singular.useGuava", "false"),
@@ -46,7 +49,9 @@ public enum ConfigKey {
 
   NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE("lombok.noArgsConstructor.extraPrivate", "false"),
 
-  BUILDER_CLASS_NAME("lombok.builder.className", "*Builder");
+  BUILDER_CLASS_NAME("lombok.builder.className", "*Builder"),
+  ADD_NULL_ANNOTATIONS("lombok.addNullAnnotations", ""),
+  ADD_LOMBOK_GENERATED_ANNOTATION("lombok.addLombokGeneratedAnnotation", "false");
   /*
     ACCESSORS_FLAG_USAGE("lombok.accessors.flagUsage", ""),
     ALLARGSCONSTRUCTOR_FLAG_USAGE("lombok.allArgsConstructor.flagUsage", ""),
@@ -87,10 +92,16 @@ public enum ConfigKey {
   */
   private final String configKey;
   private final String configDefaultValue;
+  private final boolean configScalarValue;
 
   ConfigKey(String configKey, String configDefaultValue) {
-    this.configKey = configKey.toLowerCase();
+    this(configKey, configDefaultValue, true);
+  }
+
+  ConfigKey(String configKey, String configDefaultValue, boolean configScalarValue) {
+    this.configKey = configKey;
     this.configDefaultValue = configDefaultValue;
+    this.configScalarValue = configScalarValue;
   }
 
   public String getConfigKey() {
@@ -99,6 +110,10 @@ public enum ConfigKey {
 
   public String getConfigDefaultValue() {
     return configDefaultValue;
+  }
+
+  boolean isConfigScalarValue() {
+    return configScalarValue;
   }
 
   public static ConfigKey fromConfigStringKey(String configStringKey) {

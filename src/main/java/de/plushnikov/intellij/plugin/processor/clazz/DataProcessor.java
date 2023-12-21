@@ -1,11 +1,11 @@
 package de.plushnikov.intellij.plugin.processor.clazz;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.*;
-import de.plushnikov.intellij.plugin.LombokBundle;
 import de.plushnikov.intellij.plugin.LombokClassNames;
-import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
-import de.plushnikov.intellij.plugin.problem.ProblemEmptyBuilder;
+import de.plushnikov.intellij.plugin.problem.ProblemProcessingSink;
+import de.plushnikov.intellij.plugin.problem.ProblemSink;
+import de.plushnikov.intellij.plugin.processor.LombokProcessorManager;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor;
@@ -14,102 +14,140 @@ import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
  * @author Plushnikov Michail
  */
-public class DataProcessor extends AbstractClassProcessor {
+public final class DataProcessor extends AbstractClassProcessor {
 
   public DataProcessor() {
     super(PsiMethod.class, LombokClassNames.DATA);
   }
 
-  private ToStringProcessor getToStringProcessor() {
-    return ApplicationManager.getApplication().getService(ToStringProcessor.class);
+  private static ToStringProcessor getToStringProcessor() {
+    return LombokProcessorManager.getInstance().getToStringProcessor();
   }
 
-  private NoArgsConstructorProcessor getNoArgsConstructorProcessor() {
-    return ApplicationManager.getApplication().getService(NoArgsConstructorProcessor.class);
+  private static NoArgsConstructorProcessor getNoArgsConstructorProcessor() {
+    return LombokProcessorManager.getInstance().getNoArgsConstructorProcessor();
   }
 
-  private GetterProcessor getGetterProcessor() {
-    return ApplicationManager.getApplication().getService(GetterProcessor.class);
+  private static GetterProcessor getGetterProcessor() {
+    return LombokProcessorManager.getInstance().getGetterProcessor();
   }
 
-  private SetterProcessor getSetterProcessor() {
-    return ApplicationManager.getApplication().getService(SetterProcessor.class);
+  private static SetterProcessor getSetterProcessor() {
+    return LombokProcessorManager.getInstance().getSetterProcessor();
   }
 
-  private EqualsAndHashCodeProcessor getEqualsAndHashCodeProcessor() {
-    return ApplicationManager.getApplication().getService(EqualsAndHashCodeProcessor.class);
+  private static EqualsAndHashCodeProcessor getEqualsAndHashCodeProcessor() {
+    return LombokProcessorManager.getInstance().getEqualsAndHashCodeProcessor();
   }
 
-  private RequiredArgsConstructorProcessor getRequiredArgsConstructorProcessor() {
-    return ApplicationManager.getApplication().getService(RequiredArgsConstructorProcessor.class);
+  private static RequiredArgsConstructorProcessor getRequiredArgsConstructorProcessor() {
+    return LombokProcessorManager.getInstance().getRequiredArgsConstructorProcessor();
   }
 
   @Override
-  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    final PsiAnnotation equalsAndHashCodeAnnotation =
-      PsiAnnotationSearchUtil.findAnnotation(psiClass, LombokClassNames.EQUALS_AND_HASHCODE);
-    if (null == equalsAndHashCodeAnnotation) {
-      getEqualsAndHashCodeProcessor().validateCallSuperParamExtern(psiAnnotation, psiClass, builder);
-    }
-
-    final String staticName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticConstructor", "");
-    if (shouldGenerateRequiredArgsConstructor(psiClass, staticName)) {
-      getRequiredArgsConstructorProcessor().validateBaseClassConstructor(psiClass, builder);
-    }
-
-    return validateAnnotationOnRightType(psiClass, builder);
+  protected boolean possibleToGenerateElementNamed(@NotNull String nameHint,
+                                                   @NotNull PsiClass psiClass,
+                                                   @NotNull PsiAnnotation psiAnnotation) {
+    return nameHint.equals(getStaticConstructorNameValue(psiAnnotation)) ||
+           getNoArgsConstructorProcessor().possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation) ||
+           getToStringProcessor().possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation) ||
+           getEqualsAndHashCodeProcessor().possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation) ||
+           getGetterProcessor().possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation) ||
+           getSetterProcessor().possibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation);
   }
 
-  private boolean validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    boolean result = true;
-    if (psiClass.isAnnotationType() || psiClass.isInterface() || psiClass.isEnum()) {
-      builder.addError(LombokBundle.message("inspection.message.data.only.supported.on.class.type"));
-      result = false;
+  @Override
+  protected Collection<String> getNamesOfPossibleGeneratedElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
+    Collection<String> result = new ArrayList<>();
+
+    final String staticConstructorName = getStaticConstructorNameValue(psiAnnotation);
+    if(StringUtil.isNotEmpty(staticConstructorName)) {
+      result.add(staticConstructorName);
     }
+    result.addAll(getNoArgsConstructorProcessor().getNamesOfPossibleGeneratedElements(psiClass, psiAnnotation));
+    result.addAll(getToStringProcessor().getNamesOfPossibleGeneratedElements(psiClass, psiAnnotation));
+    result.addAll(getEqualsAndHashCodeProcessor().getNamesOfPossibleGeneratedElements(psiClass, psiAnnotation));
+    result.addAll(getGetterProcessor().getNamesOfPossibleGeneratedElements(psiClass, psiAnnotation));
+    result.addAll(getSetterProcessor().getNamesOfPossibleGeneratedElements(psiClass, psiAnnotation));
+
     return result;
+  }
+
+  private static String getStaticConstructorNameValue(@NotNull PsiAnnotation psiAnnotation) {
+    return PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticConstructor", "");
+  }
+
+  @Override
+  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemSink builder) {
+    validateAnnotationOnRightType(psiClass, builder);
+
+    if (builder.deepValidation()) {
+      final boolean hasNoEqualsAndHashCodeAnnotation =
+        PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.EQUALS_AND_HASHCODE);
+      if (hasNoEqualsAndHashCodeAnnotation) {
+        getEqualsAndHashCodeProcessor().validateCallSuperParamExtern(psiAnnotation, psiClass, builder);
+      }
+
+      final String staticName = getStaticConstructorNameValue(psiAnnotation);
+      if (shouldGenerateRequiredArgsConstructor(psiClass, staticName)) {
+        getRequiredArgsConstructorProcessor().validateBaseClassConstructor(psiClass, builder);
+      }
+    }
+    return builder.success();
+  }
+
+  private static void validateAnnotationOnRightType(@NotNull PsiClass psiClass, @NotNull ProblemSink builder) {
+    if (psiClass.isAnnotationType() || psiClass.isInterface() || psiClass.isEnum() || psiClass.isRecord()) {
+      builder.addErrorMessage("inspection.message.data.only.supported.on.class.type");
+      builder.markFailed();
+    }
   }
 
   @Override
   protected void generatePsiElements(@NotNull PsiClass psiClass,
                                      @NotNull PsiAnnotation psiAnnotation,
-                                     @NotNull List<? super PsiElement> target) {
+                                     @NotNull List<? super PsiElement> target, @Nullable String nameHint) {
     if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.GETTER)) {
-      target.addAll(getGetterProcessor().createFieldGetters(psiClass, PsiModifier.PUBLIC));
+      target.addAll(getGetterProcessor().createFieldGetters(psiClass, PsiModifier.PUBLIC, nameHint));
     }
     if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.SETTER)) {
-      target.addAll(getSetterProcessor().createFieldSetters(psiClass, PsiModifier.PUBLIC));
+      target.addAll(getSetterProcessor().createFieldSetters(psiClass, PsiModifier.PUBLIC, nameHint));
     }
-    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.EQUALS_AND_HASHCODE)) {
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.EQUALS_AND_HASHCODE) &&
+        getEqualsAndHashCodeProcessor().noHintOrPossibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)) {
       target.addAll(getEqualsAndHashCodeProcessor().createEqualAndHashCode(psiClass, psiAnnotation));
     }
-    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.TO_STRING)) {
+    if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, LombokClassNames.TO_STRING) &&
+        getToStringProcessor().noHintOrPossibleToGenerateElementNamed(nameHint, psiClass, psiAnnotation)) {
       target.addAll(getToStringProcessor().createToStringMethod(psiClass, psiAnnotation));
     }
 
-    final boolean hasConstructorWithoutParamaters;
-    final String staticName = PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, "staticConstructor", "");
+    final boolean hasConstructorWithoutParameters;
+    final String staticName = getStaticConstructorNameValue(psiAnnotation);
+    if (nameHint != null && !nameHint.equals(staticName) && !nameHint.equals(psiClass.getName())) return;
     if (shouldGenerateRequiredArgsConstructor(psiClass, staticName)) {
       target.addAll(
         getRequiredArgsConstructorProcessor().createRequiredArgsConstructor(psiClass, PsiModifier.PUBLIC, psiAnnotation, staticName, true));
       // if there are no required field, it will already have a default constructor without parameters
-      hasConstructorWithoutParamaters = getRequiredArgsConstructorProcessor().getRequiredFields(psiClass).isEmpty();
+      hasConstructorWithoutParameters = getRequiredArgsConstructorProcessor().getRequiredFields(psiClass).isEmpty();
     }
     else {
-      hasConstructorWithoutParamaters = false;
+      hasConstructorWithoutParameters = false;
     }
 
-    if (!hasConstructorWithoutParamaters && shouldGenerateExtraNoArgsConstructor(psiClass)) {
+    if (!hasConstructorWithoutParameters && shouldGenerateExtraNoArgsConstructor(psiClass)) {
       target.addAll(getNoArgsConstructorProcessor().createNoArgsConstructor(psiClass, PsiModifier.PRIVATE, psiAnnotation, true));
     }
   }
 
-  private boolean shouldGenerateRequiredArgsConstructor(@NotNull PsiClass psiClass, @Nullable String staticName) {
+  private static boolean shouldGenerateRequiredArgsConstructor(@NotNull PsiClass psiClass, @Nullable String staticName) {
     boolean result = false;
     // create required constructor only if there are no other constructor annotations
     final boolean notAnnotatedWith = PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass,
@@ -123,7 +161,7 @@ public class DataProcessor extends AbstractClassProcessor {
       final Collection<PsiField> requiredFields = requiredArgsConstructorProcessor.getRequiredFields(psiClass);
 
       result = requiredArgsConstructorProcessor.validateIsConstructorNotDefined(
-        psiClass, staticName, requiredFields, ProblemEmptyBuilder.getInstance());
+        psiClass, staticName, requiredFields, new ProblemProcessingSink());
     }
     return result;
   }

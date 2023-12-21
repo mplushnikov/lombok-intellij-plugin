@@ -1,63 +1,54 @@
 package de.plushnikov.intellij.plugin;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.projectRoots.JavaSdk;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.LanguageLevelModuleExtension;
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.pom.java.LanguageLevel;
-import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.PsiTestUtil;
+import com.intellij.testFramework.IdeaTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
-import com.intellij.util.PathUtil;
+import com.intellij.testFramework.fixtures.MavenDependencyUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
+public final class LombokTestUtil {
 
-public class LombokTestUtil {
-  private static final String THIRD_PARTY_LIB_DIRECTORY = "lib";
-  private static final String OLD_LOMBOK_JAR_NAME = "lombok-1.18.2.jar";
-  private static final String LOMBOK_JAR_NAME = "lombok-1.18.18.jar";
-  private static final String SLF4J_JAR_NAME = "slf4j-api-1.7.30.jar";
-  private static final String JSR305_JAR_NAME = "jsr305-3.0.2.jar";
+  public static final String LOMBOK_MAVEN_COORDINATES = "org.projectlombok:lombok:" + Version.LAST_LOMBOK_VERSION;
+  private static final String JACKSON_MAVEN_COORDINATES = "com.fasterxml.jackson.core:jackson-databind:2.12.7.1";
 
-  public static void loadLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
-    loadLibrary(projectDisposable, module, "Lombok Library", LOMBOK_JAR_NAME);
-  }
+  public static final DefaultLightProjectDescriptor LOMBOK_DESCRIPTOR = new DefaultLightProjectDescriptor() {
+    @Override
+    public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+      DefaultLightProjectDescriptor.addJetBrainsAnnotations(model);
+      MavenDependencyUtil.addFromMaven(model, LOMBOK_MAVEN_COORDINATES, true, DependencyScope.PROVIDED);
+      MavenDependencyUtil.addFromMaven(model, JACKSON_MAVEN_COORDINATES);
+      MavenDependencyUtil.addFromMaven(model, "com.google.guava:guava:27.0.1-jre");
+      MavenDependencyUtil.addFromMaven(model, "org.slf4j:slf4j-api:1.7.30");
+      model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_8);
+    }
 
-  public static void loadOldLombokLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
-    loadLibrary(projectDisposable, module, "Lombok Old Library", OLD_LOMBOK_JAR_NAME);
-  }
+    @Override
+    public Sdk getSdk() {
+      return IdeaTestUtil.getMockJdk18();
+    }
+  };
 
-  public static void loadSlf4jLibrary(@NotNull Disposable projectDisposable, @NotNull Module module) {
-    loadLibrary(projectDisposable, module, "Slf4j Library", SLF4J_JAR_NAME);
-  }
+  public static final DefaultLightProjectDescriptor LOMBOK_NEW_DESCRIPTOR = new DefaultLightProjectDescriptor() {
+    @Override
+    public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+      MavenDependencyUtil.addFromMaven(model, LOMBOK_MAVEN_COORDINATES, true, DependencyScope.PROVIDED);
+      MavenDependencyUtil.addFromMaven(model, JACKSON_MAVEN_COORDINATES);
+      MavenDependencyUtil.addFromMaven(model, "org.slf4j:slf4j-api:1.7.30");
+      model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.HIGHEST);
+    }
+  };
 
-  public static void loadJsr305Library(@NotNull Disposable projectDisposable, @NotNull Module module) {
-    loadLibrary(projectDisposable, module, "JSR-305 Library", JSR305_JAR_NAME);
-  }
-
-  private static void loadLibrary(@NotNull Disposable projectDisposable, @NotNull Module module, String libraryName,
-                                  String libraryJarName) {
-    final String lombokLibPath = PathUtil.toSystemIndependentName(new File(THIRD_PARTY_LIB_DIRECTORY).getAbsolutePath());
-    VfsRootAccess.allowRootAccess(projectDisposable, lombokLibPath);
-    PsiTestUtil.addLibrary(projectDisposable, module, libraryName, lombokLibPath, libraryJarName);
-  }
-
-  public static LightProjectDescriptor getProjectDescriptor() {
-    return new DefaultLightProjectDescriptor() {
-      @Override
-      public Sdk getSdk() {
-        return JavaSdk.getInstance().createJdk("java 1.8", "lib/mockJDK-1.8", false);
-      }
-
-      @Override
-      public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
-        model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_8);
-      }
-    };
-  }
+  public static final DefaultLightProjectDescriptor LOMBOK_OLD_DESCRIPTOR = new DefaultLightProjectDescriptor() {
+    @Override
+    public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+      MavenDependencyUtil.addFromMaven(model, "org.projectlombok:lombok:1.18.2", true, DependencyScope.PROVIDED);
+      model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_8);
+    }
+  };
 }

@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class LombokElementRenameVetoHandler implements RenameHandler {
   @Override
-  public boolean isAvailableOnDataContext(DataContext dataContext) {
+  public boolean isAvailableOnDataContext(@NotNull DataContext dataContext) {
     final PsiElement element = PsiElementRenameHandler.getElement(dataContext);
     return element instanceof LombokLightClassBuilder ||
       ((element instanceof LombokLightMethodBuilder || element instanceof LombokLightFieldBuilder)
@@ -31,7 +31,7 @@ public class LombokElementRenameVetoHandler implements RenameHandler {
   }
 
   @Override
-  public boolean isRenaming(DataContext dataContext) {
+  public boolean isRenaming(@NotNull DataContext dataContext) {
     return isAvailableOnDataContext(dataContext);
   }
 
@@ -41,12 +41,12 @@ public class LombokElementRenameVetoHandler implements RenameHandler {
   }
 
   @Override
-  public void invoke(@NotNull Project project, @NotNull PsiElement[] elements, @Nullable DataContext dataContext) {
+  public void invoke(@NotNull Project project, PsiElement @NotNull [] elements, @Nullable DataContext dataContext) {
     Editor editor = dataContext == null ? null : CommonDataKeys.EDITOR.getData(dataContext);
     invokeInner(project, editor);
   }
 
-  private void invokeInner(Project project, Editor editor) {
+  private static void invokeInner(Project project, Editor editor) {
     CommonRefactoringUtil.showErrorHint(project, editor,
       RefactoringBundle.getCannotRefactorMessage(LombokBundle.message("dialog.message.this.element.cannot.be.renamed")),
       RefactoringBundle.message("rename.title"), null);

@@ -2,9 +2,12 @@ package de.plushnikov.intellij.plugin.psi;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.ElementPresentationUtil;
 import com.intellij.psi.impl.light.LightPsiClassBuilder;
 import com.intellij.psi.impl.source.PsiExtensibleClass;
-import de.plushnikov.intellij.plugin.icon.LombokIcons;
+import com.intellij.ui.IconManager;
+import com.intellij.ui.icons.RowIcon;
+import icons.LombokIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +16,7 @@ import javax.swing.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class LombokLightClassBuilder extends LightPsiClassBuilder implements PsiExtensibleClass, SyntheticElement {
@@ -23,17 +26,19 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   private final LombokLightModifierList myModifierList;
 
   private boolean myIsEnum;
+  private boolean myIsAnnotationType;
   private PsiField[] myFields;
   private PsiMethod[] myMethods;
 
-  private Supplier<? extends Collection<PsiField>> fieldSupplier = Collections::emptyList;
-  private Supplier<? extends Collection<PsiMethod>> methodSupplier = Collections::emptyList;
+  private Function<PsiClass, ? extends Collection<PsiField>> fieldSupplier = c -> Collections.emptyList();
+  private Function<PsiClass, ? extends Collection<PsiMethod>> methodSupplier = c -> Collections.emptyList();
 
   public LombokLightClassBuilder(@NotNull PsiElement context, @NotNull String simpleName, @NotNull String qualifiedName) {
     super(context, simpleName);
     myIsEnum = false;
+    myIsAnnotationType = false;
     myQualifiedName = qualifiedName;
-    myBaseIcon = LombokIcons.CLASS_ICON;
+    myBaseIcon = LombokIcons.Nodes.LombokClass;
     myModifierList = new LombokLightModifierList(context.getManager(), context.getLanguage());
   }
 
@@ -64,7 +69,9 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
 
   @Override
   public Icon getElementIcon(final int flags) {
-    return myBaseIcon;
+    RowIcon baseIcon = IconManager.getInstance().createLayeredIcon(this, myBaseIcon,
+                                                                   ElementPresentationUtil.getFlags(this, false));
+    return ElementPresentationUtil.addVisibilityIcon(this, flags, baseIcon);
   }
 
   @Override
@@ -87,11 +94,16 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   }
 
   @Override
+  public boolean isAnnotationType() {
+    return myIsAnnotationType;
+  }
+
+  @Override
   public PsiField @NotNull [] getFields() {
     if (null == myFields) {
-      Collection<PsiField> generatedFields = fieldSupplier.get();
+      Collection<PsiField> generatedFields = fieldSupplier.apply(this);
       myFields = generatedFields.toArray(PsiField.EMPTY_ARRAY);
-      fieldSupplier = Collections::emptyList;
+      fieldSupplier = c -> Collections.emptyList();
     }
     return myFields;
   }
@@ -99,9 +111,9 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   @Override
   public PsiMethod @NotNull [] getMethods() {
     if (null == myMethods) {
-      Collection<PsiMethod> generatedMethods = methodSupplier.get();
+      Collection<PsiMethod> generatedMethods = methodSupplier.apply(this);
       myMethods = generatedMethods.toArray(PsiMethod.EMPTY_ARRAY);
-      methodSupplier = Collections::emptyList;
+      methodSupplier = c -> Collections.emptyList();
     }
     return myMethods;
   }
@@ -121,18 +133,23 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
     return Collections.emptyList();
   }
 
-  public LombokLightClassBuilder withFieldSupplier(final Supplier<? extends Collection<PsiField>> fieldSupplier) {
+  public LombokLightClassBuilder withFieldSupplier(final Function<PsiClass, ? extends Collection<PsiField>> fieldSupplier) {
     this.fieldSupplier = fieldSupplier;
     return this;
   }
 
-  public LombokLightClassBuilder withMethodSupplier(final Supplier<? extends Collection<PsiMethod>> methodSupplier) {
+  public LombokLightClassBuilder withMethodSupplier(final Function<PsiClass, ? extends Collection<PsiMethod>> methodSupplier) {
     this.methodSupplier = methodSupplier;
     return this;
   }
 
   public LombokLightClassBuilder withEnum(boolean isEnum) {
     myIsEnum = isEnum;
+    return this;
+  }
+
+  public LombokLightClassBuilder withAnnotationType(boolean isAnnotationType) {
+    myIsAnnotationType = isAnnotationType;
     return this;
   }
 

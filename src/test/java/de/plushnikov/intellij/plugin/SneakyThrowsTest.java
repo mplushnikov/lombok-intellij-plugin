@@ -1,18 +1,14 @@
 package de.plushnikov.intellij.plugin;
 
-import java.util.List;
 import com.intellij.codeInsight.ExceptionUtil;
-import com.intellij.openapi.projectRoots.JavaSdk;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiTryStatement;
+import com.intellij.psi.*;
 import com.intellij.testFramework.LightJavaCodeInsightTestCase;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 
 /**
@@ -46,12 +42,12 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
   }
 
   public void testLambdaSneakyThrowsWrongCatch() {
-    PsiFile file = createTestFile("@lombok.SneakyThrows" +
-      "    public void m1() {\n" +
-      "        Runnable runnable = () -> {\n" +
-      "            throwsMyException();" +
-      "        };\n" +
-      "    }\n");
+    PsiFile file = createTestFile("""
+                                    @lombok.SneakyThrows    public void m1() {
+                                            Runnable runnable = () -> {
+                                                throwsMyException();        };
+                                        }
+                                    """);
     PsiMethodCallExpression methodCall = findMethodCall(file);
     assertNotNull(methodCall);
 
@@ -61,12 +57,12 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
   }
 
   public void testAnonymousClassCorrectCatch() {
-    PsiFile file = createTestFile("@lombok.SneakyThrows" +
-      "    public void m1() {\n" +
-      "        Runnable runnable = new Runnable() {\n" +
-      "           public void run() { throwsMyException(); }" +
-      "        };\n" +
-      "    }\n");
+    PsiFile file = createTestFile("""
+                                    @lombok.SneakyThrows    public void m1() {
+                                            Runnable runnable = new Runnable() {
+                                               public void run() { throwsMyException(); }        };
+                                        }
+                                    """);
     PsiMethodCallExpression methodCall = findMethodCall(file);
     assertNotNull(methodCall);
 
@@ -76,14 +72,13 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
   }
 
   public void testTryCatchThatCatchAnotherException() {
-    PsiFile file = createTestFile("@lombok.SneakyThrows\n" +
-      "    public void m() {\n" +
-      "        try {\n" +
-      "            throwsMyException();" +
-      "            throwsSomeException();" +
-      "        } catch (Test.SomeException e) {\n" +
-      "        }\n" +
-      "    }");
+    PsiFile file = createTestFile("""
+                                    @lombok.SneakyThrows
+                                        public void m() {
+                                            try {
+                                                throwsMyException();            throwsSomeException();        } catch (Test.SomeException e) {
+                                            }
+                                        }""");
 
     PsiMethodCallExpression methodCall = findMethodCall(file);
     assertNotNull(methodCall);
@@ -96,29 +91,26 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
   }
 
   public void testTryCatchThatCatchAnotherExceptionWithNullTopElement() {
-    PsiMethodCallExpression methodCall = createCall("@lombok.SneakyThrows\n" +
-      "    public void m() {\n" +
-      "        try {\n" +
-      "            throwsMyException();" +
-      "            throwsSomeException();" +
-      "        } catch (Test.SomeException e) {\n" +
-      "        }\n" +
-      "    }");
+    PsiMethodCallExpression methodCall = createCall("""
+                                                      @lombok.SneakyThrows
+                                                          public void m() {
+                                                              try {
+                                                                  throwsMyException();            throwsSomeException();        } catch (Test.SomeException e) {
+                                                              }
+                                                          }""");
     List<PsiClassType> exceptions = ExceptionUtil.getUnhandledExceptions(methodCall, null);
     assertSize(0, exceptions);
   }
 
   public void testTryCatchThatCatchAnotherExceptionHierarchy() {
-    PsiFile file = createTestFile("@lombok.SneakyThrows\n" +
-      "    public void m() {\n" +
-      "        try {\n" +
-      "            try {" +
-      "                throwsMyException();\n" +
-      "                throwsSomeException();" +
-      "                throwsAnotherException();" +
-      "            } catch (Test.SomeException e) {}\n" +
-      "        } catch (Test.AnotherException e) {}\n" +
-      "    }");
+    PsiFile file = createTestFile("""
+                                    @lombok.SneakyThrows
+                                        public void m() {
+                                            try {
+                                                try {                throwsMyException();
+                                                    throwsSomeException();                throwsAnotherException();            } catch (Test.SomeException e) {}
+                                            } catch (Test.AnotherException e) {}
+                                        }""");
 
     PsiMethodCallExpression methodCall = findMethodCall(file);
     assertNotNull(methodCall);
@@ -140,12 +132,9 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
     assertEquals("Test.MyException", exceptions.get(0).getCanonicalText());
   }
 
-  @Override
-  protected Sdk getProjectJDK() {
-    return JavaSdk.getInstance().createJdk("java 1.8", "lib/mockJDK-1.8", false);
-  }
 
-  private PsiMethodCallExpression createCall(@NonNls final String body) {
+
+  private PsiMethodCallExpression createCall(@NonNls @Language("JAVA") final String body) {
     final PsiFile file = createTestFile(body);
     PsiMethodCallExpression methodCall = findMethodCall(file);
     assertNotNull(methodCall);
@@ -153,7 +142,7 @@ public class SneakyThrowsTest extends LightJavaCodeInsightTestCase {
   }
 
   @NotNull
-  private PsiFile createTestFile(@NonNls String body) {
+  private PsiFile createTestFile(@NonNls @Language("JAVA") String body) {
     return createFile("test.java", "class Test { " + body +
       "void throwsAnotherException() throws AnotherException {}" +
       "void throwsMyException() throws MyException {}" +

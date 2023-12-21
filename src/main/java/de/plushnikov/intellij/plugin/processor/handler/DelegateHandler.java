@@ -1,75 +1,118 @@
 package de.plushnikov.intellij.plugin.processor.handler;
 
+import com.intellij.codeInsight.daemon.impl.quickfix.DeleteElementFix;
+import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.openapi.util.Pair;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTypesUtil;
-import com.intellij.psi.util.PsiUtil;
-import com.intellij.psi.util.TypeConversionUtil;
-import de.plushnikov.intellij.plugin.LombokBundle;
+import com.intellij.psi.impl.light.LightTypeParameterBuilder;
+import com.intellij.psi.impl.source.PsiExtensibleClass;
+import com.intellij.psi.util.*;
+import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
-import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
+import de.plushnikov.intellij.plugin.problem.ProblemSink;
+import de.plushnikov.intellij.plugin.psi.LombokDelegateMethod;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiElementUtil;
-import de.plushnikov.intellij.plugin.util.PsiMethodUtil;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Handler for Delegate annotation processing, for fields and for methods
  */
-public class DelegateHandler {
+public final class DelegateHandler {
 
-  public DelegateHandler() {
-    // default constructor
-  }
+  private static final String TYPES_PARAMETER = "types";
+  private static final String EXCLUDES_PARAMETER = "excludes";
 
-  public boolean validate(@NotNull PsiModifierListOwner psiModifierListOwner, @NotNull PsiType psiType, @NotNull PsiAnnotation psiAnnotation, @NotNull ProblemBuilder builder) {
+  public static boolean validate(@NotNull PsiModifierListOwner psiModifierListOwner,
+                                 @NotNull PsiType delegateTargetType,
+                                 @NotNull PsiAnnotation psiAnnotation,
+                                 @NotNull ProblemSink problemSink) {
     boolean result = true;
 
     if (psiModifierListOwner.hasModifierProperty(PsiModifier.STATIC)) {
-      builder.addError(LombokBundle.message("inspection.message.delegate.legal.only.on.instance.fields"));
+      problemSink.addErrorMessage("inspection.message.delegate.legal.only.on.instance.fields");
       result = false;
     }
 
-    final Collection<PsiType> types = collectDelegateTypes(psiAnnotation, psiType);
-    result &= validateTypes(types, builder);
+    final Collection<PsiType> types = collectDelegateTypes(psiAnnotation, delegateTargetType);
+    result &= validateTypes(types, problemSink);
+    result &= validateTypesMethodsExistsInDelegateTargetType(types, delegateTargetType, problemSink);
 
     final Collection<PsiType> excludes = collectExcludeTypes(psiAnnotation);
-    result &= validateTypes(excludes, builder);
+    result &= validateTypes(excludes, problemSink);
 
     return result;
   }
 
-  private Collection<PsiType> collectDelegateTypes(PsiAnnotation psiAnnotation, PsiType psiType) {
-    Collection<PsiType> types = PsiAnnotationUtil.getAnnotationValues(psiAnnotation, "types", PsiType.class);
+  private static boolean validateTypesMethodsExistsInDelegateTargetType(@NotNull Collection<PsiType> types,
+                                                                        @NotNull PsiType delegateTargetType,
+                                                                        @NotNull ProblemSink sink) {
+    boolean result = true;
+
+    final Set<PsiType> typesToCheck = new HashSet<>(types);
+    typesToCheck.remove(delegateTargetType);
+
+    if (!typesToCheck.isEmpty()) {
+      final PsiClassType.ClassResolveResult resolveResult = PsiUtil.resolveGenericsClassInType(delegateTargetType);
+      final PsiClass psiDelegateTargetClass = resolveResult.getElement();
+      if (null != psiDelegateTargetClass) {
+        final Collection<MethodSignatureBackedByPsiMethod> delegateTargetSignatures =
+          ContainerUtil.map(psiDelegateTargetClass.getVisibleSignatures(),
+                            signature -> MethodSignatureBackedByPsiMethod.create(signature.getMethod(), resolveResult.getSubstitutor()));
+
+        for (PsiType psiType : typesToCheck) {
+          final PsiClass psiClass = PsiUtil.resolveClassInClassTypeOnly(psiType);
+          if (null != psiClass) {
+            final Collection<HierarchicalMethodSignature> methodSignatures = psiClass.getVisibleSignatures();
+
+            for (HierarchicalMethodSignature methodSignature : methodSignatures) {
+              final MethodSignatureBackedByPsiMethod matchingSignature =
+                ContainerUtil.find(delegateTargetSignatures,
+                                   signature -> MethodSignatureUtil.areSignaturesErasureEqual(signature, methodSignature));
+              if (matchingSignature == null) {
+                sink.addWarningMessage("inspection.message.delegate.unknown.type.method", methodSignature.getName())
+                  .withLocalQuickFixes(() -> LocalQuickFix.from(new DeleteElementFix(methodSignature.getMethod())));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private static Collection<PsiType> collectDelegateTypes(PsiAnnotation psiAnnotation, PsiType psiType) {
+    Collection<PsiType> types = PsiAnnotationUtil.getAnnotationValues(psiAnnotation, TYPES_PARAMETER, PsiType.class);
     if (types.isEmpty()) {
       types = Collections.singletonList(psiType);
     }
     return types;
   }
 
-  private boolean validateTypes(Collection<PsiType> psiTypes, ProblemBuilder builder) {
+  private static boolean validateTypes(Collection<PsiType> psiTypes, ProblemSink problemSink) {
     boolean result = true;
     for (PsiType psiType : psiTypes) {
       if (!checkConcreteClass(psiType)) {
-        builder.addError(LombokBundle.message("inspection.message.delegate.can.only.use.concrete.class.types"),
-                         psiType.getCanonicalText());
+        problemSink.addErrorMessage("inspection.message.delegate.can.only.use.concrete.class.types", psiType.getCanonicalText());
         result = false;
-      } else {
-        result &= validateRecursion(psiType, builder);
+      }
+      else {
+        result &= validateRecursion(psiType, problemSink);
       }
     }
     return result;
   }
 
-  private boolean validateRecursion(PsiType psiType, ProblemBuilder builder) {
+  private static boolean validateRecursion(PsiType psiType, ProblemSink problemSink) {
     final PsiClass psiClass = PsiTypesUtil.getPsiClass(psiType);
     if (null != psiClass) {
-      final DelegateAnnotationElementVisitor delegateAnnotationElementVisitor = new DelegateAnnotationElementVisitor(psiType, builder);
+      final DelegateAnnotationElementVisitor delegateAnnotationElementVisitor = new DelegateAnnotationElementVisitor(psiType, problemSink);
       psiClass.acceptChildren(delegateAnnotationElementVisitor);
       return delegateAnnotationElementVisitor.isValid();
     }
@@ -77,113 +120,126 @@ public class DelegateHandler {
   }
 
 
-  private boolean checkConcreteClass(@NotNull PsiType psiType) {
+  private static boolean checkConcreteClass(@NotNull PsiType psiType) {
     if (psiType instanceof PsiClassType) {
-      PsiClass psiClass = ((PsiClassType) psiType).resolve();
+      PsiClass psiClass = ((PsiClassType)psiType).resolve();
       return !(psiClass instanceof PsiTypeParameter);
     }
     return false;
   }
 
-  private Collection<PsiType> collectExcludeTypes(PsiAnnotation psiAnnotation) {
-    return PsiAnnotationUtil.getAnnotationValues(psiAnnotation, "excludes", PsiType.class);
+  private static Collection<PsiType> collectExcludeTypes(PsiAnnotation psiAnnotation) {
+    return PsiAnnotationUtil.getAnnotationValues(psiAnnotation, EXCLUDES_PARAMETER, PsiType.class);
   }
 
-  public <T extends PsiMember & PsiNamedElement> void generateElements(@NotNull T psiElement, @NotNull PsiType psiElementType, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    final PsiManager manager = psiElement.getContainingFile().getManager();
+  public static <T extends PsiMember & PsiNamedElement> void generateElements(@NotNull T psiElement,
+                                                                              @NotNull PsiType delegateTargetType,
+                                                                              @NotNull PsiAnnotation psiAnnotation,
+                                                                              @NotNull List<? super PsiElement> target) {
+    if (!(psiElement.getContainingClass() instanceof PsiExtensibleClass containingPsiClass)) {
+      return;
+    }
 
-    final Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods = new LinkedHashSet<>();
+    final Collection<PsiType> includes = collectDelegateTypes(psiAnnotation, delegateTargetType);
 
-    final Collection<PsiType> types = collectDelegateTypes(psiAnnotation, psiElementType);
-    addMethodsOfTypes(types, includesMethods);
-
-    final Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods = new LinkedHashSet<>();
-    PsiClassType javaLangObjectType = PsiType.getJavaLangObject(manager, psiElement.getResolveScope());
-    addMethodsOfType(javaLangObjectType, excludeMethods);
+    final Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods = new ArrayList<>();
+    for (PsiType psiType : includes) {
+      addMethodsOfType(psiType, includesMethods);
+    }
 
     final Collection<PsiType> excludes = collectExcludeTypes(psiAnnotation);
-    addMethodsOfTypes(excludes, excludeMethods);
+
+    final Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods = new ArrayList<>();
+    for (PsiType psiType : excludes) {
+      addMethodsOfType(psiType, excludeMethods);
+    }
+
+    // Add all already implemented methods to exclude list (includes methods from java.lang.Object too)
+    collectAllOwnMethods(containingPsiClass, excludeMethods);
 
     final Collection<Pair<PsiMethod, PsiSubstitutor>> methodsToDelegate = findMethodsToDelegate(includesMethods, excludeMethods);
-    if (!methodsToDelegate.isEmpty()) {
-      final PsiClass psiClass = psiElement.getContainingClass();
-      if (null != psiClass) {
-        for (Pair<PsiMethod, PsiSubstitutor> pair : methodsToDelegate) {
-          target.add(generateDelegateMethod(psiClass, psiElement, psiAnnotation, pair.getFirst(), pair.getSecond()));
-        }
-      }
+    for (Pair<PsiMethod, PsiSubstitutor> pair : methodsToDelegate) {
+      target.add(generateDelegateMethod(containingPsiClass, psiElement, psiAnnotation, pair.getFirst(), pair.getSecond()));
     }
   }
 
-  private void addMethodsOfTypes(Collection<PsiType> types, Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods) {
-    for (PsiType type : types) {
-      addMethodsOfType(type, includesMethods);
-    }
-  }
-
-  private void addMethodsOfType(PsiType psiType, Collection<Pair<PsiMethod, PsiSubstitutor>> allMethods) {
+  private static void addMethodsOfType(PsiType psiType, Collection<Pair<PsiMethod, PsiSubstitutor>> results) {
     final PsiClassType.ClassResolveResult resolveResult = PsiUtil.resolveGenericsClassInType(psiType);
-
     final PsiClass psiClass = resolveResult.getElement();
     if (null != psiClass) {
-      collectAllMethods(allMethods, psiClass, resolveResult.getSubstitutor());
+      final PsiSubstitutor psiClassSubstitutor = resolveResult.getSubstitutor();
+
+      for (Pair<PsiMethod, PsiSubstitutor> pair : psiClass.getAllMethodsAndTheirSubstitutors()) {
+        final PsiMethod psiMethod = pair.getFirst();
+        if (isAcceptableMethod(psiMethod)) {
+          final PsiSubstitutor psiSubstitutor = pair.getSecond().putAll(psiClassSubstitutor);
+          if (!isAlreadyPresent(psiMethod, psiSubstitutor, results)) {
+            results.add(Pair.pair(psiMethod, psiSubstitutor));
+          }
+        }
+      }
     }
   }
 
-  private void collectAllMethods(Collection<Pair<PsiMethod, PsiSubstitutor>> allMethods, @NotNull PsiClass psiStartClass, @NotNull PsiSubstitutor classSubstitutor) {
-    PsiClass psiClass = psiStartClass;
-    while (null != psiClass) {
-      PsiMethod[] psiMethods = psiClass.getMethods();
-      for (PsiMethod psiMethod : psiMethods) {
-        if (!psiMethod.isConstructor() && psiMethod.hasModifierProperty(PsiModifier.PUBLIC) && !psiMethod.hasModifierProperty(PsiModifier.STATIC)) {
-
-          Pair<PsiMethod, PsiSubstitutor> newMethodSubstitutorPair = new Pair<>(psiMethod, classSubstitutor);
-
-          boolean acceptMethod = true;
-          for (Pair<PsiMethod, PsiSubstitutor> uniquePair : allMethods) {
-            if (PsiElementUtil.methodMatches(newMethodSubstitutorPair, uniquePair)) {
-              acceptMethod = false;
-              break;
-            }
-          }
-          if (acceptMethod) {
-            allMethods.add(newMethodSubstitutorPair);
+  private static void collectAllOwnMethods(@NotNull PsiExtensibleClass psiStartClass, Collection<Pair<PsiMethod, PsiSubstitutor>> results) {
+    PsiExtensibleClass psiClass = psiStartClass;
+    do {
+      for (PsiMethod psiMethod : psiClass.getOwnMethods()) {
+        if (isAcceptableMethod(psiMethod)) {
+          if (!isAlreadyPresent(psiMethod, PsiSubstitutor.EMPTY, results)) {
+            results.add(Pair.pair(psiMethod, PsiSubstitutor.EMPTY));
           }
         }
       }
 
-      for (PsiClass interfaceClass : psiClass.getInterfaces()) {
-        classSubstitutor = TypeConversionUtil.getSuperClassSubstitutor(interfaceClass, psiClass, classSubstitutor);
-
-        collectAllMethods(allMethods, interfaceClass, classSubstitutor);
+      if (psiClass.getSuperClass() instanceof PsiExtensibleClass psiExtensibleSuperClass) {
+        psiClass = psiExtensibleSuperClass;
       }
-
-      psiClass = psiClass.getSuperClass();
+      else {
+        psiClass = null;
+      }
     }
+    while (null != psiClass);
   }
 
-  private Collection<Pair<PsiMethod, PsiSubstitutor>> findMethodsToDelegate(Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods, Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods) {
+  private static boolean isAcceptableMethod(PsiMethod psiMethod) {
+    return !psiMethod.isConstructor() &&
+           psiMethod.hasModifierProperty(PsiModifier.PUBLIC) &&
+           !psiMethod.hasModifierProperty(PsiModifier.STATIC);
+  }
+
+  private static Collection<Pair<PsiMethod, PsiSubstitutor>> findMethodsToDelegate(Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods,
+                                                                                   Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods) {
     final Collection<Pair<PsiMethod, PsiSubstitutor>> result = new ArrayList<>();
     for (Pair<PsiMethod, PsiSubstitutor> includesMethodPair : includesMethods) {
-      boolean acceptMethod = true;
-      for (Pair<PsiMethod, PsiSubstitutor> excludeMethodPair : excludeMethods) {
-        if (PsiElementUtil.methodMatches(includesMethodPair, excludeMethodPair)) {
-          acceptMethod = false;
-          break;
-        }
-      }
-      if (acceptMethod) {
+      if (!isAlreadyPresent(includesMethodPair.getFirst(), includesMethodPair.getSecond(), excludeMethods)) {
         result.add(includesMethodPair);
       }
     }
     return result;
   }
 
+  private static boolean isAlreadyPresent(PsiMethod psiMethod, PsiSubstitutor psiSubstitutor,
+                                          Collection<Pair<PsiMethod, PsiSubstitutor>> searchedPairs) {
+    boolean acceptMethod = true;
+    for (Pair<PsiMethod, PsiSubstitutor> someMethodPair : searchedPairs) {
+      if (methodMatches(psiMethod, psiSubstitutor, someMethodPair.getFirst(), someMethodPair.getSecond())) {
+        acceptMethod = false;
+        break;
+      }
+    }
+    return !acceptMethod;
+  }
+
   @NotNull
-  private <T extends PsiModifierListOwner & PsiNamedElement> PsiMethod generateDelegateMethod(@NotNull PsiClass psiClass, @NotNull T psiElement, @NotNull PsiAnnotation psiAnnotation, @NotNull PsiMethod psiMethod, @NotNull PsiSubstitutor psiSubstitutor) {
+  private static <T extends PsiModifierListOwner & PsiNamedElement> PsiMethod generateDelegateMethod(@NotNull PsiClass psiClass,
+                                                                                                     @NotNull T psiElement,
+                                                                                                     @NotNull PsiAnnotation psiAnnotation,
+                                                                                                     @NotNull PsiMethod psiMethod,
+                                                                                                     @NotNull PsiSubstitutor psiSubstitutor) {
     final PsiType returnType = psiSubstitutor.substitute(psiMethod.getReturnType());
 
-    final LombokLightMethodBuilder methodBuilder = new LombokLightMethodBuilder(psiClass.getManager(), psiMethod.getName())
+    final LombokLightMethodBuilder methodBuilder = new LombokDelegateMethod(psiMethod)
       .withModifier(PsiModifier.PUBLIC)
       .withMethodReturnType(returnType)
       .withContainingClass(psiClass)
@@ -191,7 +247,15 @@ public class DelegateHandler {
       .withNavigationElement(psiMethod);
 
     for (PsiTypeParameter typeParameter : psiMethod.getTypeParameters()) {
-      methodBuilder.withTypeParameter(typeParameter);
+      final LightTypeParameterBuilder lightTypeParameter =
+        new LightTypeParameterBuilder(typeParameter.getName(), psiMethod, typeParameter.getIndex());
+      for (PsiClassType extendsListType : typeParameter.getExtendsListTypes()) {
+        lightTypeParameter.getExtendsList().addReference((PsiClassType)psiSubstitutor.substitute(extendsListType));
+      }
+      for (PsiClassType implementsListType : typeParameter.getImplementsListTypes()) {
+        lightTypeParameter.getImplementsList().addReference((PsiClassType)psiSubstitutor.substitute(implementsListType));
+      }
+      methodBuilder.withTypeParameter(lightTypeParameter);
     }
 
     final PsiReferenceList throwsList = psiMethod.getThrowsList();
@@ -200,70 +264,87 @@ public class DelegateHandler {
     }
 
     final PsiParameterList parameterList = psiMethod.getParameterList();
-
     final PsiParameter[] psiParameters = parameterList.getParameters();
-    for (int parameterIndex = 0; parameterIndex < psiParameters.length; parameterIndex++) {
-      final PsiParameter psiParameter = psiParameters[parameterIndex];
+    for (final PsiParameter psiParameter : psiParameters) {
       final PsiType psiParameterType = psiSubstitutor.substitute(psiParameter.getType());
-      final String generatedParameterName = StringUtils.defaultIfEmpty(psiParameter.getName(), "p" + parameterIndex);
-      methodBuilder.withParameter(generatedParameterName, psiParameterType);
+      methodBuilder.withParameter(psiParameter.getName(), psiParameterType);
     }
 
     final String codeBlockText = createCodeBlockText(psiElement, psiMethod, returnType, psiParameters);
-    methodBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(codeBlockText, methodBuilder));
+    methodBuilder.withBodyText(codeBlockText);
 
     return methodBuilder;
   }
 
   @NotNull
-  private <T extends PsiModifierListOwner & PsiNamedElement> String createCodeBlockText(@NotNull T psiElement, @NotNull PsiMethod psiMethod, @NotNull PsiType returnType, @NotNull PsiParameter[] psiParameters) {
-    final String blockText;
-    final StringBuilder paramString = new StringBuilder();
-
-    for (int parameterIndex = 0; parameterIndex < psiParameters.length; parameterIndex++) {
-      final PsiParameter psiParameter = psiParameters[parameterIndex];
-      final String generatedParameterName = StringUtils.defaultIfEmpty(psiParameter.getName(), "p" + parameterIndex);
-      paramString.append(generatedParameterName).append(',');
-    }
-
-    if (paramString.length() > 0) {
-      paramString.deleteCharAt(paramString.length() - 1);
-    }
-
+  private static <T extends PsiModifierListOwner & PsiNamedElement> String createCodeBlockText(@NotNull T psiElement,
+                                                                                               @NotNull PsiMethod psiMethod,
+                                                                                               @NotNull PsiType returnType,
+                                                                                               PsiParameter @NotNull [] psiParameters) {
+    final String paramString = Arrays.stream(psiParameters).map(PsiParameter::getName).collect(Collectors.joining(","));
     final boolean isMethodCall = psiElement instanceof PsiMethod;
-    blockText = String.format("%sthis.%s%s.%s(%s);",
-      PsiType.VOID.equals(returnType) ? "" : "return ",
-      psiElement.getName(),
-      isMethodCall ? "()" : "",
-      psiMethod.getName(),
-      paramString.toString());
-    return blockText;
+    return String.format("%sthis.%s%s.%s(%s);",
+                         PsiTypes.voidType().equals(returnType) ? "" : "return ",
+                         psiElement.getName(),
+                         isMethodCall ? "()" : "",
+                         psiMethod.getName(),
+                         paramString);
+  }
+
+  public static boolean methodMatches(@NotNull PsiMethod firstMethod, @NotNull PsiSubstitutor firstSubstitutor,
+                                      @NotNull PsiMethod secondMethod, @NotNull PsiSubstitutor secondSubstitutor) {
+    if (!firstMethod.getName().equals(secondMethod.getName())) {
+      return false;
+    }
+
+    PsiParameterList firstMethodParameterList = firstMethod.getParameterList();
+    PsiParameterList secondMethodParameterList = secondMethod.getParameterList();
+    if (firstMethodParameterList.getParametersCount() != secondMethodParameterList.getParametersCount()) {
+      return false;
+    }
+
+    PsiParameter[] firstMethodParameters = firstMethodParameterList.getParameters();
+    PsiParameter[] secondMethodParameters = secondMethodParameterList.getParameters();
+    for (int i = 0; i < firstMethodParameters.length; i++) {
+      final PsiType firstMethodParameterListParameterType = firstSubstitutor.substitute(firstMethodParameters[i].getType());
+      final PsiType secondMethodParameterListParameterType = secondSubstitutor.substitute(secondMethodParameters[i].getType());
+
+      final PsiType firstParameterType = TypeConversionUtil.erasure(firstMethodParameterListParameterType, firstSubstitutor);
+      final PsiType secondParameterType = TypeConversionUtil.erasure(secondMethodParameterListParameterType, secondSubstitutor);
+
+      if (!PsiElementUtil.typesAreEquivalent(firstParameterType, secondParameterType)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private static class DelegateAnnotationElementVisitor extends JavaElementVisitor {
     private final PsiType psiType;
-    private final ProblemBuilder builder;
+    private final ProblemSink builder;
     private boolean valid;
 
-    DelegateAnnotationElementVisitor(PsiType psiType, ProblemBuilder builder) {
+    DelegateAnnotationElementVisitor(PsiType psiType, ProblemSink builder) {
       this.psiType = psiType;
       this.builder = builder;
       this.valid = true;
     }
 
     @Override
-    public void visitField(PsiField psiField) {
+    public void visitField(@NotNull PsiField psiField) {
       checkModifierListOwner(psiField);
     }
 
     @Override
-    public void visitMethod(PsiMethod psiMethod) {
+    public void visitMethod(@NotNull PsiMethod psiMethod) {
       checkModifierListOwner(psiMethod);
     }
 
     private void checkModifierListOwner(PsiModifierListOwner modifierListOwner) {
       if (PsiAnnotationSearchUtil.isAnnotatedWith(modifierListOwner, LombokClassNames.DELEGATE, LombokClassNames.EXPERIMENTAL_DELEGATE)) {
-        builder.addError(LombokBundle.message("inspection.message.delegate.does.not.support.recursion.delegating"), ((PsiMember) modifierListOwner).getName(), psiType.getPresentableText());
+        builder.addErrorMessage("inspection.message.delegate.does.not.support.recursion.delegating",
+                                ((PsiMember)modifierListOwner).getName(), psiType.getPresentableText());
         valid = false;
       }
     }

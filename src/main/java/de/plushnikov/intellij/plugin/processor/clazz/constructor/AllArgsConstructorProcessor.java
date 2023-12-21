@@ -2,11 +2,12 @@ package de.plushnikov.intellij.plugin.processor.clazz.constructor;
 
 import com.intellij.psi.*;
 import de.plushnikov.intellij.plugin.LombokClassNames;
-import de.plushnikov.intellij.plugin.problem.ProblemBuilder;
+import de.plushnikov.intellij.plugin.problem.ProblemSink;
 import de.plushnikov.intellij.plugin.processor.LombokPsiElementUsage;
 import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,14 +15,13 @@ import java.util.List;
 /**
  * @author Plushnikov Michail
  */
-public class AllArgsConstructorProcessor extends AbstractConstructorClassProcessor {
-
+public final class AllArgsConstructorProcessor extends AbstractConstructorClassProcessor {
   public AllArgsConstructorProcessor() {
     super(LombokClassNames.ALL_ARGS_CONSTRUCTOR, PsiMethod.class);
   }
 
   @Override
-  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
+  protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemSink builder) {
     boolean result;
 
     result = super.validate(psiAnnotation, psiClass, builder);
@@ -40,7 +40,8 @@ public class AllArgsConstructorProcessor extends AbstractConstructorClassProcess
   }
 
   @Override
-  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
+  protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target,
+                                     @Nullable String nameHint) {
     final String methodVisibility = LombokProcessorUtil.getAccessVisibility(psiAnnotation);
     if (null != methodVisibility) {
       final String staticConstructorName = getStaticConstructorName(psiAnnotation);
@@ -51,12 +52,7 @@ public class AllArgsConstructorProcessor extends AbstractConstructorClassProcess
   @NotNull
   private Collection<PsiMethod> createAllArgsConstructor(PsiClass psiClass, String methodVisibility, PsiAnnotation psiAnnotation, String staticName) {
     final Collection<PsiField> allNotInitializedNotStaticFields = getAllFields(psiClass);
-    return createAllArgsConstructor(psiClass, methodVisibility, psiAnnotation, staticName, allNotInitializedNotStaticFields);
-  }
-
-  @NotNull
-  public Collection<PsiMethod> createAllArgsConstructor(@NotNull PsiClass psiClass, @PsiModifier.ModifierConstant @NotNull String methodModifier, @NotNull PsiAnnotation psiAnnotation, String staticName, Collection<PsiField> allNotInitializedNotStaticFields) {
-    return createAllArgsConstructor(psiClass, methodModifier, psiAnnotation, staticName, allNotInitializedNotStaticFields, false);
+    return createAllArgsConstructor(psiClass, methodVisibility, psiAnnotation, staticName, allNotInitializedNotStaticFields, false);
   }
 
   @NotNull

@@ -1,4 +1,4 @@
-lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
+## **Lombok IntelliJ Plugin** [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3F9HXD7A2SMCN)
 ======================
 [![Build Status][badge-travis-img]][badge-travis] [![Code Coverage](https://img.shields.io/codecov/c/github/mplushnikov/lombok-intellij-plugin/master.svg)](https://codecov.io/github/mplushnikov/lombok-intellij-plugin?branch=master)
 
@@ -14,6 +14,7 @@ lombok-intellij-plugin [![Donate](https://www.paypal.com/en_US/i/btn/btn_donateC
 Provides support for lombok annotations to write great Java code with IntelliJ IDEA.
 
 **Last version (0.34) released on 17.01.2021**
+**Integrated into IntelliJ starting with 2020.3 Release**
 
 ---
 :collision: **Breaking News: Starting with IntelliJ version 2020.3 lombok plugin will be integrated and included in IntelliJ by default!.** :collision:
@@ -44,8 +45,7 @@ Last support for IntelliJ 10.5.4 by plugin version 0.8.7
 With this plugin your IntelliJ can recognize all of generated getters, setters and some other things from lombok project, so that you get code completion and are able to work without errors stating the methods don't exists.
 
 
-Features / Supports
---------
+### Features / Supports
 - [@Getter and @Setter](http://projectlombok.org/features/GetterSetter.html)
 - [@ToString](http://projectlombok.org/features/ToString.html)
 - [@EqualsAndHashCode](http://projectlombok.org/features/EqualsAndHashCode.html)
@@ -61,7 +61,7 @@ Features / Supports
 - [@SneakyThrows](https://projectlombok.org/features/SneakyThrows.html)
 - [@val](https://projectlombok.org/features/val.html) available from IntelliJ 14.1 (improved in 2016.2)
 - [@UtilityClass](https://projectlombok.org/features/experimental/UtilityClass.html) available from IntelliJ 2016.2
-- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html) experimental in IntelliJ 2019.2-2020.2
+- [@ExtensionMethod](https://projectlombok.org/features/experimental/ExtensionMethod.html) experimental in IntelliJ 2019.2-2020.2, available from IntelliJ 2021
 - [lombok config files syntax highlighting](https://projectlombok.org/features/configuration.html)
 - code inspections
 - refactoring actions (lombok and delombok)
@@ -101,11 +101,11 @@ repositories {
 }
 
 dependencies {
-	compileOnly 'org.projectlombok:lombok:1.18.16'
-	annotationProcessor 'org.projectlombok:lombok:1.18.16'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-	testCompileOnly 'org.projectlombok:lombok:1.18.16'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
+	testCompileOnly 'org.projectlombok:lombok:1.18.30'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 ```
 
@@ -116,7 +116,7 @@ In your `pom.xml`:
 	<dependency>
 		<groupId>org.projectlombok</groupId>
 		<artifactId>lombok</artifactId>
-		<version>1.18.16</version>
+		<version>1.18.30</version>
 		<scope>provided</scope>
 	</dependency>
 </dependencies>
@@ -125,7 +125,7 @@ In your `pom.xml`:
 ##### Ivy
 In your `ivy.xml`:
 ```xml
-<dependency org="org.projectlombok" name="lombok" rev="1.18.16" conf="build" />
+<dependency org="org.projectlombok" name="lombok" rev="1.18.30" conf="build" />
 ```
 
 IntelliJ and Eclipse compiler
@@ -138,8 +138,7 @@ If you're using Eclipse compiler with lombok, try this setup:
   - <kbd>...</kbd> > <kbd>Compiler</kbd> > <kbd>Annotation Processors</kbd> > <kbd>Enable annotation processing: checked (default configuration)</kbd>
   - <kbd>...</kbd> > <kbd>Compiler</kbd> > <kbd>Additional build process VM options: -javaagent:lombok.jar</kbd>
 
-Developed By
-------------
+### Developed by
 [**@mplushnikov** Michail Plushnikov](https://github.com/mplushnikov)
 
 **Contributors**

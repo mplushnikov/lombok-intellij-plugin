@@ -2,8 +2,10 @@ package de.plushnikov.intellij.plugin.extension;
 
 import com.intellij.psi.*;
 import com.intellij.refactoring.rename.RenameJavaVariableProcessor;
+import com.intellij.util.containers.ContainerUtil;
 import de.plushnikov.intellij.plugin.LombokClassNames;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
+import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
 import de.plushnikov.intellij.plugin.processor.handler.singular.BuilderElementHandler;
 import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerFactory;
 import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
@@ -11,6 +13,7 @@ import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -22,10 +25,10 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
   @Override
   public boolean canProcessElement(@NotNull PsiElement element) {
     if (element instanceof PsiField && !(element instanceof LombokLightFieldBuilder)) {
-      final PsiClass containingClass = ((PsiField) element).getContainingClass();
+      final PsiClass containingClass = ((PsiField)element).getContainingClass();
       if (null != containingClass) {
-        return Arrays.stream(containingClass.getMethods()).anyMatch(LombokLightMethodBuilder.class::isInstance) ||
-          Arrays.stream(containingClass.getInnerClasses()).anyMatch(LombokLightClassBuilder.class::isInstance);
+        return ContainerUtil.exists(containingClass.getMethods(), LombokLightMethodBuilder.class::isInstance) ||
+               ContainerUtil.exists(containingClass.getInnerClasses(), LombokLightClassBuilder.class::isInstance);
       }
     }
     return false;
@@ -33,13 +36,13 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
 
   @Override
   public void prepareRenaming(@NotNull PsiElement element, @NotNull String newFieldName, @NotNull Map<PsiElement, String> allRenames) {
-    final PsiField psiField = (PsiField) element;
+    final PsiField psiField = (PsiField)element;
     final PsiClass containingClass = psiField.getContainingClass();
     final String currentFieldName = psiField.getName();
-    if (null != containingClass && null != currentFieldName) {
-      final boolean isBoolean = PsiType.BOOLEAN.equals(psiField.getType());
+    if (null != containingClass) {
+      final boolean isBoolean = PsiTypes.booleanType().equals(psiField.getType());
 
-      final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
+      final AccessorsInfo accessorsInfo = AccessorsInfo.buildFor(psiField);
 
       final String getterName = LombokUtils.toGetterName(accessorsInfo, currentFieldName, isBoolean);
       final PsiMethod[] psiGetterMethods = containingClass.findMethodsByName(getterName, false);
@@ -61,12 +64,23 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
         }
       }
 
-      final PsiAnnotation builderAnnotation = PsiAnnotationSearchUtil.findAnnotation(containingClass, LombokClassNames.BUILDER, LombokClassNames.SUPER_BUILDER);
+      final PsiAnnotation builderAnnotation =
+        PsiAnnotationSearchUtil.findAnnotation(containingClass, LombokClassNames.BUILDER, LombokClassNames.SUPER_BUILDER);
       if (null != builderAnnotation) {
         final PsiAnnotation singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, LombokClassNames.SINGULAR);
-        final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiField, null!=singularAnnotation);
-        final List<String> currentBuilderMethodNames = handler.getBuilderMethodNames(accessorsInfo.removePrefix(currentFieldName), singularAnnotation);
-        final List<String> newBuilderMethodNames = handler.getBuilderMethodNames(accessorsInfo.removePrefix(newFieldName), singularAnnotation);
+        final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiField, null != singularAnnotation);
+
+        final String setterPrefix =
+          PsiAnnotationUtil.getStringAnnotationValue(builderAnnotation, BuilderHandler.ANNOTATION_SETTER_PREFIX, "");
+
+        final List<String> currentBuilderMethodNames = handler.getBuilderMethodNames(accessorsInfo.removePrefix(currentFieldName),
+                                                                                     setterPrefix,
+                                                                                     singularAnnotation,
+                                                                                     accessorsInfo.getCapitalizationStrategy());
+        final List<String> newBuilderMethodNames = handler.getBuilderMethodNames(accessorsInfo.removePrefix(newFieldName),
+                                                                                 setterPrefix,
+                                                                                 singularAnnotation,
+                                                                                 accessorsInfo.getCapitalizationStrategy());
 
         if (currentBuilderMethodNames.size() == newBuilderMethodNames.size()) {
           Arrays.stream(containingClass.getInnerClasses())
@@ -83,7 +97,8 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
         }
       }
 
-      final boolean hasFieldNameConstantAnnotation = PsiAnnotationSearchUtil.isAnnotatedWith(containingClass, LombokClassNames.FIELD_NAME_CONSTANTS);
+      final boolean hasFieldNameConstantAnnotation =
+        PsiAnnotationSearchUtil.isAnnotatedWith(containingClass, LombokClassNames.FIELD_NAME_CONSTANTS);
       if (hasFieldNameConstantAnnotation) {
         Arrays.stream(containingClass.getInnerClasses())
           .map(PsiClass::getFields)
@@ -94,5 +109,4 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
       }
     }
   }
-
 }

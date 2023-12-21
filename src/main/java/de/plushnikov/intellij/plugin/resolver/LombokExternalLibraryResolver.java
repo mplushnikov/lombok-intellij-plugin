@@ -2,6 +2,7 @@ package de.plushnikov.intellij.plugin.resolver;
 
 import com.intellij.codeInsight.daemon.quickFix.ExternalLibraryResolver;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.ExternalLibraryDescriptor;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ThreeState;
@@ -21,8 +22,9 @@ public class LombokExternalLibraryResolver extends ExternalLibraryResolver {
   private final Set<String> allLombokPackages;
   private final Map<String, String> simpleNameToFQNameMap;
 
-  private static final ExternalLibraryDescriptor LOMBOK = new ExternalLibraryDescriptor("org.projectlombok", "lombok",
-                                                                                        null, null, Version.LAST_LOMBOK_VERSION);
+  private static final ExternalLibraryDescriptor LOMBOK_DESCRIPTOR = new ExternalLibraryDescriptor("org.projectlombok", "lombok",
+                                                                                                   null, null, Version.LAST_LOMBOK_VERSION,
+                                                                                                   DependencyScope.PROVIDED);
 
   public LombokExternalLibraryResolver() {
     allLombokPackages = MAIN_LOMBOK_CLASSES.stream().map(StringUtil::getPackageName).collect(Collectors.toUnmodifiableSet());
@@ -35,7 +37,7 @@ public class LombokExternalLibraryResolver extends ExternalLibraryResolver {
                                                  @NotNull ThreeState isAnnotation,
                                                  @NotNull Module contextModule) {
     if (isAnnotation == ThreeState.YES && simpleNameToFQNameMap.containsKey(shortClassName)) {
-      return new ExternalClassResolveResult(simpleNameToFQNameMap.get(shortClassName), LOMBOK);
+      return new ExternalClassResolveResult(simpleNameToFQNameMap.get(shortClassName), LOMBOK_DESCRIPTOR);
     }
     return null;
   }
@@ -44,7 +46,7 @@ public class LombokExternalLibraryResolver extends ExternalLibraryResolver {
   @Override
   public ExternalLibraryDescriptor resolvePackage(@NotNull String packageName) {
     if (allLombokPackages.contains(packageName)) {
-      return LOMBOK;
+      return LOMBOK_DESCRIPTOR;
     }
     return null;
   }

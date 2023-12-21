@@ -7,7 +7,7 @@ import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
 import com.intellij.openapi.util.NlsContexts;
 import de.plushnikov.intellij.plugin.LombokBundle;
-import de.plushnikov.intellij.plugin.icon.LombokIcons;
+import icons.LombokIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,15 +16,17 @@ import java.util.Map;
 
 public class LombokConfigColorSettingsPage implements ColorSettingsPage {
   private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[]{
-    new AttributesDescriptor(LombokBundle.message("attribute.descriptor.key"), LombokConfigSyntaxHighlighter.KEY),
-    new AttributesDescriptor(LombokBundle.message("attribute.descriptor.separator"), LombokConfigSyntaxHighlighter.SEPARATOR),
-    new AttributesDescriptor(LombokBundle.message("attribute.descriptor.value"), LombokConfigSyntaxHighlighter.VALUE),
+    new AttributesDescriptor(LombokBundle.messagePointer("color.settings.comment"), LombokConfigSyntaxHighlighter.COMMENT),
+    new AttributesDescriptor(LombokBundle.messagePointer("color.settings.clear"), LombokConfigSyntaxHighlighter.CLEAR),
+    new AttributesDescriptor(LombokBundle.messagePointer("color.settings.key"), LombokConfigSyntaxHighlighter.KEY),
+    new AttributesDescriptor(LombokBundle.messagePointer("color.settings.separator"), LombokConfigSyntaxHighlighter.SEPARATOR),
+    new AttributesDescriptor(LombokBundle.messagePointer("color.settings.value"), LombokConfigSyntaxHighlighter.VALUE),
   };
 
   @Nullable
   @Override
   public Icon getIcon() {
-    return LombokIcons.CONFIG_FILE_ICON;
+    return LombokIcons.Config;
   }
 
   @NotNull
@@ -36,16 +38,18 @@ public class LombokConfigColorSettingsPage implements ColorSettingsPage {
   @NotNull
   @Override
   public String getDemoText() {
-    return "##\n" +
-      "## Key : lombok.log.fieldName\n" +
-      "## Type: string\n" +
-      "##\n" +
-      "## Use this name for the generated logger fields (default: 'log')\n" +
-      "##\n" +
-      "## Examples:\n" +
-      "#\n" +
-      "clear lombok.log.fieldName\n" +
-      "lombok.log.fieldName = LOGGER\n";
+    return """
+      ##
+      ## Key : lombok.log.fieldName
+      ## Type: string
+      ##
+      ## Use this name for the generated logger fields (default: 'log')
+      ##
+      ## Examples:
+      #
+      clear lombok.log.fieldName
+      lombok.log.fieldName = LOGGER
+      """;
   }
 
   @Nullable
@@ -54,15 +58,13 @@ public class LombokConfigColorSettingsPage implements ColorSettingsPage {
     return null;
   }
 
-  @NotNull
   @Override
-  public AttributesDescriptor[] getAttributeDescriptors() {
+  public AttributesDescriptor @NotNull [] getAttributeDescriptors() {
     return DESCRIPTORS;
   }
 
-  @NotNull
   @Override
-  public ColorDescriptor[] getColorDescriptors() {
+  public ColorDescriptor @NotNull [] getColorDescriptors() {
     return ColorDescriptor.EMPTY_ARRAY;
   }
 

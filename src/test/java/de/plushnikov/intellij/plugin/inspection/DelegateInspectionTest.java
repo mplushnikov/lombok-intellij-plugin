@@ -5,8 +5,8 @@ import com.intellij.codeInspection.InspectionProfileEntry;
 public class DelegateInspectionTest extends LombokInspectionTest {
 
   @Override
-  protected String getTestDataPath() {
-    return TEST_DATA_INSPECTION_DIRECTORY + "/delegate";
+  protected String getBasePath() {
+    return super.getBasePath() + "/" + TEST_DATA_INSPECTION_DIRECTORY + "/delegate";
   }
 
   @Override
@@ -27,6 +27,10 @@ public class DelegateInspectionTest extends LombokInspectionTest {
   }
 
   public void testRecursionType() {
+    doTest();
+  }
+
+  public void testDelegateIncludeUnknownMethods() {
     doTest();
   }
 
