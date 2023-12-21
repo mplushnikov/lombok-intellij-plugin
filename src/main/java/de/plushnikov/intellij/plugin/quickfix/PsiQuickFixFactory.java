@@ -35,7 +35,7 @@ public final class PsiQuickFixFactory {
                                                     @NotNull String modifier,
                                                     boolean shouldHave,
                                                     final boolean showContainingClass) {
-    return LocalQuickFix.from(new ModifierFix(owner, modifier, shouldHave, showContainingClass));
+    return new ModifierFix(owner, modifier, shouldHave, showContainingClass);
   }
 
   public static LocalQuickFix createNewFieldFix(@NotNull PsiClass psiClass,

@@ -86,20 +86,24 @@ tasks.withType(JavaCompile).configureEach {
   sourceCompatibility = JavaVersion.VERSION_17
   targetCompatibility = JavaVersion.VERSION_17
   //  options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-  dependsOn("generateLexer", "generateParser", "generateLombok")
+  dependsOn("generateLexer", /*"generateParser",*/ "generateLombok")
 }
 
 tasks {
 
   sourceSets {
     main {
-      java.srcDirs 'src/main/java', 'generated/src'
+      java.srcDirs 'src/main/java', 'generated/src', 'lang/src'
       resources.srcDirs 'src/main/resources', 'generated/resources'
     }
     test {
       java.srcDir 'test/java'
       resources.srcDirs 'test/resources', 'testData'
     }
+  }
+
+  processResources {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
   }
 
   clean {
@@ -111,7 +115,7 @@ tasks {
     println "Generating Lexer for JFlexRelease: ${grammarKit.jflexRelease}"
 
     sourceFile = file("src/main/resources/de/plushnikov/intellij/plugin/language/lombokConfig.flex")
-    targetDir = "generated/src/de/plushnikov/intellij/plugin/language"
+    targetDir = "lang/src/de/plushnikov/intellij/plugin/language"
     targetClass = "LombokConfigLexer"
     purgeOldFiles = true
   }
@@ -120,7 +124,7 @@ tasks {
     println "Generating Parser for GrammerKit: ${grammarKit.grammarKitRelease}"
 
     sourceFile = file("src/main/resources/de/plushnikov/intellij/plugin/language/lombokConfig.bnf")
-    targetRoot = "generated/src"
+    targetRoot = "lang/src"
     pathToParser = "/de/plushnikov/intellij/plugin/language/parser/LombokConfigParser.java"
     pathToPsiRoot = "/de/plushnikov/intellij/plugin/language/psi"
     purgeOldFiles = true
