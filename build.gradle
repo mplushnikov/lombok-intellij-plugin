@@ -37,7 +37,7 @@ dependencies {
 
   testImplementation("junit:junit:4.13.2")
   testImplementation("org.mockito:mockito-core:5.8.0")
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.1")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2")
 }
 
 task generateLombok {
